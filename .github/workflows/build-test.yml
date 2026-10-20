@@ -3,9 +3,9 @@ name: Build (CI)
 permissions:
   contents: read
 
+# dev 分支的提交由 auto-release.yml 负责构建并发布，避免与自动发布流程重复构建。
 on:
-  push:
-    branches: [dev]
+  pull_request:
     paths-ignore: &ignored
       - '**/.editorconfig'
       - '**/.gitignore'
@@ -16,8 +16,6 @@ on:
       - 'PCL.Core.Test/**'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/FUNDING.yml'
-  pull_request:
-    paths-ignore: *ignored
   workflow_dispatch:
 
 jobs:
