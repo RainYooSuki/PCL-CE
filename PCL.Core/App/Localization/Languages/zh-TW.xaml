@@ -3196,18 +3196,6 @@
     <sys:String x:Key="Setup.Update.OtherOptions.Title">其他更新選項 - 升級到 AquaCL</sys:String>
     <sys:String x:Key="Setup.Update.RestartInstall">重啟安裝</sys:String>
 
-    <!-- Setup.Update.Auto -->
-
-    <sys:String x:Key="Setup.Update.Auto.Disabled">不自動檢查更新（不推薦）</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.Disabled.ToolTip">關閉自動更新檢查。這可能導致你無法及時獲得更新。</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndInstall">自動下載並安裝更新</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndInstall.ToolTip">啟動器將會自動檢查並下載可用更新，並在關閉啟動器後自動安裝更新。</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndNotify">自動下載並提示更新</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndNotify.ToolTip">啟動器將會自動檢查並下載可用更新，並在完成後提示你安裝更新。</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.NotifyOnly">提示更新</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.NotifyOnly.ToolTip">啟動器將會自動檢查可用更新，然後提示你下載並安裝更新。</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.Title">自動更新設定</sys:String>
-
     <!-- Setup.Update.Channel -->
 
     <sys:String x:Key="Setup.Update.Channel.Beta">測試版 / Beta</sys:String>

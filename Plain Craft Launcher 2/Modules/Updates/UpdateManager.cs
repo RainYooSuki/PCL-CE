@@ -72,6 +72,13 @@ public static class UpdateManager
 
     public static void UpdateStart(UpdateEnums.UpdateType type, string receivedKey = null, bool forceValidated = false)
     {
+        // 自动更新已禁用：只有用户在更新页面主动发起安装时才允许继续。
+        if (type != UpdateEnums.UpdateType.UpdateNow)
+        {
+            ModBase.Log("[Update] 自动更新已禁用，已忽略非手动更新请求");
+            return;
+        }
+
         var dlTargetPath = ModBase.exePath + @"PCL\Plain Craft Launcher Community Edition.exe";
         ModBase.RunInNewThread(() =>
         {
@@ -86,22 +93,6 @@ public static class UpdateManager
                 ModBase.Log($"[Update] 远程最新版本: {version.VersionName}, 当前版本: {ModBase.versionBaseName}");
                 if (!(SemVer.Parse(version.VersionName) > SemVer.Parse(ModBase.versionBaseName)))
                     return;
-                if (type == UpdateEnums.UpdateType.PromptOnly)
-                {
-                    ModBase.RunInUi(() =>
-                    {
-                        if (ModMain.MyMsgBox(
-                                Lang.Text("Update.Available", ModBase.versionBaseName, version.VersionName),
-                                Lang.Text("Update.Title"),
-                                Lang.Text("Update.Action"),
-                                Lang.Text("Common.Action.Cancel")
-                            ) == 1)
-                            ModMain.frmMain.PageChange(FormMain.PageType.Setup, FormMain.PageSubType.SetupUpdate);
-                    });
-                    return;
-                    // 构造步骤加载器
-                }
-
                 var loaders = new List<ModLoader.LoaderBase>();
                 // 下载
                 loaders.AddRange(remoteServer.GetDownloadLoader(
@@ -113,25 +104,7 @@ public static class UpdateManager
                     if ((curHash ?? "") != (version.Sha256 ?? ""))
                         throw new Exception(Lang.Text("Update.Error.Sha256Mismatch", version.Sha256, curHash));
                 }));
-                if (type == UpdateEnums.UpdateType.UpdateNow)
-                    loaders.Add(new ModLoader.LoaderTask<int, int>(Lang.Text("Update.Task.Install"), _ => UpdateRestart(true)));
-                else if (type == UpdateEnums.UpdateType.Silent)
-                    loaders.Add(new ModLoader.LoaderTask<int, int>(Lang.Text("Update.Task.Prepare"), _ => isUpdateWaitingRestart = true));
-                else if (type == UpdateEnums.UpdateType.DownloadAndPrompt)
-                    loaders.Add(new ModLoader.LoaderTask<int, int>(Lang.Text("Update.Task.ShowButton"), _ =>
-                    {
-                        isUpdateWaitingRestart = true;
-                        ModBase.RunInUi(() =>
-                        {
-                            ModMain.frmMain.BtnExtraUpdateRestart.ToolTip =
-                                Lang.Text("Main.Extra.UpdateRestart.ToolTipWithVersion", ModBase.versionBaseName, version.VersionName);
-                            ModMain.frmMain.BtnExtraUpdateRestart.ShowRefresh();
-                            ModMain.frmMain.BtnExtraUpdateRestart.Ribble();
-                        });
-                    })
-                    {
-                        show = false
-                    });
+                loaders.Add(new ModLoader.LoaderTask<int, int>(Lang.Text("Update.Task.Install"), _ => UpdateRestart(true)));
                 loaders.Add(new ModLoader.LoaderTask<int, int>(Lang.Text("Update.Task.RefreshSettings"), _ =>
                 {
                     if (ModMain.frmSetupUpdate is not null)
@@ -147,18 +120,14 @@ public static class UpdateManager
                 // 启动
                 updateLoader = new ModLoader.LoaderCombo<JsonObject>(Lang.Text("Update.Title"), loaders);
                 updateLoader.Start();
-                if (type == UpdateEnums.UpdateType.UpdateNow)
-                {
-                    ModLoader.LoaderTaskbarAdd(updateLoader);
-                    ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-                    ModMain.frmMain.BtnExtraDownload.Ribble();
-                }
+                ModLoader.LoaderTaskbarAdd(updateLoader);
+                ModMain.frmMain.BtnExtraDownload.ShowRefresh();
+                ModMain.frmMain.BtnExtraDownload.Ribble();
             }
             catch (Exception ex)
             {
                 ModBase.Log(ex, "[Update] 获取启动器更新失败");
-                if (type != UpdateEnums.UpdateType.Silent)
-                    HintService.Hint(Lang.Text("Update.Error.FetchFailed"), HintType.Error);
+                HintService.Hint(Lang.Text("Update.Error.FetchFailed"), HintType.Error);
             }
         });
     }
@@ -237,31 +206,8 @@ public static class UpdateManager
 
     private static void LoadOnlineInfo()
     {
-        ScheduleBasedOnConfig();
+        // 自动更新已禁用：仅加载公告，不在后台检查、下载或安装启动器更新。
         AnnouncementService.Load();
-    }
-
-    private static void ScheduleBasedOnConfig()
-    {
-        switch (Config.Update.UpdateMode)
-        {
-            case LauncherAutoUpdateBehavior.DownloadAndInstall:
-                ModBase.Log("[Update] 更新设置: 自动下载并安装更新");
-                if (GetVersionStatus() != UpdateEnums.VersionStatus.Latest)
-                    UpdateStart(UpdateEnums.UpdateType.Silent);
-                break;
-            case LauncherAutoUpdateBehavior.DownloadAndAnnounce:
-                ModBase.Log("[Update] 更新设置: 自动下载并提示更新");
-                UpdateStart(UpdateEnums.UpdateType.DownloadAndPrompt);
-                break;
-            case LauncherAutoUpdateBehavior.AnnounceOnly:
-                ModBase.Log("[Update] 更新设置: 提示更新");
-                UpdateStart(UpdateEnums.UpdateType.PromptOnly);
-                break;
-            default:
-                ModBase.Log("[Update] 更新设置: 不自动检查更新");
-                return;
-        }
     }
 
     /// <summary>

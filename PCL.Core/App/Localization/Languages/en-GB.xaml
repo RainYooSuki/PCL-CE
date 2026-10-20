@@ -3196,18 +3196,6 @@
     <sys:String x:Key="Setup.Update.OtherOptions.Title">Other update options - upgrade to AquaCL</sys:String>
     <sys:String x:Key="Setup.Update.RestartInstall">Restart to install</sys:String>
 
-    <!-- Setup.Update.Auto -->
-
-    <sys:String x:Key="Setup.Update.Auto.Disabled">Do not automatically check for updates (not recommended)</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.Disabled.ToolTip">Disable automatic update checking. This may prevent you from receiving updates in a timely manner.</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndInstall">Automatically download and install updates</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndInstall.ToolTip">The launcher will automatically check for and download available updates, and install them after closing.</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndNotify">Automatically download and prompt for update</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndNotify.ToolTip">The launcher will automatically check for and download available updates, then prompt you to install.</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.NotifyOnly">Prompt for update</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.NotifyOnly.ToolTip">The launcher will automatically check for available updates, then prompt you to download and install.</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.Title">Auto update settings</sys:String>
-
     <!-- Setup.Update.Channel -->
 
     <sys:String x:Key="Setup.Update.Channel.Beta">Beta</sys:String>

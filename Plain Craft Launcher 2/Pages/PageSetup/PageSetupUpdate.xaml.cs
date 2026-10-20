@@ -24,7 +24,6 @@ public partial class PageSetupUpdate
         TextMirrorCDK.Password = Config.Update.MirrorChyanKey;
 
         ComboSystemUpdateChannel.SelectedIndex = (int)Config.Update.UpdateChannel;
-        ComboSystemUpdateMode.SelectedIndex = (int)Config.Update.UpdateMode;
 
         TextCurrentVersion.Text = "PCL CE " + VersionNameFormat(ModBase.versionBaseName);
         ModAnimation.AniControlEnabled -= 1;
@@ -170,12 +169,6 @@ public partial class PageSetupUpdate
             ModMain.MyMsgBox(Lang.Text("Setup.Update.Changelog.Unavailable"), Lang.Text("Setup.Update.Changelog.Title"));
         else
             ModMain.MyMsgBoxMarkdown(updateInfo.Changelog, Lang.Text("Setup.Update.Changelog.Title"));
-    }
-
-    private void ComboSystemUpdateMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (ModAnimation.AniControlEnabled == 0)
-            Config.Update.UpdateMode = (LauncherAutoUpdateBehavior)ComboSystemUpdateMode.SelectedIndex;
     }
 
     private void ComboSystemUpdateBranch_SelectionChanged(object sender, SelectionChangedEventArgs e)

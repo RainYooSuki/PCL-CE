@@ -107,7 +107,7 @@ public enum LinkRelayBehavior
 }
 
 /// <summary>
-/// 启动器更新行为
+/// 启动器自动更新行为。自动更新已禁用；保留枚举值以兼容旧版配置。
 /// </summary>
 public enum LauncherAutoUpdateBehavior
 {

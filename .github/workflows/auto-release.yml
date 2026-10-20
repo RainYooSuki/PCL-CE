@@ -1,0 +1,144 @@
+name: Auto Release
+
+run-name: Auto release ${{ github.sha }}
+
+# 每次向 dev 分支推送提交后，构建 x64 / ARM64 可执行文件，
+# 打包为带提交哈希的 Release 资产并发布为 prerelease。
+# 如需所有分支都自动发布，可将 branches 改为 ['**']。
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: auto-release-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build ${{ matrix.architecture }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x64
+          - architecture: ARM64
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      configuration: Release
+      architecture: ${{ matrix.architecture }}
+    secrets: inherit
+
+  publish:
+    name: Package and publish release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Compute release metadata
+        id: meta
+        shell: bash
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+          echo "short_sha=${short_sha}" >> "$GITHUB_OUTPUT"
+
+      - name: Download x64 build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: PCL2_CE_Release_x64
+          path: artifacts/x64
+
+      - name: Download ARM64 build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: PCL2_CE_Release_ARM64
+          path: artifacts/ARM64
+
+      - name: Package release assets
+        shell: bash
+        env:
+          SHORT_SHA: ${{ steps.meta.outputs.short_sha }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p dist package/x64 package/ARM64
+
+          x64_source="$(find artifacts/x64 -maxdepth 1 -type f -name '*.exe' -print -quit)"
+          arm64_source="$(find artifacts/ARM64 -maxdepth 1 -type f -name '*.exe' -print -quit)"
+
+          if [[ -z "${x64_source}" || -z "${arm64_source}" ]]; then
+            echo "Build artifact is missing an .exe file" >&2
+            find artifacts -maxdepth 3 -type f -print >&2
+            exit 1
+          fi
+
+          x64_name="PCL2_CE_Release_${SHORT_SHA}_x64.exe"
+          arm64_name="PCL2_CE_Release_${SHORT_SHA}_ARM64.exe"
+
+          mv "${x64_source}" "dist/${x64_name}"
+          mv "${arm64_source}" "dist/${arm64_name}"
+
+          cp "dist/${x64_name}" "package/x64/${x64_name}"
+          cp "dist/${arm64_name}" "package/ARM64/${arm64_name}"
+
+          cat > package/BUILD_INFO.txt <<EOF
+          PCL2 CE automatic release
+          Commit: ${GITHUB_SHA}
+          Branch: ${GITHUB_REF_NAME}
+          Platforms: x64, ARM64
+          Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          EOF
+
+          zip_name="PCL2_CE_Release_${SHORT_SHA}_x64_ARM64.zip"
+          checksum_name="PCL2_CE_Release_${SHORT_SHA}_x64_ARM64_sha256.txt"
+
+          (cd package && zip -r "../dist/${zip_name}" .)
+          (
+            cd dist
+            sha256sum "${x64_name}" "${arm64_name}" "${zip_name}" > "${checksum_name}"
+          )
+
+      - name: Create release notes
+        shell: bash
+        env:
+          SHORT_SHA: ${{ steps.meta.outputs.short_sha }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || github.ref_name }}
+        run: |
+          commit_subject="$(printf '%s\n' "${COMMIT_MESSAGE}" | head -n 1)"
+          {
+            echo "PCL2 CE automatic build for commit \`${GITHUB_SHA}\`."
+            echo
+            echo "- Commit: [\`${SHORT_SHA}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA})"
+            echo "- Commit message: ${commit_subject}"
+            echo "- Branch: \`${GITHUB_REF_NAME}\`"
+            echo "- Platforms: x64, ARM64"
+            echo "- Workflow run: [${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})"
+          } > release-notes.md
+
+      - name: Upload packaged assets as workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_all
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: auto-build-${{ github.sha }}
+          target_commitish: ${{ github.sha }}
+          name: PCL2 CE Release ${{ steps.meta.outputs.short_sha }}
+          body_path: release-notes.md
+          prerelease: true
+          make_latest: 'false'
+          fail_on_unmatched_files: true
+          files: |
+            dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_x64.exe
+            dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_ARM64.exe
+            dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_x64_ARM64.zip
+            dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_x64_ARM64_sha256.txt

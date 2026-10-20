@@ -118,9 +118,9 @@ public static partial class Config
     [ConfigGroup("Update")] partial class UpdateConfigGroup
     {
         /// <summary>
-        /// 自动更新行为。
+        /// 自动更新行为。自动更新已禁用；保留此配置项以兼容旧版配置。
         /// </summary>
-        [ConfigItem<LauncherAutoUpdateBehavior>("SystemSystemUpdate", LauncherAutoUpdateBehavior.DownloadAndAnnounce, ConfigSource.Local)] public partial LauncherAutoUpdateBehavior UpdateMode { get; set; }
+        [ConfigItem<LauncherAutoUpdateBehavior>("SystemSystemUpdate", LauncherAutoUpdateBehavior.Disable, ConfigSource.Local)] public partial LauncherAutoUpdateBehavior UpdateMode { get; set; }
 
         /// <summary>
         /// 更新分支。

@@ -3252,18 +3252,6 @@
     <sys:String x:Key="Setup.Update.OtherOptions.Title">其他更新选项 - 升级到 AquaCL</sys:String>
     <sys:String x:Key="Setup.Update.RestartInstall">重启安装</sys:String>
 
-    <!-- Setup.Update.Auto -->
-
-    <sys:String x:Key="Setup.Update.Auto.Disabled">不自动检查更新（不推荐）</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.Disabled.ToolTip">关闭自动更新检查。这可能导致你无法及时获得更新。</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndInstall">自动下载并安装更新</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndInstall.ToolTip">启动器将会自动检查并下载可用更新，并在关闭启动器后自动安装更新。</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndNotify">自动下载并提示更新</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.DownloadAndNotify.ToolTip">启动器将会自动检查并下载可用更新，并在完成后提示你安装更新。</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.NotifyOnly">提示更新</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.NotifyOnly.ToolTip">启动器将会自动检查可用更新，然后提示你下载并安装更新。</sys:String>
-    <sys:String x:Key="Setup.Update.Auto.Title">自动更新设置</sys:String>
-
     <!-- Setup.Update.Channel -->
 
     <sys:String x:Key="Setup.Update.Channel.Beta">测试版 / Beta</sys:String>
@@ -3635,7 +3623,4 @@
     <sys:String x:Key="Watcher.Start">开始 Minecraft 日志监控</sys:String>
     <sys:String x:Key="Watcher.WindowLoaded">Minecraft 窗口已加载：{0}（{1}）</sys:String>
     <sys:String x:Key="Watcher.WindowMaximized">已最大化 Minecraft 窗口：{0}</sys:String>
-
-    <sys:String x:Key="Region.Feature.Restricted">Minecraft 下载、补全与整合包安装功能在你所在的国家或地区不可用。</sys:String>
-    <sys:String x:Key="Region.Feature.Unknown">无法获取区域信息，暂时无法使用 Minecraft 下载、补全与整合包安装功能。</sys:String>
 </ResourceDictionary>
