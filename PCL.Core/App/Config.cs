@@ -38,6 +38,12 @@ public static partial class Config
         /// </summary>
         [ConfigItem<int>("UiAniFPS", 59)] public partial int AnimationFpsLimit { get; set; }
 
+        /// <summary>
+        ///     动画是否跟随显示器刷新率。
+        /// </summary>
+        [ConfigItem<bool>("UiAniMatchDisplayRefreshRate", true)]
+        public partial bool AnimationMatchDisplayRefreshRate { get; set; }
+
         [ConfigItem<string>("Profile", "{\"lastUsed\":-1,\"profiles\":[]}", ConfigSource.SharedEncrypt)] public partial string Profiles { get; set; }
 
     }

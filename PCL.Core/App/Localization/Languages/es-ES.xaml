@@ -10,4 +10,6 @@
     <sys:String x:Key="Meta.Code">es-ES</sys:String>
     <sys:String x:Key="Meta.Name">Español (España)</sys:String>
 
+    <sys:String x:Key="Setup.Misc.System.MatchDisplayRefreshRate">Igualar la frecuencia de actualización del monitor</sys:String>
+    <sys:String x:Key="Setup.Misc.System.MatchDisplayRefreshRate.ToolTip">Si se activa, las animaciones seguirán la frecuencia de actualización del monitor. Desactívalo para usar el límite máximo de FPS de animación.</sys:String>
 </ResourceDictionary>

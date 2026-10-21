@@ -287,4 +287,6 @@ Ce que vous pouvez essayer
     <sys:String x:Key="Download.Comp.Category.Energy">Énergie</sys:String>
     <sys:String x:Key="Download.Comp.Category.Entities">Entités</sys:String>
     <sys:String x:Key="Download.Comp.Category.Equipment">Équipement</sys:String>
+    <sys:String x:Key="Setup.Misc.System.MatchDisplayRefreshRate">Synchroniser avec la fréquence de rafraîchissement de l'écran</sys:String>
+    <sys:String x:Key="Setup.Misc.System.MatchDisplayRefreshRate.ToolTip">Lorsque cette option est activée, les animations suivent la fréquence de rafraîchissement de l'écran. Désactivez-la pour utiliser la limite maximale de FPS des animations.</sys:String>
 </ResourceDictionary>

@@ -2941,6 +2941,8 @@
     <sys:String x:Key="Setup.Misc.System.ImportSettings.Success.Restart">Restart</sys:String>
     <sys:String x:Key="Setup.Misc.System.MaxFps">Maximum animation FPS</sys:String>
     <sys:String x:Key="Setup.Misc.System.MaxFps.ToolTip">If you have disabled hardware acceleration, it is recommended to lower the maximum animation FPS to prevent excessive resource usage.</sys:String>
+    <sys:String x:Key="Setup.Misc.System.MatchDisplayRefreshRate">Match display refresh rate</sys:String>
+    <sys:String x:Key="Setup.Misc.System.MatchDisplayRefreshRate.ToolTip">When enabled, animations follow the display refresh rate. Disable this to use the maximum animation FPS limit.</sys:String>
     <sys:String x:Key="Setup.Misc.System.MaxLogLines">Real-time log lines</sys:String>
     <sys:String x:Key="Setup.Misc.System.MaxLogLines.ToolTip">Maximum number of lines displayed in the real-time log feature. Old logs are automatically deleted when exceeded.</sys:String>
     <sys:String x:Key="Setup.Misc.System.MaxLogLines.Unlimited">Unlimited</sys:String>

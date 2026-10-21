@@ -48,6 +48,8 @@ public partial class PageSetupLauncherMisc
         ComboSystemActivity.SelectedIndex = States.System.AnnounceSolution;
         CheckSystemDisableHardwareAcceleration.Checked = Config.System.DisableHardwareAcceleration;
         SliderAniFPS.Value = Config.System.AnimationFpsLimit;
+        SliderAniFPS.IsEnabled = !Config.System.AnimationMatchDisplayRefreshRate;
+        CheckSystemMatchDisplayRefreshRate.Checked = Config.System.AnimationMatchDisplayRefreshRate;
         SliderMaxLog.Value = Config.System.MaxGameLog;
         CheckSystemTelemetry.Checked = Config.System.Telemetry;
 
@@ -192,6 +194,12 @@ public partial class PageSetupLauncherMisc
     {
         CheckBoxChange(sender, user);
         Check_DisableHardwareAcceleration(sender, user);
+    }
+
+    private void CheckSystemMatchDisplayRefreshRate_OnChange(object sender, bool user)
+    {
+        CheckBoxChange(sender, user);
+        SliderAniFPS.IsEnabled = CheckSystemMatchDisplayRefreshRate.Checked != true;
     }
 
     private void ComboSystemActivity_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
