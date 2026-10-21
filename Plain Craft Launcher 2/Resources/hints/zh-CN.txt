@@ -1,5 +1,5 @@
 
-PCL CE 是由 PCL-Community 开发的 PCL 社区衍生版本。
+PCL CE 是由 RainYooSuki/PCL-CE 维护的 PCL 社区衍生版本。
 
 在 PCL 文件夹下创建 hints.txt ，可以自定义“你知道吗”的内容，注意编码需要为 UTF-8！
 
@@ -979,11 +979,11 @@ eruption 决斗室的外圈地面上用涂蜡的氧化切制铜块标记出发�
 
 村庄的原住民起初是猪人，而猪人后来的设计概念被沿用成为猪灵。
 
-PCL CE 由 PCL-Community 基于 PCL 官方版开发，与龙腾猫跃没有隶属关系。
+PCL CE 由 RainYooSuki/PCL-CE 基于 PCL 官方版维护，与龙腾猫跃没有隶属关系。
 
 PCL CE 支持导入 HMCL 档案。
 
-PCL CE 由 PCL-Community 开发，但 PCL-Community 不止开发了 PCL CE。
+PCL CE 是一个独立维护的社区项目。
 
 PCL CE 全称是 Plain Craft Launcher Community Edition（Plain Craft Launcher 社区版）。
 
