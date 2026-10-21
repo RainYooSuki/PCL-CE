@@ -130,7 +130,7 @@ public partial class MyMsgInput
         }, "MyMsgBox " + uuid);
     }
 
-    public void Btn1_Click(object? sender, EventArgs? e)
+    public void Btn1_Click(object? sender, MouseButtonEventArgs? e)
     {
         TextArea.Validate(); // #5773
         if (myConverter.IsExited || !TextArea.IsValidated)
@@ -140,7 +140,7 @@ public partial class MyMsgInput
         Close();
     }
 
-    public void Btn2_Click(object? sender, EventArgs? e)
+    public void Btn2_Click(object? sender, MouseButtonEventArgs? e)
     {
         if (myConverter.IsExited)
             return;

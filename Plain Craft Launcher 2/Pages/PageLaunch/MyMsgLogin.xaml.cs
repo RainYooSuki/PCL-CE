@@ -262,11 +262,11 @@ public partial class MyMsgLogin
     }
 
     // 实现回车和 Esc 的接口（#4857）
-    public void Btn1_Click(object? sender, EventArgs? e)
+    public void Btn1_Click(object? sender, MouseButtonEventArgs? e)
     {
     }
 
-    public void Btn3_Click(object? sender, EventArgs? e)
+    public void Btn3_Click(object? sender, MouseButtonEventArgs? e)
     {
         Finished(new ThreadInterruptedException());
     }

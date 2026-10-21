@@ -684,23 +684,23 @@ public partial class FormMain
                 var msg = PanMsg.Children[0];
                 Action? escapeAction = msg switch
                 {
-                    MyMsgInput input => input.Btn2.Visibility == Visibility.Visible
+                    MyMsgInput input => input.Btn2 is { Visibility: Visibility.Visible }
                         ? () => input.Btn2_Click(sender, null)
                         : () => input.Btn1_Click(sender, null),
-                    MyMsgSelect select => select.Btn2.Visibility == Visibility.Visible
+                    MyMsgSelect select => select.Btn2 is { Visibility: Visibility.Visible }
                         ? () => select.Btn2_Click(sender, null)
                         : () => select.Btn1_Click(sender, null),
-                    MyMsgText text => text.Btn3.Visibility == Visibility.Visible
+                    MyMsgText text => text.Btn3 is { Visibility: Visibility.Visible }
                         ? () => text.Btn3_Click(sender, null)
-                        : text.Btn2.Visibility == Visibility.Visible
+                        : text.Btn2 is { Visibility: Visibility.Visible }
                             ? () => text.Btn2_Click(sender, null)
                             : () => text.Btn1_Click(sender, null),
-                    MyMsgMarkdown markdown => markdown.Btn3.Visibility == Visibility.Visible
+                    MyMsgMarkdown markdown => markdown.Btn3 is { Visibility: Visibility.Visible }
                         ? () => markdown.Btn3_Click(sender, null)
-                        : markdown.Btn2.Visibility == Visibility.Visible
+                        : markdown.Btn2 is { Visibility: Visibility.Visible }
                             ? () => markdown.Btn2_Click(sender, null)
                             : () => markdown.Btn1_Click(sender, null),
-                    MyMsgLogin login => login.Btn3.Visibility == Visibility.Visible
+                    MyMsgLogin login => login.Btn3 is { Visibility: Visibility.Visible }
                         ? () => login.Btn3_Click(sender, null)
                         : () => login.Btn1_Click(sender, null),
                     _ => null

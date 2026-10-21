@@ -144,7 +144,7 @@ public partial class MyMsgMarkdown
         }, "MyMsgBox " + uuid);
     }
 
-    public void Btn1_Click(object? sender, EventArgs? e)
+    public void Btn1_Click(object? sender, MouseButtonEventArgs? e)
     {
         if (myConverter.IsExited)
             return;
@@ -160,7 +160,7 @@ public partial class MyMsgMarkdown
         }
     }
 
-    public void Btn2_Click(object? sender, EventArgs? e)
+    public void Btn2_Click(object? sender, MouseButtonEventArgs? e)
     {
         if (myConverter.IsExited)
             return;
@@ -176,7 +176,7 @@ public partial class MyMsgMarkdown
         }
     }
 
-    public void Btn3_Click(object? sender, EventArgs? e)
+    public void Btn3_Click(object? sender, MouseButtonEventArgs? e)
     {
         if (myConverter.IsExited)
             return;

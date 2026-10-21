@@ -61,7 +61,7 @@ public partial class MyMsgAuthServer
         }, "MyMsgBox " + _uuid);
     }
 
-    private void Btn1_Click(object sender, MouseButtonEventArgs e)
+    private void Btn1_Click(object? sender, MouseButtonEventArgs? e)
     {
         var server = ComboServer.Text?.Trim();
         if (string.IsNullOrWhiteSpace(server) || !server.IsMatch(RegexPatterns.HttpUri))
@@ -74,7 +74,7 @@ public partial class MyMsgAuthServer
         _Close();
     }
 
-    private void Btn2_Click(object sender, MouseButtonEventArgs e)
+    private void Btn2_Click(object? sender, MouseButtonEventArgs? e)
     {
         if (_converter.IsExited) return;
         _converter.IsExited = true;
