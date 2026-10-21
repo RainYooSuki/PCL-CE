@@ -333,8 +333,8 @@ public class ModJarInJarIndex
     #region MC 版本匹配
 
     private static List<CompFile> _CollectLoadableNodes(List<CompFile> embedded, string mc,
-        IReadOnlyDictionary<string, string> forgeSelections = null,
-        IReadOnlyDictionary<string, string> fabricSelections = null)
+        IReadOnlyDictionary<string, string>? forgeSelections = null,
+        IReadOnlyDictionary<string, string>? fabricSelections = null)
     {
         var into = new List<CompFile>();
         _Collect(embedded, mc, into, forgeSelections, fabricSelections);
@@ -342,8 +342,8 @@ public class ModJarInJarIndex
     }
 
     private static void _Collect(List<CompFile> embedded, string mc, List<CompFile> into,
-        IReadOnlyDictionary<string, string> forgeSelections,
-        IReadOnlyDictionary<string, string> fabricSelections)
+        IReadOnlyDictionary<string, string>? forgeSelections,
+        IReadOnlyDictionary<string, string>? fabricSelections)
     {
         if (embedded is null) return;
         foreach (var e in embedded)
@@ -356,7 +356,7 @@ public class ModJarInJarIndex
         }
     }
 
-    private static bool _FabricNodeSelected(CompFile node, IReadOnlyDictionary<string, string> selections)
+    private static bool _FabricNodeSelected(CompFile node, IReadOnlyDictionary<string, string>? selections)
     {
         if (selections is null || string.IsNullOrWhiteSpace(node.ModId) ||
             !string.Equals(node.JijLoader, "Fabric", StringComparison.OrdinalIgnoreCase) &&
@@ -435,7 +435,7 @@ public class ModJarInJarIndex
         string.Join("\n", selections.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(pair => pair.Key + "\0" + pair.Value));
 
-    private static bool _ForgeNodeSelected(CompFile node, IReadOnlyDictionary<string, string> selections)
+    private static bool _ForgeNodeSelected(CompFile node, IReadOnlyDictionary<string, string>? selections)
     {
         if (selections is null || string.IsNullOrWhiteSpace(node.JijIdentifier)) return true;
         if (!selections.TryGetValue(node.JijIdentifier, out var selected) || selected is null) return false;

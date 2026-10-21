@@ -195,12 +195,12 @@ public partial class Application
     // 自定义监听器类
     public class BindingErrorTraceListener : TraceListener
     {
-        public override void Write(string message)
+        public override void Write(string? message)
         {
             ModBase.Log($"警告，检测到 Binding 失败：{message}");
         }
 
-        public override void WriteLine(string message)
+        public override void WriteLine(string? message)
         {
             ModBase.Log($"警告，检测到 Binding 失败：{message}");
         }

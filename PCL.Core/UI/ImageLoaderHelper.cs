@@ -31,9 +31,9 @@ public static class ImageLoaderHelper {
     /// <returns></returns>
     public static async Task SetImageFromBase64Async(
         string base64String, 
-        Image imageElement, 
+        Image? imageElement, 
         string? fallbackImageUri = null) {
-        ArgumentNullException.ThrowIfNull(nameof(imageElement));
+        ArgumentNullException.ThrowIfNull(imageElement);
         
         if (string.IsNullOrWhiteSpace(base64String)) {
             SetFallbackImage(imageElement, fallbackImageUri);
@@ -127,9 +127,9 @@ public static class ImageLoaderHelper {
     /// <returns></returns>
     public static async Task SetImageFromFileAsync(
         string imagePath,
-        Image imageElement,
+        Image? imageElement,
         string fallbackImageUri) {
-        ArgumentNullException.ThrowIfNull(nameof(imageElement));
+        ArgumentNullException.ThrowIfNull(imageElement);
 
         if (string.IsNullOrWhiteSpace(imagePath) || !File.Exists(imagePath)) {
             SetFallbackImage(imageElement, fallbackImageUri);
