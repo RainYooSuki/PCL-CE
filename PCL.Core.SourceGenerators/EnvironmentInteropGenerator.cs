@@ -27,7 +27,7 @@ public class EnvironmentInteropGenerator : IIncrementalGenerator
                     where !string.IsNullOrWhiteSpace(key) && key.StartsWith("PCL_") && key != "PCL_WRITE_SECRET"
                     select key
                 )
-                let value = envs[key]?.ToString()
+                let value = envs[key]?.ToString() ?? string.Empty
                 where !string.IsNullOrWhiteSpace(value)
                 select (key.Substring(4), value)
             ) : [];

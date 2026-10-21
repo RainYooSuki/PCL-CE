@@ -115,16 +115,18 @@ public partial class PageToolsTest
         }
     }
 
-    public static void StartCustomDownload(string url, string fileName, string folder = null, string userAgent = "")
+    public static void StartCustomDownload(string url, string fileName, string? folder = null, string userAgent = "")
     {
         try
         {
             if (string.IsNullOrWhiteSpace(folder))
             {
-                folder = SystemDialogs.SelectSaveFile(Lang.Text("Tools.Test.CustomDownload.SelectLocation"), fileName);
-                if (!folder.Contains(@"\")) return;
+                var selectedFolder = SystemDialogs.SelectSaveFile(Lang.Text("Tools.Test.CustomDownload.SelectLocation"), fileName);
+                if (string.IsNullOrWhiteSpace(selectedFolder) || !selectedFolder.Contains(@"\")) return;
+                folder = selectedFolder;
                 if (folder.EndsWith(fileName)) folder = folder[..^fileName.Length];
             }
+            if (folder is null) return;
 
             folder = folder.Replace("/", @"\").TrimEnd(new[] { '\\' }) + @"\";
             try
@@ -156,8 +158,11 @@ public partial class PageToolsTest
                 { OnStateChanged = a => DownloadState((ModLoader.LoaderCombo<int>)a) };
             loaderCombo.Start();
             ModLoader.LoaderTaskbarAdd(loaderCombo);
-            ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-            ModMain.frmMain.BtnExtraDownload.Ribble();
+            if (ModMain.frmMain is { } main)
+            {
+                main.BtnExtraDownload.ShowRefresh();
+                main.BtnExtraDownload.Ribble();
+            }
         }
 
         catch (Exception ex)
@@ -187,8 +192,8 @@ public partial class PageToolsTest
     {
         ModBase.RunInUi(() =>
         {
-            if (ModMain.frmToolsTest is not null && ModMain.frmToolsTest.BtnClear is not null)
-                ModMain.frmToolsTest.BtnClear.IsEnabled = false;
+            if (ModMain.frmToolsTest is not null && ModMain.FrmToolsTestRequired.BtnClear is not null)
+                ModMain.FrmToolsTestRequired.BtnClear.IsEnabled = false;
         });
         // 只有当没有运行中的Minecraft游戏且启动器不在加载状态时才能清理
 
@@ -292,8 +297,8 @@ public partial class PageToolsTest
             {
                 ModBase.RunInUiWait(() =>
                 {
-                    if (ModMain.frmToolsTest is not null && ModMain.frmToolsTest.BtnClear is not null)
-                        ModMain.frmToolsTest.BtnClear.IsEnabled = true;
+                    if (ModMain.frmToolsTest is not null && ModMain.FrmToolsTestRequired.BtnClear is not null)
+                        ModMain.FrmToolsTestRequired.BtnClear.IsEnabled = true;
                 });
             }
         }, "Rubbish Clear");

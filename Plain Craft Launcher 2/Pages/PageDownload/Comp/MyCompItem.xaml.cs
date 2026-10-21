@@ -7,7 +7,7 @@ namespace PCL;
 
 public partial class MyCompItem
 {
-    private string stateLast;
+    private string stateLast = "";
 
     /// <summary>
     ///     是否允许交互。目前仅用于 PageDownloadCompDetail 的顶部栏展示：若关闭碰撞检测，则无法展开 Tooltip。
@@ -40,7 +40,7 @@ public partial class MyCompItem
             time = 180;
         }
 
-        if ((stateLast ?? "") == (stateNew ?? ""))
+        if (stateLast == stateNew)
             return;
         stateLast = stateNew;
         // 触发颜色动画
@@ -285,25 +285,26 @@ public partial class MyCompItem
 
     private void MyCompItem_Click(MyCompItem sender, EventArgs e)
     {
+        if (ModMain.frmMain is not { } main) return;
         // 记录当前展开的卡片标题（#2712）
         var titles = new List<string>();
-        if (ModMain.frmMain.pageCurrent.page == FormMain.PageType.CompDetail)
+        if (main.pageCurrent.page == FormMain.PageType.CompDetail)
         {
-            foreach (MyCard Card in ModMain.frmDownloadCompDetail.PanResults.Children)
+            foreach (MyCard Card in ModMain.FrmDownloadCompDetailRequired.PanResults.Children)
                 if (!string.IsNullOrEmpty(Card.Title) && !Card.IsSwapped)
                     titles.Add(Card.Title);
             ModBase.Log("[Comp] 记录当前已展开的卡片：" + string.Join("、", titles));
-            var additional = ModMain.frmMain.pageCurrent.additional.Value;
-            ModMain.frmMain.pageCurrent.additional = additional with { ExpandedTitles = titles };
+            if (main.pageCurrent.additional is not { } additional) return;
+            main.pageCurrent.additional = additional with { ExpandedTitles = titles };
         }
 
         // 打开详情页
         var targetType = default(ModComp.CompType);
-        string targetVersion = null;
+        var targetVersion = "";
         var targetLoader = ModComp.CompLoaderType.Any;
-        if (ModMain.frmMain.pageCurrent.page == FormMain.PageType.Download)
+        if (main.pageCurrent.page == FormMain.PageType.Download)
         {
-            if (ModMain.frmMain.PageCurrentSub == FormMain.PageSubType.DownloadCompFavorites)
+            if (main.PageCurrentSub == FormMain.PageSubType.DownloadCompFavorites)
             {
                 targetVersion = "";
                 targetLoader = ModComp.CompLoaderType.Any;
@@ -311,49 +312,49 @@ public partial class MyCompItem
             else
             {
                 // 从下载页进入
-                switch (ModMain.frmMain.PageCurrentSub)
+                switch (main.PageCurrentSub)
                 {
                     case FormMain.PageSubType.DownloadMod:
                     {
                         targetType = ModComp.CompType.Mod;
-                        targetVersion = ModMain.frmDownloadMod.Content.loader.input.gameVersion;
-                        targetLoader = ModMain.frmDownloadMod.Content.loader.input.modLoader;
+                        targetVersion = ModMain.FrmDownloadModRequired.Content.loader.input.gameVersion ?? "";
+                        targetLoader = ModMain.FrmDownloadModRequired.Content.loader.input.modLoader;
                         break;
                     }
                     case FormMain.PageSubType.DownloadPack:
                     {
                         targetType = ModComp.CompType.ModPack;
-                        targetVersion = ModMain.frmDownloadPack.Content.loader.input.gameVersion;
+                        targetVersion = ModMain.FrmDownloadPackRequired.Content.loader.input.gameVersion ?? "";
                         break;
                     }
                     case FormMain.PageSubType.DownloadDataPack:
                     {
                         targetType = ModComp.CompType.DataPack;
-                        targetVersion = ModMain.frmDownloadDataPack.Content.loader.input.gameVersion;
+                        targetVersion = ModMain.FrmDownloadDataPackRequired.Content.loader.input.gameVersion ?? "";
                         break;
                     }
                     case FormMain.PageSubType.DownloadResourcePack:
                     {
                         targetType = ModComp.CompType.ResourcePack;
-                        targetVersion = ModMain.frmDownloadResourcePack.Content.loader.input.gameVersion;
+                        targetVersion = ModMain.FrmDownloadResourcePackRequired.Content.loader.input.gameVersion ?? "";
                         break;
                     }
                     case FormMain.PageSubType.DownloadShader:
                     {
                         targetType = ModComp.CompType.Shader;
-                        targetVersion = ModMain.frmDownloadShader.Content.loader.input.gameVersion;
+                        targetVersion = ModMain.FrmDownloadShaderRequired.Content.loader.input.gameVersion ?? "";
                         break;
                     }
                     case FormMain.PageSubType.DownloadWorld:
                     {
                         targetType = ModComp.CompType.World;
-                        targetVersion = ModMain.frmDownloadWorld.Content.loader.input.gameVersion;
+                        targetVersion = ModMain.FrmDownloadWorldRequired.Content.loader.input.gameVersion ?? "";
                         break;
                     }
                 }
             }
         }
-        else if (ModMain.frmMain.pageCurrent.page == FormMain.PageType.InstanceSetup)
+        else if (main.pageCurrent.page == FormMain.PageType.InstanceSetup)
         {
             // 从实例设置页进入（查看整合包信息）
             targetType = ModComp.CompType.ModPack;
@@ -362,12 +363,12 @@ public partial class MyCompItem
         {
             // 从详情页进入（查看前置）
             targetType = ModComp.CompType.Any; // 允许任意类别
-            var additional = ModMain.frmMain.pageCurrent.additional.Value;
-            targetVersion = additional.TargetVersion;
+            if (main.pageCurrent.additional is not { } additional) return;
+            targetVersion = additional.TargetVersion ?? "";
             targetLoader = additional.TargetLoader;
         }
 
-        ModMain.frmMain.PageChange(new FormMain.PageStackData
+        main.PageChange(new FormMain.PageStackData
         {
             page = FormMain.PageType.CompDetail,
             additional = ((ModComp.CompProject)sender.Tag, new List<string>(), targetVersion, targetLoader, targetType, null)
@@ -429,7 +430,7 @@ public partial class MyCompItem
 
     #region 后加载指向背景
 
-    private Border _RectBack;
+    private Border? _RectBack;
 
     public Border RectBack
     {

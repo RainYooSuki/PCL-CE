@@ -9,8 +9,8 @@ namespace PCL.Core.Utils;
 /// <typeparam name="TValue">属性值类型</typeparam>
 public class ParameterizedProperty<TParam, TValue>
 {
-    public Func<TParam, TValue> GetValue { private get; init; } = null!;
-    public Action<TParam, TValue> SetValue { private get; init; } = null!;
+    public required Func<TParam, TValue> GetValue { private get; init; }
+    public required Action<TParam, TValue> SetValue { private get; init; }
 
     public TValue this[TParam param]
     {

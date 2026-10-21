@@ -7,7 +7,7 @@ namespace PCL.Core.Test.Validate;
 public class BlacklistValidatorTest
 {
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public TestContext TestContext { get; set; }
+    public TestContext? TestContext { get; set; }
 
     [TestMethod]
     [DataRow("", true)]
@@ -24,7 +24,7 @@ public class BlacklistValidatorTest
         {
             foreach (var error in result.Errors)
             {
-                TestContext.WriteLine(error.ErrorMessage);
+                TestContext?.WriteLine(error.ErrorMessage);
             }
         }
         Assert.AreEqual(expected, result.IsValid);

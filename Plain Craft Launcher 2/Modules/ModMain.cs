@@ -25,70 +25,265 @@ namespace PCL;
 public static class ModMain
 {
     public static FormMain? frmMain;
+
+    public static FormMain FrmMainRequired =>
+        frmMain ?? throw new InvalidOperationException("主窗口尚未初始化。");
     public static SplashScreen? frmStart;
+
+    public static SplashScreen FrmStartRequired =>
+        frmStart ?? throw new InvalidOperationException("frmStart 尚未初始化。");
     public static PageLaunchLeft? frmLaunchLeft;
+
+    public static PageLaunchLeft FrmLaunchLeftRequired =>
+        frmLaunchLeft ?? throw new InvalidOperationException("启动页尚未初始化。");
     public static PageLaunchRight? frmLaunchRight;
+
+    public static PageLaunchRight FrmLaunchRightRequired =>
+        frmLaunchRight ?? throw new InvalidOperationException("启动页尚未初始化。");
     public static PageLogLeft? frmLogLeft;
+
+    public static PageLogLeft FrmLogLeftRequired =>
+        frmLogLeft ?? throw new InvalidOperationException("frmLogLeft 尚未初始化。");
     public static PageLogRight? frmLogRight;
+
+    public static PageLogRight FrmLogRightRequired =>
+        frmLogRight ?? throw new InvalidOperationException("frmLogRight 尚未初始化。");
     public static PageSelectLeft? frmSelectLeft;
+
+    public static PageSelectLeft FrmSelectLeftRequired =>
+        frmSelectLeft ?? throw new InvalidOperationException("frmSelectLeft 尚未初始化。");
     public static PageSelectRight? frmSelectRight;
+
+    public static PageSelectRight FrmSelectRightRequired =>
+        frmSelectRight ?? throw new InvalidOperationException("frmSelectRight 尚未初始化。");
     public static PageSpeedLeft? frmSpeedLeft;
+
+    public static PageSpeedLeft FrmSpeedLeftRequired =>
+        frmSpeedLeft ?? throw new InvalidOperationException("frmSpeedLeft 尚未初始化。");
     public static PageSpeedRight? frmSpeedRight;
+
+    public static PageSpeedRight FrmSpeedRightRequired =>
+        frmSpeedRight ?? throw new InvalidOperationException("frmSpeedRight 尚未初始化。");
     public static PageToolsLeft? frmToolsLeft;
+
+    public static PageToolsLeft FrmToolsLeftRequired =>
+        frmToolsLeft ?? throw new InvalidOperationException("frmToolsLeft 尚未初始化。");
     public static PageToolsTest? frmToolsTest;
+
+    public static PageToolsTest FrmToolsTestRequired =>
+        frmToolsTest ?? throw new InvalidOperationException("frmToolsTest 尚未初始化。");
     public static PageDownloadLeft? frmDownloadLeft;
+
+    public static PageDownloadLeft FrmDownloadLeftRequired =>
+        frmDownloadLeft ?? throw new InvalidOperationException("下载页尚未初始化。");
     public static PageDownloadInstall? frmDownloadInstall;
+
+    public static PageDownloadInstall FrmDownloadInstallRequired =>
+        frmDownloadInstall ?? throw new InvalidOperationException("下载安装页尚未初始化。");
     public static PageDownloadClient? frmDownloadClient;
+
+    public static PageDownloadClient FrmDownloadClientRequired =>
+        frmDownloadClient ?? throw new InvalidOperationException("frmDownloadClient 尚未初始化。");
     public static PageDownloadOptiFine? frmDownloadOptiFine;
+
+    public static PageDownloadOptiFine FrmDownloadOptiFineRequired =>
+        frmDownloadOptiFine ?? throw new InvalidOperationException("frmDownloadOptiFine 尚未初始化。");
     public static PageDownloadLiteLoader? frmDownloadLiteLoader;
+
+    public static PageDownloadLiteLoader FrmDownloadLiteLoaderRequired =>
+        frmDownloadLiteLoader ?? throw new InvalidOperationException("frmDownloadLiteLoader 尚未初始化。");
     public static PageDownloadForge? frmDownloadForge;
+
+    public static PageDownloadForge FrmDownloadForgeRequired =>
+        frmDownloadForge ?? throw new InvalidOperationException("frmDownloadForge 尚未初始化。");
     public static PageDownloadNeoForge? frmDownloadNeoForge;
+
+    public static PageDownloadNeoForge FrmDownloadNeoForgeRequired =>
+        frmDownloadNeoForge ?? throw new InvalidOperationException("frmDownloadNeoForge 尚未初始化。");
     public static PageDownloadCleanroom? frmDownloadCleanroom;
+
+    public static PageDownloadCleanroom FrmDownloadCleanroomRequired =>
+        frmDownloadCleanroom ?? throw new InvalidOperationException("frmDownloadCleanroom 尚未初始化。");
     public static PageDownloadFabric? frmDownloadFabric;
+
+    public static PageDownloadFabric FrmDownloadFabricRequired =>
+        frmDownloadFabric ?? throw new InvalidOperationException("frmDownloadFabric 尚未初始化。");
     public static PageDownloadLabyMod? frmDownloadLabyMod;
+
+    public static PageDownloadLabyMod FrmDownloadLabyModRequired =>
+        frmDownloadLabyMod ?? throw new InvalidOperationException("frmDownloadLabyMod 尚未初始化。");
     public static PageDownloadLegacyFabric? frmDownloadLegacyFabric;
+
+    public static PageDownloadLegacyFabric FrmDownloadLegacyFabricRequired =>
+        frmDownloadLegacyFabric ?? throw new InvalidOperationException("frmDownloadLegacyFabric 尚未初始化。");
     public static PageDownloadMod? frmDownloadMod;
+
+    public static PageDownloadMod FrmDownloadModRequired =>
+        frmDownloadMod ?? throw new InvalidOperationException("frmDownloadMod 尚未初始化。");
     public static PageDownloadPack? frmDownloadPack;
+
+    public static PageDownloadPack FrmDownloadPackRequired =>
+        frmDownloadPack ?? throw new InvalidOperationException("frmDownloadPack 尚未初始化。");
     public static PageDownloadDataPack? frmDownloadDataPack;
+
+    public static PageDownloadDataPack FrmDownloadDataPackRequired =>
+        frmDownloadDataPack ?? throw new InvalidOperationException("frmDownloadDataPack 尚未初始化。");
     public static PageDownloadShader? frmDownloadShader;
+
+    public static PageDownloadShader FrmDownloadShaderRequired =>
+        frmDownloadShader ?? throw new InvalidOperationException("frmDownloadShader 尚未初始化。");
     public static PageDownloadResourcePack? frmDownloadResourcePack;
+
+    public static PageDownloadResourcePack FrmDownloadResourcePackRequired =>
+        frmDownloadResourcePack ?? throw new InvalidOperationException("frmDownloadResourcePack 尚未初始化。");
     public static PageDownloadWorld? frmDownloadWorld;
+
+    public static PageDownloadWorld FrmDownloadWorldRequired =>
+        frmDownloadWorld ?? throw new InvalidOperationException("frmDownloadWorld 尚未初始化。");
     public static PageDownloadCompFavorites? frmDownloadCompFavorites;
+
+    public static PageDownloadCompFavorites FrmDownloadCompFavoritesRequired =>
+        frmDownloadCompFavorites ?? throw new InvalidOperationException("frmDownloadCompFavorites 尚未初始化。");
     public static PageSetupLeft? frmSetupLeft;
+
+    public static PageSetupLeft FrmSetupLeftRequired =>
+        frmSetupLeft ?? throw new InvalidOperationException("frmSetupLeft 尚未初始化。");
     public static PageSetupLaunch? frmSetupLaunch;
+
+    public static PageSetupLaunch FrmSetupLaunchRequired =>
+        frmSetupLaunch ?? throw new InvalidOperationException("frmSetupLaunch 尚未初始化。");
     public static PageSetupUI? frmSetupUI;
+
+    public static PageSetupUI FrmSetupUIRequired =>
+        frmSetupUI ?? throw new InvalidOperationException("frmSetupUI 尚未初始化。");
     public static PageSetupGameManage? frmSetupGameManage;
+
+    public static PageSetupGameManage FrmSetupGameManageRequired =>
+        frmSetupGameManage ?? throw new InvalidOperationException("frmSetupGameManage 尚未初始化。");
     public static PageSetupUpdate? frmSetupUpdate;
+
+    public static PageSetupUpdate FrmSetupUpdateRequired =>
+        frmSetupUpdate ?? throw new InvalidOperationException("frmSetupUpdate 尚未初始化。");
     public static PageSetupJava? frmSetupJava;
+
+    public static PageSetupJava FrmSetupJavaRequired =>
+        frmSetupJava ?? throw new InvalidOperationException("frmSetupJava 尚未初始化。");
     public static PageSetupAbout? frmSetupAbout;
+
+    public static PageSetupAbout FrmSetupAboutRequired =>
+        frmSetupAbout ?? throw new InvalidOperationException("frmSetupAbout 尚未初始化。");
     public static PageSetupLog? frmSetupLog;
+
+    public static PageSetupLog FrmSetupLogRequired =>
+        frmSetupLog ?? throw new InvalidOperationException("frmSetupLog 尚未初始化。");
     public static PageSetupFeedback? frmSetupFeedback;
+
+    public static PageSetupFeedback FrmSetupFeedbackRequired =>
+        frmSetupFeedback ?? throw new InvalidOperationException("frmSetupFeedback 尚未初始化。");
     public static PageSetupLauncherLanguage? frmSetupLauncherLanguage;
+
+    public static PageSetupLauncherLanguage FrmSetupLauncherLanguageRequired =>
+        frmSetupLauncherLanguage ?? throw new InvalidOperationException("frmSetupLauncherLanguage 尚未初始化。");
     public static PageSetupLauncherMisc? frmSetupLauncherMisc;
+
+    public static PageSetupLauncherMisc FrmSetupLauncherMiscRequired =>
+        frmSetupLauncherMisc ?? throw new InvalidOperationException("frmSetupLauncherMisc 尚未初始化。");
     public static PageLoginAuth? frmLoginAuth;
+
+    public static PageLoginAuth FrmLoginAuthRequired =>
+        frmLoginAuth ?? throw new InvalidOperationException("frmLoginAuth 尚未初始化。");
     public static PageLoginMs? frmLoginMs;
+
+    public static PageLoginMs FrmLoginMsRequired =>
+        frmLoginMs ?? throw new InvalidOperationException("frmLoginMs 尚未初始化。");
     public static PageLoginProfile? frmLoginProfile;
+
+    public static PageLoginProfile FrmLoginProfileRequired =>
+        frmLoginProfile ?? throw new InvalidOperationException("frmLoginProfile 尚未初始化。");
     public static PageLoginProfileSkin? frmLoginProfileSkin;
+
+    public static PageLoginProfileSkin FrmLoginProfileSkinRequired =>
+        frmLoginProfileSkin ?? throw new InvalidOperationException("frmLoginProfileSkin 尚未初始化。");
     public static PageLoginOffline? frmLoginOffline;
+
+    public static PageLoginOffline FrmLoginOfflineRequired =>
+        frmLoginOffline ?? throw new InvalidOperationException("frmLoginOffline 尚未初始化。");
     public static PageInstanceLeft? frmInstanceLeft;
+
+    public static PageInstanceLeft FrmInstanceLeftRequired =>
+        frmInstanceLeft ?? throw new InvalidOperationException("实例页尚未初始化。");
     public static PageInstanceOverall? frmInstanceOverall;
+
+    public static PageInstanceOverall FrmInstanceOverallRequired =>
+        frmInstanceOverall ?? throw new InvalidOperationException("frmInstanceOverall 尚未初始化。");
     public static PageInstanceCompResource? frmInstanceMod;
+
+    public static PageInstanceCompResource FrmInstanceModRequired =>
+        frmInstanceMod ?? throw new InvalidOperationException("frmInstanceMod 尚未初始化。");
     public static PageInstanceModDisabled? frmInstanceModDisabled;
+
+    public static PageInstanceModDisabled FrmInstanceModDisabledRequired =>
+        frmInstanceModDisabled ?? throw new InvalidOperationException("frmInstanceModDisabled 尚未初始化。");
     public static PageInstanceCompJarInJar? frmInstanceModJarInJar;
+
+    public static PageInstanceCompJarInJar FrmInstanceModJarInJarRequired =>
+        frmInstanceModJarInJar ?? throw new InvalidOperationException("frmInstanceModJarInJar 尚未初始化。");
     public static PageInstanceScreenshot? frmInstanceScreenshot;
+
+    public static PageInstanceScreenshot FrmInstanceScreenshotRequired =>
+        frmInstanceScreenshot ?? throw new InvalidOperationException("frmInstanceScreenshot 尚未初始化。");
     public static PageInstanceSaves? frmInstanceSaves;
+
+    public static PageInstanceSaves FrmInstanceSavesRequired =>
+        frmInstanceSaves ?? throw new InvalidOperationException("frmInstanceSaves 尚未初始化。");
     public static PageInstanceCompResource? frmInstanceShader;
+
+    public static PageInstanceCompResource FrmInstanceShaderRequired =>
+        frmInstanceShader ?? throw new InvalidOperationException("frmInstanceShader 尚未初始化。");
     public static PageInstanceCompResource? frmInstanceSchematic;
+
+    public static PageInstanceCompResource FrmInstanceSchematicRequired =>
+        frmInstanceSchematic ?? throw new InvalidOperationException("frmInstanceSchematic 尚未初始化。");
     public static PageInstanceCompResource? frmInstanceResourcePack;
+
+    public static PageInstanceCompResource FrmInstanceResourcePackRequired =>
+        frmInstanceResourcePack ?? throw new InvalidOperationException("frmInstanceResourcePack 尚未初始化。");
     public static PageInstanceSetup? frmInstanceSetup;
+
+    public static PageInstanceSetup FrmInstanceSetupRequired =>
+        frmInstanceSetup ?? throw new InvalidOperationException("frmInstanceSetup 尚未初始化。");
     public static PageInstanceInstall? frmInstanceInstall;
+
+    public static PageInstanceInstall FrmInstanceInstallRequired =>
+        frmInstanceInstall ?? throw new InvalidOperationException("frmInstanceInstall 尚未初始化。");
     public static PageInstanceExport? frmInstanceExport;
+
+    public static PageInstanceExport FrmInstanceExportRequired =>
+        frmInstanceExport ?? throw new InvalidOperationException("frmInstanceExport 尚未初始化。");
     public static PageInstanceServer? frmInstanceServer;
+
+    public static PageInstanceServer FrmInstanceServerRequired =>
+        frmInstanceServer ?? throw new InvalidOperationException("frmInstanceServer 尚未初始化。");
     public static PageInstanceSavesLeft? frmInstanceSavesLeft;
+
+    public static PageInstanceSavesLeft FrmInstanceSavesLeftRequired =>
+        frmInstanceSavesLeft ?? throw new InvalidOperationException("frmInstanceSavesLeft 尚未初始化。");
     public static PageInstanceSavesInfo? frmInstanceSavesInfo;
+
+    public static PageInstanceSavesInfo FrmInstanceSavesInfoRequired =>
+        frmInstanceSavesInfo ?? throw new InvalidOperationException("frmInstanceSavesInfo 尚未初始化。");
     public static PageInstanceSavesDatapack? frmInstanceSavesDatapack;
+
+    public static PageInstanceSavesDatapack FrmInstanceSavesDatapackRequired =>
+        frmInstanceSavesDatapack ?? throw new InvalidOperationException("frmInstanceSavesDatapack 尚未初始化。");
     public static PageDownloadCompDetail? frmDownloadCompDetail;
+
+    public static PageDownloadCompDetail FrmDownloadCompDetailRequired =>
+        frmDownloadCompDetail ?? throw new InvalidOperationException("frmDownloadCompDetail 尚未初始化。");
     public static PageHomepageNewsView? frmHomepageNews;
+
+    public static PageHomepageNewsView FrmHomepageNewsRequired =>
+        frmHomepageNews ?? throw new InvalidOperationException("frmHomepageNews 尚未初始化。");
 
     public static MySlider? dragControl = null;
     private static int timer4Count;
@@ -107,7 +302,7 @@ public static class ModMain
 
             HintService.Tick();
             MyMsgBoxTick();
-            frmMain!.DragTick();
+            frmMain?.DragTick();
             ModLoader.LoaderTaskbarProgressRefresh();
         }
 
@@ -147,15 +342,16 @@ public static class ModMain
             {
                 #region 每 7.5s 执行一次的代码
 
-                if (frmMain!.BtnExtraApril_ShowCheck() && aprilDistance != 0)
-                    frmMain.BtnExtraApril.Ribble();
+                if (frmMain is { } main && main.BtnExtraApril_ShowCheck() && aprilDistance != 0)
+                    main.BtnExtraApril.Ribble();
                 // 以未知原因窗口被丢到一边去的修复（Top、Left = -25600），还有 #745
                 ModBase.RunInUi(() =>
                 {
-                    if (!frmMain.Hidden)
+                    if (frmMain is not { } main) return;
+                    if (!main.Hidden)
                     {
-                        if (frmMain.Top < -9000) frmMain.Top = 100d;
-                        if (frmMain.Left < -9000) frmMain.Left = 100d;
+                        if (main.Top < -9000) main.Top = 100d;
+                        if (main.Left < -9000) main.Left = 100d;
                     }
                 }); // 窗口拉至最大时 Left = -18.8
             }
@@ -257,16 +453,16 @@ public static class ModMain
         ///     选择模式：需要放进去的 List(Of MyListItem)。
         ///     登录模式：登录步骤 1 中返回的 JSON。
         /// </summary>
-        public object Content;
+        public object? Content;
 
         /// <summary>
         /// Optional provider-specific device-code polling callback used by OAuth providers other than Microsoft.
         /// </summary>
-        public Func<JsonObject, CancellationToken, Task<AuthorizeResult?>> DeviceCodePoll;
+        public Func<JsonObject, CancellationToken, Task<AuthorizeResult?>>? DeviceCodePoll;
 
         public Func<AuthorizeResult, CancellationToken, Task>? LoginResultHandler;
 
-        public Action<object>? CompletionHandler;
+        public Action<object?>? CompletionHandler;
 
         public bool ForceWait;
 
@@ -297,16 +493,16 @@ public static class ModMain
         ///     选择模式：点击的按钮编号，从 1 开始。
         ///     登录模式：字符串数组 {AccessToken, RefreshToken} 或一个 Exception。
         /// </summary>
-        public object Result;
+        public object? Result;
 
-        public string Text;
-        public string Title;
+        public string Text = "";
+        public string Title = "";
         public MyMsgBoxType Type;
 
         /// <summary>
         ///     输入模式：输入验证规则。
         /// </summary>
-        public Collection<IValidator<string>> ValidateRules;
+        public Collection<IValidator<string>> ValidateRules = [];
 
         public DispatcherFrame WaitFrame = new(true);
 
@@ -364,7 +560,7 @@ public static class ModMain
         if (button2.Length > 0 || forceWait)
         {
             // 若有多个按钮则开始等待
-            if (frmMain is null || (frmMain.PanMsg is null && ModBase.RunInUi()))
+            if (frmMain is null || (FrmMainRequired.PanMsg is null && ModBase.RunInUi()))
             {
                 // 主窗体尚未加载，用老土的弹窗来替代
                 WaitingMyMsgBox.Remove(converter);
@@ -407,7 +603,7 @@ public static class ModMain
             {
                 try
                 {
-                    frmMain.DragStop();
+                    FrmMainRequired.DragStop();
                     ComponentDispatcher.PushModal();
                     Dispatcher.PushFrame(converter.WaitFrame);
                 }
@@ -418,7 +614,7 @@ public static class ModMain
             }
 
             ModBase.Log($"[Control] 普通弹框返回：{converter.Result ?? "null"}");
-            return (int)converter.Result;
+            return converter.Result is int result ? result : 0;
         }
 
         // 不进行等待，直接返回
@@ -459,7 +655,7 @@ public static class ModMain
         if (button2.Length > 0 || forceWait)
         {
             // 若有多个按钮则开始等待
-            if (frmMain is null || (frmMain.PanMsg is null && ModBase.RunInUi()))
+            if (frmMain is null || (FrmMainRequired.PanMsg is null && ModBase.RunInUi()))
             {
                 // 主窗体尚未加载，用老土的弹窗来替代
                 WaitingMyMsgBox.Remove(converter);
@@ -502,7 +698,7 @@ public static class ModMain
             {
                 try
                 {
-                    frmMain.DragStop();
+                    FrmMainRequired.DragStop();
                     ComponentDispatcher.PushModal();
                     Dispatcher.PushFrame(converter.WaitFrame);
                 }
@@ -513,7 +709,7 @@ public static class ModMain
             }
 
             ModBase.Log($"[Control] 普通弹框返回：{converter.Result ?? "null"}");
-            return (int)converter.Result;
+            return converter.Result is int result ? result : 0;
         }
 
         // 不进行等待，直接返回
@@ -612,7 +808,7 @@ public static class ModMain
         try
         {
             if (frmMain is not null)
-                frmMain.DragStop();
+                FrmMainRequired.DragStop();
             ComponentDispatcher.PushModal();
             Dispatcher.PushFrame(converter.WaitFrame);
         }
@@ -650,7 +846,7 @@ public static class ModMain
         try
         {
             if (frmMain is not null)
-                frmMain.DragStop();
+                FrmMainRequired.DragStop();
             ComponentDispatcher.PushModal();
             Dispatcher.PushFrame(converter.WaitFrame);
         }
@@ -668,47 +864,47 @@ public static class ModMain
     {
         try
         {
-            if (frmMain is null || frmMain.PanMsg is null || frmMain.WindowState == WindowState.Minimized)
+            if (frmMain is null || FrmMainRequired.PanMsg is null || FrmMainRequired.WindowState == WindowState.Minimized)
                 return;
-            if (frmMain.PanMsg.Children.Count > 0)
+            if (FrmMainRequired.PanMsg.Children.Count > 0)
             {
                 // 弹窗中
-                frmMain.PanMsgBackground.Visibility = Visibility.Visible;
+                FrmMainRequired.PanMsgBackground.Visibility = Visibility.Visible;
             }
             else if (WaitingMyMsgBox.Any())
             {
                 // 没有弹窗，显示一个等待的弹窗
-                frmMain.PanMsgBackground.Visibility = Visibility.Visible;
+                FrmMainRequired.PanMsgBackground.Visibility = Visibility.Visible;
                 switch (WaitingMyMsgBox[0].Type)
                 {
                     case MyMsgBoxType.Input:
                     {
-                        frmMain.PanMsg.Children.Add(new MyMsgInput(WaitingMyMsgBox[0]));
+                        FrmMainRequired.PanMsg.Children.Add(new MyMsgInput(WaitingMyMsgBox[0]));
                         break;
                     }
                     case MyMsgBoxType.Select:
                     {
-                        frmMain.PanMsg.Children.Add(new MyMsgSelect(WaitingMyMsgBox[0]));
+                        FrmMainRequired.PanMsg.Children.Add(new MyMsgSelect(WaitingMyMsgBox[0]));
                         break;
                     }
                     case MyMsgBoxType.AuthServer:
                     {
-                        frmMain.PanMsg.Children.Add(new MyMsgAuthServer(WaitingMyMsgBox[0]));
+                        FrmMainRequired.PanMsg.Children.Add(new MyMsgAuthServer(WaitingMyMsgBox[0]));
                         break;
                     }
                     case MyMsgBoxType.Text:
                     {
-                        frmMain.PanMsg.Children.Add(new MyMsgText(WaitingMyMsgBox[0]));
+                        FrmMainRequired.PanMsg.Children.Add(new MyMsgText(WaitingMyMsgBox[0]));
                         break;
                     }
                     case MyMsgBoxType.Login:
                     {
-                        frmMain.PanMsg.Children.Add(new MyMsgLogin(WaitingMyMsgBox[0]));
+                        FrmMainRequired.PanMsg.Children.Add(new MyMsgLogin(WaitingMyMsgBox[0]));
                         break;
                     }
                     case MyMsgBoxType.Markdown:
                     {
-                        frmMain.PanMsg.Children.Add(new MyMsgMarkdown(WaitingMyMsgBox[0]));
+                        FrmMainRequired.PanMsg.Children.Add(new MyMsgMarkdown(WaitingMyMsgBox[0]));
                         break;
                     }
                 }
@@ -716,9 +912,9 @@ public static class ModMain
                 WaitingMyMsgBox.RemoveAt(0);
             }
             // 没有弹窗，没有等待的弹窗
-            else if (!(frmMain.PanMsgBackground.Visibility == Visibility.Collapsed))
+            else if (!(FrmMainRequired.PanMsgBackground.Visibility == Visibility.Collapsed))
             {
-                frmMain.PanMsgBackground.Visibility = Visibility.Collapsed;
+                FrmMainRequired.PanMsgBackground.Visibility = Visibility.Collapsed;
             }
         }
         catch (Exception ex)
@@ -735,11 +931,11 @@ public static class ModMain
         MsgBoxTheme theme, bool block, ref int result)
     {
         var btnText1 = buttons.Count < 1 ? GetDefaultConfirmText() : buttons.ElementAt(0).Context;
-        var btnAct1 = (Action)(buttons.Count < 1 ? (object)null : buttons.ElementAt(0).OnClick);
+        var btnAct1 = buttons.Count < 1 ? null : buttons.ElementAt(0).OnClick;
         var btnText2 = buttons.Count < 2 ? GetDefaultCancelText() : buttons.ElementAt(1).Context;
-        var btnAct2 = (Action)(buttons.Count < 2 ? (object)null : buttons.ElementAt(1).OnClick);
+        var btnAct2 = buttons.Count < 2 ? null : buttons.ElementAt(1).OnClick;
         var btnText3 = buttons.Count < 3 ? "" : buttons.ElementAt(2).Context;
-        var btnAct3 = (Action)(buttons.Count < 3 ? (object)null : buttons.ElementAt(2).OnClick);
+        var btnAct3 = buttons.Count < 3 ? null : buttons.ElementAt(2).OnClick;
 
         var isWarn = theme == MsgBoxTheme.Warning || theme == MsgBoxTheme.Error;
 
@@ -762,14 +958,15 @@ public static class ModMain
     {
         try
         {
-            if (frmLaunchLeft is null || frmLaunchLeft.AprilPosTrans is null || frmMain.lastMouseArg is null)
+            if (frmLaunchLeft is null || FrmLaunchLeftRequired.AprilPosTrans is null ||
+                frmMain is not { lastMouseArg: { } mouseArg } main)
                 return;
-            if (isAprilGiveup || frmMain.pageCurrent != FormMain.PageType.Launch ||
-                ModAnimation.AniControlEnabled != 0 || !frmLaunchLeft.BtnLaunch.IsLoaded)
+            if (isAprilGiveup || main.pageCurrent != FormMain.PageType.Launch ||
+                ModAnimation.AniControlEnabled != 0 || !FrmLaunchLeftRequired.BtnLaunch.IsLoaded)
                 return;
 
             // 计算是否空闲
-            var mousePos = frmMain.lastMouseArg.GetPosition(frmMain);
+            var mousePos = mouseArg.GetPosition(main);
             if (mousePos == aprilMousePosLast)
             {
                 aprilIdieCount += 1;
@@ -783,9 +980,9 @@ public static class ModMain
             // 计算躲避移动
             Vector direction;
             double distance;
-            var buttonWidth = frmLaunchLeft.BtnLaunch.ActualWidth / 2d;
-            var buttonHeight = frmLaunchLeft.BtnLaunch.ActualHeight / 2d;
-            var vec = (Vector)(frmMain.lastMouseArg.GetPosition(frmLaunchLeft.BtnLaunch) -
+            var buttonWidth = FrmLaunchLeftRequired.BtnLaunch.ActualWidth / 2d;
+            var buttonHeight = FrmLaunchLeftRequired.BtnLaunch.ActualHeight / 2d;
+            var vec = (Vector)(mouseArg.GetPosition(FrmLaunchLeftRequired.BtnLaunch) -
                                new Vector(buttonWidth, buttonHeight));
             var dir = new Vector(vec.X, vec.Y);
             dir.Normalize();
@@ -797,9 +994,9 @@ public static class ModMain
             // 计算回归移动
             if (aprilIdieCount >= 64 * 5)
             {
-                var safeDist = (Vector)(frmMain.lastMouseArg.GetPosition(frmMain.PanMain) -
-                                        new Vector(buttonWidth, frmMain.PanMain.ActualHeight - buttonHeight * 3d));
-                var back = new Vector(frmLaunchLeft.AprilPosTrans.X, frmLaunchLeft.AprilPosTrans.Y);
+                var safeDist = (Vector)(mouseArg.GetPosition(main.PanMain) -
+                                        new Vector(buttonWidth, main.PanMain.ActualHeight - buttonHeight * 3d));
+                var back = new Vector(FrmLaunchLeftRequired.AprilPosTrans.X, FrmLaunchLeftRequired.AprilPosTrans.Y);
                 if (safeDist.Length > 250d && back.Length > 0.4d)
                 {
                     acc -= back * 0.0005d;
@@ -809,42 +1006,42 @@ public static class ModMain
             }
 
             // 回到边界
-            var relative = frmLaunchLeft.BtnLaunch.TranslatePoint(new Point(0d, 0d), frmMain.PanForm);
+            var relative = FrmLaunchLeftRequired.BtnLaunch.TranslatePoint(new Point(0d, 0d), main.PanForm);
             if (relative.X < -buttonWidth * 2d)
             {
-                frmLaunchLeft.AprilPosTrans.X += frmMain.PanForm.ActualWidth + buttonWidth * 2d; // 离开左边界
+                FrmLaunchLeftRequired.AprilPosTrans.X += main.PanForm.ActualWidth + buttonWidth * 2d; // 离开左边界
                 aprilSpeed.X -= 80d;
                 if (relative.Y < 0d)
-                    frmLaunchLeft.AprilPosTrans.Y += buttonHeight * 2.5d;
-                else if (relative.Y > frmMain.PanForm.ActualHeight - buttonHeight * 2d)
-                    frmLaunchLeft.AprilPosTrans.Y -= buttonHeight * 2.5d;
+                    FrmLaunchLeftRequired.AprilPosTrans.Y += buttonHeight * 2.5d;
+                else if (relative.Y > main.PanForm.ActualHeight - buttonHeight * 2d)
+                    FrmLaunchLeftRequired.AprilPosTrans.Y -= buttonHeight * 2.5d;
             }
-            else if (relative.X > frmMain.PanForm.ActualWidth)
+            else if (relative.X > main.PanForm.ActualWidth)
             {
-                frmLaunchLeft.AprilPosTrans.X -= frmMain.PanForm.ActualWidth + buttonWidth * 2d; // 离开右边界
+                FrmLaunchLeftRequired.AprilPosTrans.X -= main.PanForm.ActualWidth + buttonWidth * 2d; // 离开右边界
                 aprilSpeed.X += 80d;
                 if (relative.Y < 0d)
-                    frmLaunchLeft.AprilPosTrans.Y += buttonHeight * 2.5d;
-                else if (relative.Y > frmMain.PanForm.ActualHeight - buttonHeight * 2d)
-                    frmLaunchLeft.AprilPosTrans.Y -= buttonHeight * 2.5d;
+                    FrmLaunchLeftRequired.AprilPosTrans.Y += buttonHeight * 2.5d;
+                else if (relative.Y > main.PanForm.ActualHeight - buttonHeight * 2d)
+                    FrmLaunchLeftRequired.AprilPosTrans.Y -= buttonHeight * 2.5d;
             }
             else if (relative.Y < -buttonHeight * 2d)
             {
-                frmLaunchLeft.AprilPosTrans.Y += frmMain.PanForm.ActualHeight + buttonHeight * 2d; // 离开上边界
+                FrmLaunchLeftRequired.AprilPosTrans.Y += main.PanForm.ActualHeight + buttonHeight * 2d; // 离开上边界
                 aprilSpeed.Y -= 25d;
                 if (relative.X < 0d)
-                    frmLaunchLeft.AprilPosTrans.X += buttonWidth * 2d;
-                else if (relative.X > frmMain.PanForm.ActualWidth - buttonWidth * 2d)
-                    frmLaunchLeft.AprilPosTrans.X -= buttonWidth * 2d;
+                    FrmLaunchLeftRequired.AprilPosTrans.X += buttonWidth * 2d;
+                else if (relative.X > main.PanForm.ActualWidth - buttonWidth * 2d)
+                    FrmLaunchLeftRequired.AprilPosTrans.X -= buttonWidth * 2d;
             }
-            else if (relative.Y > frmMain.PanForm.ActualHeight)
+            else if (relative.Y > main.PanForm.ActualHeight)
             {
-                frmLaunchLeft.AprilPosTrans.Y -= frmMain.PanForm.ActualHeight + buttonHeight * 2d; // 离开下边界
+                FrmLaunchLeftRequired.AprilPosTrans.Y -= main.PanForm.ActualHeight + buttonHeight * 2d; // 离开下边界
                 aprilSpeed.Y += 25d;
                 if (relative.X < 0d)
-                    frmLaunchLeft.AprilPosTrans.X += buttonWidth * 2d;
-                else if (relative.X > frmMain.PanForm.ActualWidth - buttonWidth * 2d)
-                    frmLaunchLeft.AprilPosTrans.X -= buttonWidth * 2d;
+                    FrmLaunchLeftRequired.AprilPosTrans.X += buttonWidth * 2d;
+                else if (relative.X > main.PanForm.ActualWidth - buttonWidth * 2d)
+                    FrmLaunchLeftRequired.AprilPosTrans.X -= buttonWidth * 2d;
             }
 
             // 移动
@@ -855,13 +1052,13 @@ public static class ModMain
             aprilSpeed.Normalize();
             aprilSpeed *= speedValue;
             aprilDistance = (int)Math.Round(aprilDistance + speedValue);
-            frmLaunchLeft.AprilPosTrans.X += aprilSpeed.X;
-            frmLaunchLeft.AprilPosTrans.Y += aprilSpeed.Y;
+            FrmLaunchLeftRequired.AprilPosTrans.X += aprilSpeed.X;
+            FrmLaunchLeftRequired.AprilPosTrans.Y += aprilSpeed.Y;
             // 大小改变
-            frmLaunchLeft.AprilScaleTrans.ScaleX =
+            FrmLaunchLeftRequired.AprilScaleTrans.ScaleX =
                 ModBase.MathClamp(1d - (Math.Abs(direction.X) - Math.Abs(direction.Y)) * (speedValue / 160d), 0.2d,
                     1.8d);
-            frmLaunchLeft.AprilScaleTrans.ScaleY =
+            FrmLaunchLeftRequired.AprilScaleTrans.ScaleY =
                 ModBase.MathClamp(1d - (Math.Abs(direction.Y) - Math.Abs(direction.X)) * (speedValue / 100d), 0.2d,
                     1.8d);
             // 放弃提示
@@ -992,7 +1189,7 @@ public static class ModMain
     
     // 基础
     text = text.Replace("{pcl_version}", replacer(ModBase.versionBaseName));
-    text = text.Replace("{pcl_version_code}", replacer(ModBase.versionCode.ToString()));
+    text = text.Replace("{pcl_version_code}", replacer(ModBase.versionStandardCode));
     text = text.Replace("{pcl_version_branch}", replacer(ModBase.versionBranchName));
     text = text.Replace("{pcl_branch}", replacer(ModBase.versionBranchName));
     text = text.Replace("{identify}", replacer(Identify.LauncherId));
@@ -1013,19 +1210,19 @@ public static class ModMain
     
     if (ModInstanceList.McMcInstanceSelected is not null)
     {
-        text = text.Replace("{version_path}", replacer(ModInstanceList.McMcInstanceSelected.PathInstance));
-        text = text.Replace("{verpath}", replacer(ModInstanceList.McMcInstanceSelected.PathInstance));
-        text = text.Replace("{version_indie}", replacer(ModInstanceList.McMcInstanceSelected.PathIndie));
-        text = text.Replace("{verindie}", replacer(ModInstanceList.McMcInstanceSelected.PathIndie));
-        text = text.Replace("{name}", replacer(ModInstanceList.McMcInstanceSelected.Name));
+        text = text.Replace("{version_path}", replacer(ModInstanceList.McMcInstanceSelectedRequired.PathInstance));
+        text = text.Replace("{verpath}", replacer(ModInstanceList.McMcInstanceSelectedRequired.PathInstance));
+        text = text.Replace("{version_indie}", replacer(ModInstanceList.McMcInstanceSelectedRequired.PathIndie));
+        text = text.Replace("{verindie}", replacer(ModInstanceList.McMcInstanceSelectedRequired.PathIndie));
+        text = text.Replace("{name}", replacer(ModInstanceList.McMcInstanceSelectedRequired.Name));
         
-        if (new[] { "unknown", "old", "pending" }.Contains(ModInstanceList.McMcInstanceSelected.Info.VanillaName))
+        if (new[] { "unknown", "old", "pending" }.Contains(ModInstanceList.McMcInstanceSelectedRequired.Info.VanillaName))
         {
-            text = text.Replace("{version}", replacer(ModInstanceList.McMcInstanceSelected.Name));
+            text = text.Replace("{version}", replacer(ModInstanceList.McMcInstanceSelectedRequired.Name));
         }
         else
         {
-            text = text.Replace("{version}", replacer(ModInstanceList.McMcInstanceSelected.Info.VanillaName));
+            text = text.Replace("{version}", replacer(ModInstanceList.McMcInstanceSelectedRequired.Info.VanillaName));
         }
     }
     else

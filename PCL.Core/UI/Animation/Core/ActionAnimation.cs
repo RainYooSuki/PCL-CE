@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using PCL.Core.UI.Animation.Animatable;
@@ -12,11 +13,13 @@ public class ActionAnimation : AnimationBase
 {
     public ActionAnimation() { }
 
+    [SetsRequiredMembers]
     public ActionAnimation(Action action) => Action = _ => action();
 
+    [SetsRequiredMembers]
     public ActionAnimation(Action<CancellationToken> action) => Action = action;
 
-    public Action<CancellationToken> Action { get; set; } = null!;
+    public required Action<CancellationToken> Action { get; set; }
     public override int CurrentFrame { get; set; }
     public TimeSpan Delay { get; set; }
     

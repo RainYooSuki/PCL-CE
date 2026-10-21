@@ -25,7 +25,7 @@ internal static class ModStyle
 
         private object _isDisposed = false;
 
-        private DispatcherTimer _timer;
+        private DispatcherTimer? _timer;
 
         public TimerRun(TimeSpan interval = default, bool autoStart = false)
         {
@@ -57,9 +57,12 @@ internal static class ModStyle
                 return;
             _isDisposed = true;
             // 资源释放
-            _timer.Tick -= _TimerTick;
-            _timer?.Stop();
-            _timer = null;
+            if (_timer is { } timer)
+            {
+                timer.Tick -= _TimerTick;
+                timer.Stop();
+                _timer = null;
+            }
         }
 
         // 属性变化处理

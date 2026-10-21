@@ -49,8 +49,8 @@ public partial class PageInstanceSaves : IRefreshable
     public static void Refresh()
     {
         if (ModMain.frmInstanceSaves is not null)
-            ModMain.frmInstanceSaves.Reload();
-        ModMain.frmInstanceLeft.ItemWorld.Checked = true;
+            ModMain.FrmInstanceSavesRequired.Reload();
+        ModMain.FrmInstanceLeftRequired.ItemWorld.Checked = true;
         HintService.Hint(Lang.Text("Instance.Saves.Status.Refreshing"), log: false);
     }
 
@@ -58,7 +58,7 @@ public partial class PageInstanceSaves : IRefreshable
     {
         // 重复加载部分
         PanBack.ScrollToHome();
-        worldPath = PageInstanceLeft.McInstance.PathIndie + @"saves\";
+        worldPath = PageInstanceLeft.McInstanceRequired.PathIndie + @"saves\";
         if (!Directory.Exists(worldPath))
             Directory.CreateDirectory(worldPath);
         Reload();
@@ -191,7 +191,7 @@ public partial class PageInstanceSaves : IRefreshable
                     if (File.Exists(saveLogo))
                     {
                         var target =
-                            $@"{PageInstanceLeft.McInstance.PathInstance}PCL\ImgCache\{ModBase.GetStringMD5(saveLogo)}.png";
+                            $@"{PageInstanceLeft.McInstanceRequired.PathInstance}PCL\ImgCache\{ModBase.GetStringMD5(saveLogo)}.png";
                         ModBase.CopyFile(saveLogo, target);
                         saveLogo = target;
                     }
@@ -208,7 +208,7 @@ public partial class PageInstanceSaves : IRefreshable
                             Lang.Text("Instance.Saves.CreationTime", Lang.Date(Directory.GetCreationTime(curFolder), "d"), Lang.Date(Directory.GetLastWriteTime(curFolder), "d")),
                         Type = MyListItem.CheckType.Clickable
                     };
-                    worldItem.Click += (_, _) => ModMain.frmMain.PageChange(new FormMain.PageStackData
+                    worldItem.Click += (_, _) => ModMain.FrmMainRequired.PageChange(new FormMain.PageStackData
                         { page = FormMain.PageType.VersionSaves, additional = (null, null, null, ModComp.CompLoaderType.Any, ModComp.CompType.Any, tmpCurFolder) });
 
                     var btnOpen = new MyIconButton
@@ -280,7 +280,7 @@ public partial class PageInstanceSaves : IRefreshable
                         SvgIcon = "lucide/info",
                         ToolTip = Lang.Text("Instance.Saves.Details")
                     };
-                    btnInfo.Click += (_, _) => ModMain.frmMain.PageChange(new FormMain.PageStackData
+                    btnInfo.Click += (_, _) => ModMain.FrmMainRequired.PageChange(new FormMain.PageStackData
                         { page = FormMain.PageType.VersionSaves, additional = (null, null, null, ModComp.CompLoaderType.Any, ModComp.CompType.Any, tmpCurFolder) });
 
                     var btnLaunch = new MyIconButton
@@ -297,7 +297,7 @@ public partial class PageInstanceSaves : IRefreshable
                             instance = PageInstanceLeft.McInstance
                         };
                         ModLaunch.McLaunchStart(launchOptions);
-                        ModMain.frmMain.PageChange(new FormMain.PageStackData { page = FormMain.PageType.Launch });
+                        ModMain.FrmMainRequired.PageChange(new FormMain.PageStackData { page = FormMain.PageType.Launch });
                     };
                     if ((bool)quickPlayFeature)
                         worldItem.Buttons = new[] { btnOpen, btnDelete, btnCopy, btnInfo, btnLaunch };
@@ -324,7 +324,7 @@ public partial class PageInstanceSaves : IRefreshable
     {
         try
         {
-            var cur = new ModLaunch.LaunchArgument(PageInstanceLeft.McInstance);
+            var cur = new ModLaunch.LaunchArgument(PageInstanceLeft.McInstanceRequired);
             quickPlayFeature = cur.HasArguments("--quickPlaySingleplayer");
         }
         catch (Exception ex)
@@ -426,17 +426,17 @@ public partial class PageInstanceSaves : IRefreshable
                 HintService.Hint(Lang.Text("Instance.Saves.PastedCount", copied.ToString()), HintType.Success);
             ModBase.RunInUi(() => Reload());
         }));
-        var loader = new ModLoader.LoaderCombo<int>($"{PageInstanceLeft.McInstance.Name} - {Lang.Text("Instance.Saves.CopySave")}", loaders)
+        var loader = new ModLoader.LoaderCombo<int>($"{PageInstanceLeft.McInstanceRequired.Name} - {Lang.Text("Instance.Saves.CopySave")}", loaders)
             { OnStateChanged = ModDownloadLib.LoaderStateChangedHintOnly };
         loader.Start(1);
         ModLoader.LoaderTaskbarAdd(loader);
-        ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-        ModMain.frmMain.BtnExtraDownload.Ribble();
+        ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
     }
 
     private void BtnDownloadNew_Click(object sender, MouseButtonEventArgs e)
     {
-        ModMain.frmMain.PageChange(FormMain.PageType.Download, FormMain.PageSubType.DownloadWorld);
+        ModMain.FrmMainRequired.PageChange(FormMain.PageType.Download, FormMain.PageSubType.DownloadWorld);
         PageComp.targetVersion = PageInstanceLeft.McInstance; // 将当前实例设置为筛选器
     }
 

@@ -27,7 +27,7 @@ public class MyTextButton : Label
                 }, "MyTextButton Text " + button.Uuid);
         }));
     
-    private string colorName;
+    private string colorName = "";
 
     // 鼠标事件
 
@@ -55,7 +55,7 @@ public class MyTextButton : Label
 
     public string Text
     {
-        get => (string)GetValue(TextProperty);
+        get => GetValue(TextProperty) as string ?? "";
         set => SetValue(TextProperty, value);
     }
 
@@ -70,7 +70,7 @@ public class MyTextButton : Label
         return ("ColorBrush1", animationTimeOut);
     }
 
-    private void MyTextButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void MyTextButton_MouseLeftButtonDown(object? sender, MouseButtonEventArgs e)
     {
         isMouseDown = true;
         e.Handled = true;
@@ -81,12 +81,12 @@ public class MyTextButton : Label
         isMouseDown = false;
     }
 
-    private void MyTextButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    private void MyTextButton_MouseLeftButtonUp(object? sender, MouseButtonEventArgs e)
     {
         if (!isMouseDown) return;
         isMouseDown = false;
         ModBase.Log("[Control] 按下文本按钮：" + Text);
-        Click?.Invoke(this, null);
+        Click?.Invoke(this, EventArgs.Empty);
         ModMain.RaiseCustomEvent(this);
         e.Handled = true;
     }
@@ -96,7 +96,7 @@ public class MyTextButton : Label
         var (ForeName, Time) = GetVisualState();
 
         // 重复性验证
-        if ((colorName ?? "") == (ForeName ?? ""))
+        if (colorName == ForeName)
             return;
         colorName = ForeName;
         // 触发颜色动画

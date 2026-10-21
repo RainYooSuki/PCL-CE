@@ -520,7 +520,7 @@ public static partial class ModAnimation
 
     public class AniGroupEntry
     {
-        public List<AniData> data;
+        public required List<AniData> data;
         public long startTick;
         public int Uuid = ModBase.GetUuid();
     }

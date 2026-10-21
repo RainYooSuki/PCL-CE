@@ -44,8 +44,8 @@ public partial class PageInstanceScreenshot : IRefreshable
     public static async Task RefreshAsync()
     {
         if (ModMain.frmInstanceScreenshot is not null)
-            await ModMain.frmInstanceScreenshot.ReloadAsync();
-        ModMain.frmInstanceLeft.ItemScreenshot.Checked = true;
+            await ModMain.FrmInstanceScreenshotRequired.ReloadAsync();
+        ModMain.FrmInstanceLeftRequired.ItemScreenshot.Checked = true;
         HintService.Hint(Lang.Text("Instance.Saves.Status.Refreshing"), log: false);
     }
 
@@ -53,7 +53,7 @@ public partial class PageInstanceScreenshot : IRefreshable
     {
         // 重复加载部分
         PanBack.ScrollToHome();
-        screenshotPath = PageInstanceLeft.McInstance.PathIndie + @"screenshots\";
+        screenshotPath = PageInstanceLeft.McInstanceRequired.PathIndie + @"screenshots\";
         if (!Directory.Exists(screenshotPath))
             Directory.CreateDirectory(screenshotPath);
         Dispatcher.BeginInvoke(new Func<Task>(ReloadAsync));

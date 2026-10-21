@@ -30,15 +30,17 @@ public sealed partial class StartupService
 {
     private static Exception _GetUninitializedException() => new InvalidOperationException("Not initialized");
 
+    private static CommandLine? _commandLine;
+
     /// <summary>
     /// 解析后的命令行模型实例
     /// </summary>
     /// <exception cref="Exception">尚未初始化完成</exception>
     public static CommandLine CommandLine
     {
-        get => field ?? throw _GetUninitializedException();
-        private set;
-    } = null!;
+        get => _commandLine ?? throw _GetUninitializedException();
+        private set => _commandLine = value;
+    }
 
     private static readonly Dictionary<string, CommandLine> _UnhandledCommandMap = [];
     private static readonly ConcurrentDictionary<string, CommandHandler> _HandleCallbackMap = [];
@@ -129,8 +131,8 @@ public sealed partial class StartupService
             prefix.Append(c.Subcommand.CommandText);
             c = c.Subcommand;
         }
-        _UnhandledCommandMap.Remove("", out c!);
-        CommandLine = c;
+        _UnhandledCommandMap.Remove("", out var rootCommand);
+        CommandLine = rootCommand ?? throw _GetUninitializedException();
     }
 
     [RegisterRpc("cli")]

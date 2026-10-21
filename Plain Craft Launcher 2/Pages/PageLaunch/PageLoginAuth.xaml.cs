@@ -82,7 +82,7 @@ public partial class PageLoginAuth
         _authServerUrl = "";
         TextName.Text = null;
         TextPass.Password = null;
-        ModMain.frmLaunchLeft.RefreshPage(true);
+        ModMain.FrmLaunchLeftRequired.RefreshPage(true);
     }
 
     private void BtnLogin_Click(object sender, EventArgs e)
@@ -144,7 +144,7 @@ public partial class PageLoginAuth
                 switch (ModLaunch.mcLoginAuthLoader.State)
                 {
                     case ModBase.LoadState.Finished:
-                        ModMain.frmLaunchLeft.RefreshPage(true);
+                        ModMain.FrmLaunchLeftRequired.RefreshPage(true);
                         break;
                     case ModBase.LoadState.Aborted:
                         HintService.Hint(Lang.Text("Launch.Account.Auth.Cancelled"));
@@ -154,9 +154,9 @@ public partial class PageLoginAuth
                     case ModBase.LoadState.Failed:
                     default:
                     {
-                        if (ModLaunch.mcLoginAuthLoader.Error is null)
+                        if (ModLaunch.mcLoginAuthLoader.Error is not { } authError)
                             throw new InvalidOperationException(Lang.Text("Launch.Account.Microsoft.Error.Unknown"));
-                        throw ModLaunch.mcLoginAuthLoader.Error;
+                        throw authError;
                     }
                 }
             }
@@ -298,7 +298,7 @@ public partial class PageLoginAuth
             }, existing: null, select: true, token: CancellationToken.None).ConfigureAwait(false);
             ModBase.RunInUi(() =>
             {
-                ModMain.frmLaunchLeft.RefreshPage(true);
+                ModMain.FrmLaunchLeftRequired.RefreshPage(true);
             });
             LogWrapper.Info("Profile","Yggdrasil Connect 登录成功：" + profile.UserName);
         }

@@ -34,16 +34,18 @@ public static class ModDownload
         }
 
         // 检查 Json 是否标准
-        if (version.JsonObject["downloads"] is null || version.JsonObject["downloads"]["client"] is null ||
-            version.JsonObject["downloads"]["client"]["url"] is null)
+        var downloads = version.JsonObjectRequired["downloads"];
+        var client = downloads?["client"];
+        var clientUrl = client?["url"];
+        if (downloads is null || client is null || clientUrl is null)
             throw new Exception(Lang.Text("Minecraft.Download.Error.NoJarDownloadInfo", version.Name));
         // 检查文件
-        var checker = new ModBase.FileChecker(1024L, (long)(version.JsonObject["downloads"]["client"]["size"] ?? -1),
-            (string)version.JsonObject["downloads"]["client"]["sha1"]);
+        var checker = new ModBase.FileChecker(1024L, (long)(client["size"] ?? -1),
+            (string?)client["sha1"]);
         if (returnNothingOnFileUseable && checker.Check(version.PathInstance + version.Name + ".jar") is null)
             return null; // 通过校验
         // 返回下载信息
-        var jarUrl = (string)version.JsonObject["downloads"]["client"]["url"];
+        var jarUrl = clientUrl.ToString() ?? "";
         return new DownloadFile(DlSourceLauncherOrMetaGet(jarUrl), version.PathInstance + version.Name + ".jar",
             checker);
     }
@@ -139,8 +141,8 @@ public static class ModDownload
             if (assetsIndexBehaviour == AssetsIndexExistsBehaviour.DownloadInBackground)
             {
                 var loadersAssetsUpdate = new List<ModLoader.LoaderBase>();
-                string tempAddress = null;
-                string realAddress = null;
+                var tempAddress = "";
+                var realAddress = "";
                 loadersAssetsUpdate.Add(new ModLoader.LoaderTask<string, List<DownloadFile>>(
                     Lang.Text("Minecraft.Download.Stage.AnalyzeAssetsIndex.Background"), task =>
                 {
@@ -551,7 +553,7 @@ public static class ModDownload
         /// <summary>
         ///     显示名称，已去除 HD_U 字样，如“1.12.2 C8”。
         /// </summary>
-        public string DisplayName;
+        public string DisplayName = "";
 
         /// <summary>
         ///     是否为测试版。
@@ -561,34 +563,36 @@ public static class ModDownload
         /// <summary>
         ///     原始文件名称，如“preview_OptiFine_1.11_HD_U_E1_pre.jar”。
         /// </summary>
-        public string NameFile;
+        public string NameFile = "";
 
         /// <summary>
         ///     对应的版本名称，如“1.13.2-OptiFine_HD_U_E6”。
         /// </summary>
-        public string NameVersion;
+        public string NameVersion = "";
 
         /// <summary>
         ///     发布时间，格式为“yyyy/mm/dd”。OptiFine 源无此数据。
         /// </summary>
-        public string ReleaseTime;
+        public string ReleaseTime = "";
 
         /// <summary>
         ///     需要的最低 Forge 版本。空字符串为无限制，Nothing 为不兼容，“28.1.56” 表示版本号，“1161” 表示版本号的最后一位。
         /// </summary>
-        public string RequiredForgeVersion;
+        public string? RequiredForgeVersion;
 
         /// <summary>
         ///     对应的 Minecraft 版本，如“1.12.2”。
         /// </summary>
+        private string _inherit = "";
+
         public string Inherit
         {
-            get => field;
+            get => _inherit;
             set
             {
                 if (value.EndsWithF(".0"))
                     value = value.Substring(0, value.Length - 2);
-                field = value;
+                _inherit = value;
             }
         }
     }
@@ -682,7 +686,7 @@ public static class ModDownload
                                name[i].Replace(" ", "_") + ".jar",
                     RequiredForgeVersion = forge[i].Replace("Forge ", "").Replace("#", "")
                 };
-                if (entry.RequiredForgeVersion.Contains("N/A"))
+                if (entry.RequiredForgeVersion?.Contains("N/A") == true)
                     entry.RequiredForgeVersion = null;
                 entry.NameVersion = entry.Inherit + "-OptiFine_" +
                                     name[i].Replace(" ", "_").Replace(entry.Inherit + "_", "");
@@ -724,7 +728,7 @@ public static class ModDownload
                     NameFile = Token["filename"].ToString(),
                     RequiredForgeVersion = (Token["forge"] ?? "").ToString().Replace("Forge ", "").Replace("#", "")
                 };
-                if (entry.RequiredForgeVersion.Contains("N/A"))
+                if (entry.RequiredForgeVersion?.Contains("N/A") == true)
                     entry.RequiredForgeVersion = null;
                 entry.NameVersion = entry.Inherit + "-OptiFine_" + (Token["type"] + " " + Token["patch"])
                     .Replace(".0 ", " ").Replace(" ", "_").Replace(entry.Inherit + "_", "");
@@ -871,7 +875,7 @@ public static class ModDownload
         /// <summary>
         ///     对应的 Minecraft 版本，如“1.12.2”。
         /// </summary>
-        public string Inherit;
+        public string Inherit = "";
 
         /// <summary>
         ///     标准化后的版本号，仅可用于比较与排序。
@@ -880,7 +884,7 @@ public static class ModDownload
         ///     NeoForge：如 “20.4.30.0”（最后一位固定为 0）、“19.47.1.99”（Legacy：第一位固定为 19）。
         ///     Cleanroom：如 “0.2.4.1”（Alpha：最后一位固定为 1）。
         /// </summary>
-        public Version version;
+        public Version version = new(0, 0);
 
         /// <summary>
         ///     可对玩家显示的非格式化版本名。
@@ -888,7 +892,7 @@ public static class ModDownload
         ///     NeoForge：如 “20.4.30-beta”、“47.1.99”（Legacy）。
         ///     Cleanroom：如 “0.2.4-alpha”。
         /// </summary>
-        public string VersionName;
+        public string VersionName = "";
 
         /// <summary>
         ///     加载器名称。Forge / NeoForge / Cleanroom。
@@ -942,17 +946,17 @@ public static class ModDownload
         /// <summary>
         ///     安装类型。有 installer、client、universal 三种。
         /// </summary>
-        public string Category;
+        public string Category = "unknown";
 
         /// <summary>
         ///     用于下载的文件版本名。可能在 Version 的基础上添加了分支。
         /// </summary>
-        public string FileVersion;
+        public string FileVersion = "";
 
         /// <summary>
         ///     文件的 MD5 或 SHA1（BMCLAPI 的老版本是 MD5，新版本是 SHA1；官方源总是 MD5）。
         /// </summary>
-        public string Hash;
+        public string? Hash;
 
         /// <summary>
         ///     是否为推荐版本。
@@ -962,9 +966,9 @@ public static class ModDownload
         /// <summary>
         ///     发布时间，格式为“yyyy/MM/dd HH:mm”。
         /// </summary>
-        public string ReleaseTime;
+        public string ReleaseTime = "";
 
-        public DlForgeVersionEntry(string version, string branch, string inherit)
+        public DlForgeVersionEntry(string version, string? branch, string inherit)
         {
             // 司马版本的特殊处理
             if (version == "11.15.1.2318" || version == "11.15.1.1902" || version == "11.15.1.1890")
@@ -1145,7 +1149,7 @@ public static class ModDownload
             foreach (JsonObject Token in json)
             {
                 // 分类与 Hash 获取
-                string hash = null;
+                string? hash = null;
                 var category = "unknown";
                 var proi = -1;
                 foreach (JsonObject File in Token["files"].AsArray())
@@ -1589,12 +1593,12 @@ public static class ModDownload
         /// <summary>
         ///     实际的文件名，如“liteloader-installer-1.12-00-SNAPSHOT.jar”。
         /// </summary>
-        public string FileName;
+        public string FileName = "";
 
         /// <summary>
         ///     对应的 Minecraft 版本，如“1.12.2”。
         /// </summary>
-        public string Inherit;
+        public string Inherit = "";
 
         /// <summary>
         ///     是否为 1.7 及更早的远古版。
@@ -1609,17 +1613,17 @@ public static class ModDownload
         /// <summary>
         ///     对应的 Json 项。
         /// </summary>
-        public JsonNode jsonToken;
+        public JsonNode jsonToken = new JsonObject();
 
         /// <summary>
         ///     文件的 MD5。
         /// </summary>
-        public string MD5;
+        public string MD5 = "";
 
         /// <summary>
         ///     发布时间，格式为“yyyy/mm/dd HH:mm”。
         /// </summary>
-        public string ReleaseTime;
+        public string ReleaseTime = "";
     }
 
     /// <summary>
@@ -2327,14 +2331,15 @@ public static class ModDownload
                 else
                 {
                     // 若没有，则失败
-                    Exception errorInfo = null;
+                    Exception? errorInfo = null;
                     for (int ii = 0, loopTo1 = loaderList.Count - 1; ii <= loopTo1; ii++)
                     {
                         loaderList[ii].Key.input = default; // 重置输入，以免以同样的输入“重试加载”时直接失败
-                        if (loaderList[ii].Key.Error is null) continue;
-                        if (errorInfo is null || loaderList[ii].Key.Error.Message
+                        var loaderError = loaderList[ii].Key.Error;
+                        if (loaderError is null) continue;
+                        if (errorInfo is null || loaderError.Message
                                 .Contains(Lang.Text("Minecraft.Download.Error.NotFound")))
-                            errorInfo = loaderList[ii].Key.Error;
+                            errorInfo = loaderError;
                     }
 
                     errorInfo ??= new TimeoutException(Lang.Text("Minecraft.Download.Error.Timeout"));
@@ -2464,7 +2469,7 @@ public static class ModDownload
         try
         {
             // 获取对应版本
-            JsonNode version = null;
+            JsonNode? version = null;
             foreach (var Token in json["versions"].AsArray())
                 if (Token["id"] is not null && (Token["id"].ToString() ?? "") == (versionName ?? ""))
                 {
@@ -2490,7 +2495,7 @@ public static class ModDownload
                 ModBase.RunInUi(() =>
                 {
                     PageDownloadInstall.mcVersionWaitingForSelect = versionName;
-                    ModMain.frmMain.PageChange(FormMain.PageType.Download, FormMain.PageSubType.DownloadInstall);
+                    ModMain.FrmMainRequired.PageChange(FormMain.PageType.Download, FormMain.PageSubType.DownloadInstall);
                 });
         }
 

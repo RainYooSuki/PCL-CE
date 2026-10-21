@@ -66,7 +66,7 @@ public partial class PageInstanceServer : MyPageRight
     private async void RemoveServerEvent(object sender, EventArgs e)
     {
         // Get server index
-        var index = PanServers.Children.IndexOf((UIElement)sender);
+        var index = PanServers.Children.IndexOf(serverCard);
         if (index < 0)
         {
             HintService.Hint(Lang.Text("Instance.Server.IndexNotFound"), HintType.Error);
@@ -76,7 +76,7 @@ public partial class PageInstanceServer : MyPageRight
         // Read NBT file
         var nbtData =
             await NbtFileHandler.ReadTagInNbtFileAsync<NbtList>(
-                Path.Combine(PageInstanceLeft.McInstance.PathIndie, "servers.dat"), "servers");
+                Path.Combine(PageInstanceLeft.McInstanceRequired.PathIndie, "servers.dat"), "servers");
         if (nbtData is null)
         {
             HintService.Hint(Lang.Text("Instance.Server.ReadDataFailed"), HintType.Error);
@@ -89,7 +89,7 @@ public partial class PageInstanceServer : MyPageRight
 
         // Write back to NBT file
         if (!await NbtFileHandler.WriteTagInNbtFileAsync(clonedNbtData,
-                Path.Combine(PageInstanceLeft.McInstance.PathIndie, "servers.dat")))
+                Path.Combine(PageInstanceLeft.McInstanceRequired.PathIndie, "servers.dat")))
         {
             HintService.Hint(Lang.Text("Instance.Server.WriteDataFailed"), HintType.Error);
             return;
@@ -109,9 +109,15 @@ public partial class PageInstanceServer : MyPageRight
 
     private async void EditServer(object sender, ServerCard.ResultEventArgs e)
     {
+        if (sender is not ServerCard serverCard)
+        {
+            HintService.Hint(Lang.Text("Instance.Server.ReadDataFailed"), HintType.Error);
+            return;
+        }
+
         // Read NBT file
         var nbtData =
-            await NbtFileHandler.ReadTagInNbtFileAsync<NbtList>(Path.Combine(PageInstanceLeft.McInstance.PathIndie, "servers.dat"),
+            await NbtFileHandler.ReadTagInNbtFileAsync<NbtList>(Path.Combine(PageInstanceLeft.McInstanceRequired.PathIndie, "servers.dat"),
                 "servers");
         if (nbtData is null)
         {
@@ -120,7 +126,7 @@ public partial class PageInstanceServer : MyPageRight
         }
 
         // Get server index
-        var index = PanServers.Children.IndexOf((UIElement)sender);
+        var index = PanServers.Children.IndexOf(serverCard);
         if (index < 0 || index >= nbtData.Count)
         {
             HintService.Hint(Lang.Text("Instance.Server.IndexNotFound"), HintType.Error);
@@ -128,7 +134,11 @@ public partial class PageInstanceServer : MyPageRight
         }
 
         // Verify server data
-        var server = nbtData[index] as NbtCompound;
+        if (nbtData[index] is not NbtCompound server)
+        {
+            HintService.Hint(Lang.Text("Instance.Server.ReadDataFailed"), HintType.Error);
+            return;
+        }
 
         // Update server data
         server["name"] = new NbtString("name", e.Param1);
@@ -137,13 +147,13 @@ public partial class PageInstanceServer : MyPageRight
         // Write updated NBT data
         var clonedNbtData = (NbtList)nbtData.Clone();
         if (!await NbtFileHandler.WriteTagInNbtFileAsync(clonedNbtData,
-                Path.Combine(PageInstanceLeft.McInstance.PathIndie, "servers.dat")))
+                Path.Combine(PageInstanceLeft.McInstanceRequired.PathIndie, "servers.dat")))
         {
             HintService.Hint(Lang.Text("Instance.Server.WriteDataFailed"), HintType.Error);
             return;
         }
 
-        var serverCard = sender as ServerCard;
+
 
         serverCard.server.Name = e.Param1;
         serverCard.server.Address = e.Param2;
@@ -235,7 +245,7 @@ public partial class PageInstanceServer : MyPageRight
 
             await serverCard.RefreshServerStatusAsync(false);
 
-            var serversDatPath = Path.Combine(PageInstanceLeft.McInstance.PathIndie, "servers.dat");
+            var serversDatPath = Path.Combine(PageInstanceLeft.McInstanceRequired.PathIndie, "servers.dat");
 
             NbtList nbtData;
             if (!File.Exists(serversDatPath))
@@ -281,7 +291,7 @@ public partial class PageInstanceServer : MyPageRight
     {
         serverList.Clear();
 
-        var serversFile = Path.Combine(PageInstanceLeft.McInstance.PathIndie, "servers.dat");
+        var serversFile = Path.Combine(PageInstanceLeft.McInstanceRequired.PathIndie, "servers.dat");
         if (!File.Exists(serversFile))
             return;
 
@@ -474,8 +484,8 @@ public partial class PageInstanceServer : MyPageRight
 /// </summary>
 public class MinecraftServerInfo
 {
-    public string Name { get; set; }
-    public string Address { get; set; }
+    public required string Name { get; set; }
+    public required string Address { get; set; }
     public int Port { get; set; } = 25565;
     public ServerStatus Status { get; set; } = ServerStatus.Unknown;
     public int PlayerCount { get; set; }

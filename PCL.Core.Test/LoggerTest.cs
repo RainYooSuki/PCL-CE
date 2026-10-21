@@ -35,10 +35,10 @@ public class LoggerTest
                 {
                     logger.Info($"Current we got {current}:{j}");
                 }
-            }, TestContext.CancellationToken));
+            }, TestContext?.CancellationToken ?? default));
         }
         await Task.WhenAll(tasks.ToArray());
     }
 
-    public TestContext TestContext { get; set; }
+    public TestContext? TestContext { get; set; }
 }

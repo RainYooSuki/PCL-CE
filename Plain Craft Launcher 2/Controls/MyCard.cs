@@ -22,7 +22,8 @@ public class MyCard : AnimatedBackgroundGrid
 
     // 控件
     private readonly Grid mainGrid;
-    private TextBlock _MainTextBlock;
+    private TextBlock? _MainTextBlock;
+    private Path? _mainSwapControl;
     private bool isLoad;
 
     // UI 建立
@@ -58,7 +59,7 @@ public class MyCard : AnimatedBackgroundGrid
         set => mainBorder.Child = value;
     }
 
-    public TextBlock MainTextBlock
+    public TextBlock? MainTextBlock
     {
         get
         {
@@ -68,18 +69,32 @@ public class MyCard : AnimatedBackgroundGrid
         set => _MainTextBlock = value;
     }
 
-    public Path MainSwap
+    private Path? MainSwapOrNull
     {
         get
         {
             Init();
-            return field;
+            return _mainSwapControl;
         }
-        set => field = value;
+    }
+
+    public Path MainSwap
+    {
+        get => MainSwapOrNull ?? throw new InvalidOperationException("卡片交换图标尚未初始化。");
+        set => _mainSwapControl = value;
     }
 
     // 属性
-    public InlineCollection Inlines => MainTextBlock.Inlines;
+    public InlineCollection Inlines
+    {
+        get
+        {
+            Init();
+            if (MainTextBlock is not { } mainTextBlock)
+                throw new InvalidOperationException("卡片标题控件尚未初始化。");
+            return mainTextBlock.Inlines;
+        }
+    }
 
     public CornerRadius CornerRadius
     {
@@ -93,12 +108,12 @@ public class MyCard : AnimatedBackgroundGrid
 
     public string Title
     {
-        get => (string)GetValue(TitleProperty);
+        get => GetValue(TitleProperty) as string ?? "";
         set
         {
             SetValue(TitleProperty, value);
             if (_MainTextBlock is not null)
-                MainTextBlock.Text = value;
+                _MainTextBlock.Text = value;
         }
     }
 
@@ -120,23 +135,24 @@ public class MyCard : AnimatedBackgroundGrid
         // 初次加载限定
         if (MainTextBlock is null)
         {
-            MainTextBlock = new TextBlock
+            var mainTextBlock = new TextBlock
             {
                 HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness(15d, 12d, 0d, 0d), FontWeight = FontWeights.Bold, FontSize = 13d,
                 IsHitTestVisible = false
             };
-            MainTextBlock.SetResourceReference(TextBlock.ForegroundProperty, "ColorBrush1");
-            MainTextBlock.SetBinding(TextBlock.TextProperty,
+            MainTextBlock = mainTextBlock;
+            mainTextBlock.SetResourceReference(TextBlock.ForegroundProperty, "ColorBrush1");
+            mainTextBlock.SetBinding(TextBlock.TextProperty,
                 new Binding("Title") { Source = this, Mode = BindingMode.OneWay });
-            mainGrid.Children.Add(MainTextBlock);
+            mainGrid.Children.Add(mainTextBlock);
         }
 
         if (CanSwap || SwapControl is not null)
         {
             if (SwapControl is null && Children.Count > 3)
                 SwapControl = Children[3];
-            MainSwap = new Path
+            var mainSwap = new Path
             {
                 HorizontalAlignment = HorizontalAlignment.Right, Stretch = Stretch.Uniform, Height = 6d, Width = 10d,
                 VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0d, 17d, 16d, 0d),
@@ -144,14 +160,15 @@ public class MyCard : AnimatedBackgroundGrid
                     (Geometry)new GeometryConverter().ConvertFromString("M2,4 l-2,2 10,10 10,-10 -2,-2 -8,8 -8,-8 z"),
                 RenderTransform = new RotateTransform(180d), RenderTransformOrigin = new Point(0.5d, 0.5d)
             };
-            MainSwap.SetResourceReference(Shape.FillProperty, "ColorBrush1");
-            mainGrid.Children.Add(MainSwap);
+            MainSwap = mainSwap;
+            mainSwap.SetResourceReference(Shape.FillProperty, "ColorBrush1");
+            mainGrid.Children.Add(mainSwap);
         }
 
         // 改变默认的折叠
-        if (IsSwapped && SwapControl is not null)
+        if (IsSwapped && SwapControl is not null && MainSwapOrNull is { } mainSwap)
         {
-            MainSwap.RenderTransform = new RotateTransform(SwapLogoRight ? 270 : 0);
+            mainSwap.RenderTransform = new RotateTransform(SwapLogoRight ? 270 : 0);
             SwapControl.Visibility = Visibility.Collapsed;
             // 取消由于高度变化被迫触发的高度动画
             var rawUseAnimation = UseAnimation;
@@ -165,15 +182,16 @@ public class MyCard : AnimatedBackgroundGrid
 
     public void StackInstall()
     {
-        var argstack = (StackPanel)SwapControl;
+        if (SwapControl is not StackPanel argstack)
+            return;
         StackInstall(ref argstack, InstallMethod);
         SwapControl = argstack;
         TriggerForceResize();
     }
 
-    public static void StackInstall(ref StackPanel stack, Action<StackPanel> installMethod)
+    public static void StackInstall(ref StackPanel stack, Action<StackPanel>? installMethod)
     {
-        if (stack.Tag is null)
+        if (stack.Tag is null || installMethod is null)
             return;
         try
         {
@@ -195,8 +213,8 @@ public class MyCard : AnimatedBackgroundGrid
         var aniList = new List<ModAnimation.AniData>();
         if (MainTextBlock is not null)
             aniList.Add(ModAnimation.AaColor(MainTextBlock, TextBlock.ForegroundProperty, "ColorBrush2", 90));
-        if (MainSwap is not null)
-            aniList.Add(ModAnimation.AaColor(MainSwap, Shape.FillProperty, "ColorBrush2", 90));
+        if (MainSwapOrNull is { } mainSwap)
+            aniList.Add(ModAnimation.AaColor(mainSwap, Shape.FillProperty, "ColorBrush2", 90));
         aniList.AddRange(new[]
         {
             ModAnimation.AaColor(MainChrome, MyDropShadow.ColorProperty, "ColorObject4", 90),
@@ -213,8 +231,8 @@ public class MyCard : AnimatedBackgroundGrid
         var aniList = new List<ModAnimation.AniData>();
         if (MainTextBlock is not null)
             aniList.Add(ModAnimation.AaColor(MainTextBlock, TextBlock.ForegroundProperty, "ColorBrush1", 90));
-        if (MainSwap is not null)
-            aniList.Add(ModAnimation.AaColor(MainSwap, Shape.FillProperty, "ColorBrush1", 90));
+        if (MainSwapOrNull is { } mainSwap)
+            aniList.Add(ModAnimation.AaColor(mainSwap, Shape.FillProperty, "ColorBrush1", 90));
         aniList.AddRange(new[]
         {
             ModAnimation.AaColor(MainChrome, MyDropShadow.ColorProperty, "ColorObject1", 90),
@@ -331,14 +349,14 @@ public class MyCard : AnimatedBackgroundGrid
 
     // 若设置了 CanSwap，或 SwapControl 不为空，则判定为会进行折叠
     // 这是因为不能直接在 XAML 中设置 SwapControl
-    public UIElement SwapControl;
+    public UIElement? SwapControl;
     public bool CanSwap { get; set; } = false;
 
     /// <summary>
     ///     数据转为列表项的转换方法
     /// </summary>
     /// <returns></returns>
-    public Action<StackPanel> InstallMethod { get; set; }
+    public Action<StackPanel>? InstallMethod { get; set; }
 
     /// <summary>
     ///     是否已被折叠。
@@ -356,9 +374,8 @@ public class MyCard : AnimatedBackgroundGrid
 
             // 当卡片展开时，如果SwapControl是StackPanel类型，则执行安装方法
             // 这通常用于动态添加内容到折叠卡片中
-            if (!IsSwapped && SwapControl is StackPanel)
+            if (!IsSwapped && SwapControl is StackPanel argstack)
             {
-                var argstack = (StackPanel)SwapControl;
                 StackInstall(ref argstack, InstallMethod);
                 SwapControl = argstack;
             }
@@ -373,9 +390,11 @@ public class MyCard : AnimatedBackgroundGrid
 
             // 根据折叠状态旋转箭头图标
             // 折叠时箭头指向右侧或向上（根据SwapLogoRight设置），展开时指向下方
+            if (MainSwapOrNull is not { } mainSwap)
+                return;
             ModAnimation.AniStart(
-                ModAnimation.AaRotateTransform(MainSwap,
-                    (field ? SwapLogoRight ? 270 : 0 : 180) - ((RotateTransform)MainSwap.RenderTransform).Angle,
+                ModAnimation.AaRotateTransform(mainSwap,
+                    (field ? SwapLogoRight ? 270 : 0 : 180) - ((RotateTransform)mainSwap.RenderTransform).Angle,
                     250, ease: new ModAnimation.AniEaseOutFluent(ModAnimation.AniEasePower.ExtraStrong)),
                 "MyCard Swap " + uuid, true);
         }

@@ -52,7 +52,7 @@ public abstract class CommandArgument<TValue> : CommandArgument
     /// <returns>对应类型的参数值</returns>
     protected abstract TValue ParseValueText();
 
-    private bool _isValueParsed = false;
+    private StrongBox<TValue>? _value;
 
     /// <summary>
     /// 参数值
@@ -61,32 +61,28 @@ public abstract class CommandArgument<TValue> : CommandArgument
     {
         get
         {
-            if (_isValueParsed) return field;
-            _isValueParsed = true;
-            return field = ParseValueText();
+            if (_value is { } cached)
+                return cached.Value;
+            var parsedValue = ParseValueText();
+            _value = new StrongBox<TValue>(parsedValue);
+            return parsedValue;
         }
-        protected init
-        {
-            field = value;
-            _isValueParsed = true;
-        }
-    } = default!;
+        protected init { _value = new StrongBox<TValue>(value); }
+    }
 
-    public override bool TryCastValue<T>([NotNullWhen(true)] out T value)
+    public override bool TryCastValue<T>([NotNullWhen(true)] out T? value)
     {
         if (Value is T v)
         {
             value = v;
             return true;
         }
-        value = default!;
         if (typeof(T) == typeof(string))
         {
-            Unsafe.As<T, string>(ref value) = ValueText;
-#pragma warning disable CS8762 // The analyzer sucks.
+            value = (T)(object)ValueText;
             return true;
-#pragma warning restore CS8762
         }
+        value = default;
         return false;
     }
 }

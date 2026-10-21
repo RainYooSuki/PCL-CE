@@ -51,8 +51,8 @@ public partial class MyMsgAuthServer
         ModAnimation.AniStart(
             new[]
         {
-            ModAnimation.AaColor(ModMain.frmMain.PanMsgBackground, BlurBorder.BackgroundProperty,
-                new ModBase.MyColor(90d, 0d, 0d, 0d) - ModMain.frmMain.PanMsgBackground.Background, 200),
+            ModAnimation.AaColor(ModMain.FrmMainRequired.PanMsgBackground, BlurBorder.BackgroundProperty,
+                new ModBase.MyColor(90d, 0d, 0d, 0d) - ModMain.FrmMainRequired.PanMsgBackground.Background, 200),
             ModAnimation.AaOpacity(this, 1d, 120, 60),
             ModAnimation.AaDouble(i => TransformPos.Y += (double)i, -TransformPos.Y, 300, 60,
                 new ModAnimation.AniEaseOutBack(ModAnimation.AniEasePower.Weak)),
@@ -91,9 +91,9 @@ public partial class MyMsgAuthServer
             ModAnimation.AaCode(() =>
             {
                 if (!ModMain.WaitingMyMsgBox.Any())
-                    ModAnimation.AniStart(ModAnimation.AaColor(ModMain.frmMain.PanMsgBackground,
+                    ModAnimation.AniStart(ModAnimation.AaColor(ModMain.FrmMainRequired.PanMsgBackground,
                         BlurBorder.BackgroundProperty,
-                        new ModBase.MyColor(0d, 0d, 0d, 0d) - ModMain.frmMain.PanMsgBackground.Background, 200,
+                        new ModBase.MyColor(0d, 0d, 0d, 0d) - ModMain.FrmMainRequired.PanMsgBackground.Background, 200,
                         ease: new ModAnimation.AniEaseOutFluent(ModAnimation.AniEasePower.Weak)));
             }, 30),
             ModAnimation.AaOpacity(this, -Opacity, 80, 20),
@@ -111,7 +111,7 @@ public partial class MyMsgAuthServer
         try
         {
             if (e.LeftButton == MouseButtonState.Pressed && e.GetPosition(ShapeLine).Y <= 2d)
-                ModMain.frmMain.DragMove();
+                ModMain.FrmMainRequired.DragMove();
         }
         catch (Exception ex)
         {

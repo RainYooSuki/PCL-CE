@@ -18,7 +18,7 @@ public partial class PageLoginMs
     private void BtnBack_Click(object sender, EventArgs e)
     {
         ProfileService.IsCreatingProfile = false;
-        ModBase.RunInUi(() => ModMain.frmLaunchLeft.RefreshPage(true));
+        ModBase.RunInUi(() => ModMain.FrmLaunchLeftRequired.RefreshPage(true));
     }
 
     private void BtnLogin_Click(object sender, EventArgs e)
@@ -43,14 +43,14 @@ public partial class PageLoginMs
                 if (ModLaunch.mcLoginMsLoader.State == ModBase.LoadState.Finished)
                 {
                     loginSucceeded = true;
-                    ModBase.RunInUi(() => ModMain.frmLaunchLeft.RefreshPage(true));
+                    ModBase.RunInUi(() => ModMain.FrmLaunchLeftRequired.RefreshPage(true));
                 }
                 else if (ModLaunch.mcLoginMsLoader.State == ModBase.LoadState.Aborted)
                     throw new ThreadInterruptedException();
-                else if (ModLaunch.mcLoginMsLoader.Error is null)
+                else if (ModLaunch.mcLoginMsLoader.Error is not { } loginError)
                     throw new InvalidOperationException(Lang.Text("Launch.Account.Microsoft.Error.Unknown"));
                 else
-                    throw ModLaunch.mcLoginMsLoader.Error;
+                    throw loginError;
             }
             catch (ThreadInterruptedException ex)
             {

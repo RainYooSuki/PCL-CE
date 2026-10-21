@@ -43,26 +43,26 @@ public partial class TaskModel : ObservableObject
     /// </summary>
     public required Action? OnCancel { private get; init; }
 
+    private RelayCommand? _cancelCommand;
+
     /// <summary>
     /// 取消任务命令
     /// </summary>
-    public RelayCommand Cancel
-    {
-        get => field ??= new RelayCommand(OnCancel ?? _EmptyAction, () => OnCancel is not null);
-    } = null!;
+    public RelayCommand Cancel =>
+        _cancelCommand ??= new RelayCommand(OnCancel ?? _EmptyAction, () => OnCancel is not null);
 
     /// <summary>
     /// 暂停任务时触发的事件，值为 <see langword="null"/> 表示不支持暂停
     /// </summary>
     public required Action? OnPause { private get; init; }
 
+    private RelayCommand? _pauseCommand;
+
     /// <summary>
     /// 暂停任务命令
     /// </summary>
-    public RelayCommand Pause
-    {
-        get => field ??= new RelayCommand(OnPause ?? _EmptyAction, () => OnPause is not null);
-    } = null!;
+    public RelayCommand Pause =>
+        _pauseCommand ??= new RelayCommand(OnPause ?? _EmptyAction, () => OnPause is not null);
 
     /// <summary>
     /// 任务是否为任务组，即是否存在子任务

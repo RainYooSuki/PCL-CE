@@ -131,7 +131,7 @@ public static class ProfileUi
         var completion = new TaskCompletionSource<AuthorizeResult?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var converter = new ModMain.MyMsgBoxConverter
         {
-            Content = JsonSerializer.SerializeToNode(context.Data, JsonCompat.SerializerOptions)!.AsObject(),
+            Content = JsonSerializer.SerializeToNode(context.Data, JsonCompat.SerializerOptions) as JsonObject ?? new JsonObject(),
             ForceWait = true,
             Type = ModMain.MyMsgBoxType.Login,
             DeviceCodePoll = (_, pollToken) => context.PollAsync(pollToken),
@@ -209,7 +209,7 @@ public static class ProfileUi
                 PageLoginAuth.IsOAuthSupportedAsync(server).GetAwaiter().GetResult();
             PageLoginAuth.draggedAuthServer = server;
         }
-        ModBase.RunInUi(() => ModMain.frmLaunchLeft.RefreshPage(true, type));
+        ModBase.RunInUi(() => ModMain.FrmLaunchLeftRequired.RefreshPage(true, type));
     }
 
     private static List<IMyRadio> _GetAvailableProfileSelection() =>
@@ -259,7 +259,7 @@ public static class ProfileUi
                     ProfileService.Update(profile, updated);
                     ProfileService.Select(updated);
                     HintService.Hint(Lang.Text("Launch.Account.Profile.EditPlayerId.Success", updated.UserName), HintType.Success);
-                    ModBase.RunInUi(() => { ModMain.frmLoginProfileSkin?.Reload(); ModMain.frmLaunchLeft.RefreshPage(true); });
+                    ModBase.RunInUi(() => { ModMain.frmLoginProfileSkin?.Reload(); ModMain.FrmLaunchLeftRequired.RefreshPage(true); });
                 }
                 catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Forbidden)
                 {
@@ -421,7 +421,7 @@ public static class ProfileUi
         if (profile.ProfileType != ProfileType.Offline) return string.Empty;
         if (string.IsNullOrWhiteSpace(profile.UserName)) return Lang.Text("Launch.Account.Profile.Validation.EmptyUsername");
         if (profile.UserName.Contains('"')) return Lang.Text("Launch.Account.Profile.Validation.QuoteInUsername");
-        if (ModInstanceList.McMcInstanceSelected is not null && ModInstanceList.McMcInstanceSelected.Info.Drop >= 203 && profile.UserName.Trim().Length > 16)
+        if (ModInstanceList.McMcInstanceSelected is not null && ModInstanceList.McMcInstanceSelectedRequired.Info.Drop >= 203 && profile.UserName.Trim().Length > 16)
             return Lang.Text("Launch.Account.Profile.Validation.UsernameTooLong");
         return string.Empty;
     }
@@ -488,7 +488,7 @@ public static class ProfileUi
                     }
                     var json = (JsonObject)ModBase.GetJson(result);
                     var active = json["skins"]?.AsArray().FirstOrDefault(s => s?["state"]?.ToString() == "ACTIVE")?.AsObject();
-                    if (active?["url"] is not null) MySkin.ReloadCache(active["url"]!.ToString(), latestProfile.Uuid);
+                    if (active?["url"]?.ToString() is { } activeSkinUrl) MySkin.ReloadCache(activeSkinUrl, latestProfile.Uuid);
                     else throw new InvalidDataException(json["errorMessage"]?.ToString() ?? result);
                     break;
                 }

@@ -23,7 +23,7 @@ public partial class MyMsgInput
             LabTitle.Text = converter.Title;
             LabText.Text = converter.Text;
             PanText.Visibility = string.IsNullOrEmpty(converter.Text) ? Visibility.Collapsed : Visibility.Visible;
-            TextArea.Text = (string)converter.Content;
+            TextArea.Text = converter.Content as string ?? "";
             TextArea.HintText = converter.HintText;
             TextArea.ValidateRules = converter.ValidateRules;
             ConfigurePrimaryButton(converter.Button1, converter.IsWarn);
@@ -76,10 +76,10 @@ public partial class MyMsgInput
             // 动画
             Opacity = 0d;
             ModAnimation.AniStart(
-                ModAnimation.AaColor(ModMain.frmMain.PanMsgBackground, BlurBorder.BackgroundProperty,
+                ModAnimation.AaColor(ModMain.FrmMainRequired.PanMsgBackground, BlurBorder.BackgroundProperty,
                     (myConverter.IsWarn
                         ? new ModBase.MyColor(140d, 80d, 0d, 0d)
-                        : new ModBase.MyColor(90d, 0d, 0d, 0d)) - ModMain.frmMain.PanMsgBackground.Background, 200),
+                        : new ModBase.MyColor(90d, 0d, 0d, 0d)) - ModMain.FrmMainRequired.PanMsgBackground.Background, 200),
                 "PanMsgBackground Background");
             ModAnimation.AniStart(
                 new[]
@@ -116,9 +116,9 @@ public partial class MyMsgInput
             ModAnimation.AaCode(() =>
             {
                 if (!ModMain.WaitingMyMsgBox.Any())
-                    ModAnimation.AniStart(ModAnimation.AaColor(ModMain.frmMain.PanMsgBackground,
+                    ModAnimation.AniStart(ModAnimation.AaColor(ModMain.FrmMainRequired.PanMsgBackground,
                         BlurBorder.BackgroundProperty,
-                        new ModBase.MyColor(0d, 0d, 0d, 0d) - ModMain.frmMain.PanMsgBackground.Background, 200,
+                        new ModBase.MyColor(0d, 0d, 0d, 0d) - ModMain.FrmMainRequired.PanMsgBackground.Background, 200,
                         ease: new ModAnimation.AniEaseOutFluent(ModAnimation.AniEasePower.Weak)));
             }, 30),
             ModAnimation.AaOpacity(this, -Opacity, 80, 20),
@@ -130,7 +130,7 @@ public partial class MyMsgInput
         }, "MyMsgBox " + uuid);
     }
 
-    public void Btn1_Click(object sender, MouseButtonEventArgs e)
+    public void Btn1_Click(object? sender, EventArgs? e)
     {
         TextArea.Validate(); // #5773
         if (myConverter.IsExited || !TextArea.IsValidated)
@@ -140,7 +140,7 @@ public partial class MyMsgInput
         Close();
     }
 
-    public void Btn2_Click(object sender, MouseButtonEventArgs e)
+    public void Btn2_Click(object? sender, EventArgs? e)
     {
         if (myConverter.IsExited)
             return;
@@ -160,7 +160,7 @@ public partial class MyMsgInput
         {
             if (e.LeftButton == MouseButtonState.Pressed)
                 if (e.GetPosition(ShapeLine).Y <= 2d)
-                    ModMain.frmMain.DragMove();
+                    ModMain.FrmMainRequired.DragMove();
         }
         catch (Exception ex)
         {

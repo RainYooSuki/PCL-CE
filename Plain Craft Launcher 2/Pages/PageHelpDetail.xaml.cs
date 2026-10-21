@@ -9,12 +9,13 @@ public partial class PageHelpDetail : IRefreshable
 {
     internal sealed record HelpContent(string SourcePath, string Title, string Xaml);
 
-    private HelpContent _content = null!;
+    private HelpContent _content;
 
     public string Title => _content.Title;
 
     internal PageHelpDetail(HelpContent content)
     {
+        _content = content;
         InitializeComponent();
         Loaded += (_, _) => PanBack.ScrollToHome();
         ApplyContent(content);
@@ -31,8 +32,10 @@ public partial class PageHelpDetail : IRefreshable
         var json = ModMain.ArgumentReplace(File.ReadAllText(jsonPath), SecurityElement.Escape);
         using var document = JsonDocument.Parse(json);
         if (!document.RootElement.TryGetProperty("Title", out var titleElement) ||
-            titleElement.ValueKind != JsonValueKind.String ||
-            string.IsNullOrWhiteSpace(titleElement.GetString()))
+            titleElement.ValueKind != JsonValueKind.String)
+            throw new ArgumentException("帮助 JSON 中未找到有效的 Title 项", nameof(jsonPath));
+        var title = titleElement.GetString();
+        if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("帮助 JSON 中未找到有效的 Title 项", nameof(jsonPath));
 
         var xamlPath = Path.ChangeExtension(jsonPath, ".xaml");
@@ -43,7 +46,7 @@ public partial class PageHelpDetail : IRefreshable
         if (string.IsNullOrWhiteSpace(xaml))
             throw new InvalidDataException("帮助 XAML 文件为空");
 
-        return new HelpContent(jsonPath, titleElement.GetString()!, xaml);
+        return new HelpContent(jsonPath, title, xaml);
     }
 
     private void ApplyContent(HelpContent content)
@@ -65,7 +68,7 @@ public partial class PageHelpDetail : IRefreshable
         PanCustom.Children.Clear();
         PanCustom.Children.Add(element);
         if (ModMain.frmMain?.pageCurrent.page == FormMain.PageType.HelpDetail)
-            ModMain.frmMain.PageNameRefresh();
+            ModMain.FrmMainRequired.PageNameRefresh();
     }
 
     public void Refresh()

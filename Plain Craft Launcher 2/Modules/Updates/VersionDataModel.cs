@@ -2,11 +2,10 @@ namespace PCL;
 
 public class VersionDataModel
 {
-    public string Changelog { get; set; }
-    public string Sha256 { get; set; }
-    public string Source { get; set; }
-    public int VersionCode { get; set; }
-    public string VersionName { get; set; }
+    public string Changelog { get; set; } = "";
+    public string Sha256 { get; set; } = "";
+    public string Source { get; set; } = "";
+    public string VersionName { get; set; } = "";
 
     /// <summary>
     /// Release 对应源码提交的短 SHA；旧更新源可以为空。

@@ -15,17 +15,15 @@ namespace PCL.Core.Test.IO.Storage.Cache;
 [TestClass]
 public class CacheSystemIntegrationTest
 {
-    private CacheService _cache = null!;
-    private CacheOptions _options = null!;
-    private string _testCacheDir = null!;
+    private readonly CacheService _cache;
+    private readonly string _testCacheDir;
 
-    [TestInitialize]
-    public async Task Setup()
+    public CacheSystemIntegrationTest()
     {
         _testCacheDir = Path.Combine(Path.GetTempPath(), "pcl_integration_test_" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(_testCacheDir);
 
-        _options = new CacheOptions
+        var options = new CacheOptions
         {
             DatabasePath = Path.Combine(_testCacheDir, "cache.db"),
             FileCacheRoot = Path.Combine(_testCacheDir, "files"),
@@ -34,17 +32,19 @@ public class CacheSystemIntegrationTest
             EnableCompression = false
         };
 
-        _cache = new CacheService(_options);
+        _cache = new CacheService(options);
+    }
+
+    [TestInitialize]
+    public async Task Setup()
+    {
         await _cache.InitializeAsync();
     }
 
     [TestCleanup]
     public async Task Cleanup()
     {
-        if (_cache != null)
-        {
-            await _cache.DisposeAsync();
-        }
+        await _cache.DisposeAsync();
 
         if (Directory.Exists(_testCacheDir))
         {

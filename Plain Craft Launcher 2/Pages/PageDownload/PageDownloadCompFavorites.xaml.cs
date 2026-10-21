@@ -82,7 +82,7 @@ public partial class PageDownloadCompFavorites
 
     private List<string> LoaderInput()
     {
-        List<string> targetList = null;
+        var targetList = new List<string>();
         try
         {
             targetList = CurrentFavTarget.Favs.Distinct().ToList();
@@ -92,7 +92,7 @@ public partial class PageDownloadCompFavorites
             ModBase.Log(ex, "[Favorites] 加载收藏夹列表时出错");
         }
 
-        return (List<string>)targetList.Clone(); // 复制而不是直接引用！
+        return new List<string>(targetList); // 复制而不是直接引用！
     }
 
     private void CompFavoritesGet(ModLoader.LoaderTask<List<string>, List<ModComp.CompProject>> task)
@@ -106,9 +106,9 @@ public partial class PageDownloadCompFavorites
 
     public class CompListItemContainer // 用来存储自动依据类型生成的卡片及其相关信息
     {
-        public MyCard Card { get; set; }
-        public StackPanel ContentList { get; set; }
-        public string Title { get; set; }
+        public required MyCard Card { get; set; }
+        public required StackPanel ContentList { get; set; }
+        public string Title { get; set; } = "";
         public int CompType { get; set; }
     }
 
@@ -314,7 +314,7 @@ public partial class PageDownloadCompFavorites
         // ---操作逻辑---
         // 右键查看详细信息界面
         if (compItem.Tag is ModComp.CompProject)
-            compItem.MouseRightButtonUp += (_, _) => ModMain.frmMain.PageChange(
+            compItem.MouseRightButtonUp += (_, _) => ModMain.FrmMainRequired.PageChange(
                 new FormMain.PageStackData
                 {
                     page = FormMain.PageType.CompDetail,
@@ -423,9 +423,7 @@ public partial class PageDownloadCompFavorites
         {
             case ModBase.LoadState.Failed:
             {
-                var errorMessage = "";
-                if (loader.Error is not null)
-                    errorMessage = loader.Error.Message;
+                var errorMessage = loader.Error?.Message ?? "";
                 if (errorMessage.Contains(Lang.Text("Common.Error.InvalidJson")))
                 {
                     ModBase.Log("[Download] 下载的工程列表 JSON 文件损坏，已自动重试", ModBase.LogLevel.Debug);
@@ -655,8 +653,8 @@ public partial class PageDownloadCompFavorites
 
             checkLoader.Start(selectedItemList.Select(i => ((ModComp.CompProject)i.Tag).Id).ToList());
             ModLoader.LoaderTaskbarAdd(checkLoader);
-            ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-            ModMain.frmMain.BtnExtraDownload.Ribble();
+            ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+            ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
             Items_SetSelectAll(false);
         }
         catch (Exception ex)
@@ -692,7 +690,7 @@ public partial class PageDownloadCompFavorites
             CurrentFavTarget.Favs.Remove(((ModComp.CompProject)item.Tag).Id);
             ModComp.CompFavorites.Save();
             if (!compItemList.Any())
-                ModMain.frmDownloadCompFavorites.PageLoaderRestart();
+                ModMain.FrmDownloadCompFavoritesRequired.PageLoaderRestart();
         }
         catch (Exception ex)
         {

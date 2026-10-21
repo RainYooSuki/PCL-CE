@@ -24,7 +24,7 @@ public partial class PageSelectRight
     private bool isRefreshing;
 
     private DateTime lastInputTime = DateTime.MinValue;
-    private DispatcherTimer reloadTimer;
+    private DispatcherTimer? reloadTimer;
 
     // 窗口属性
     /// <summary>
@@ -60,26 +60,31 @@ public partial class PageSelectRight
 
         isRefreshing = false;
 
+        if (reloadTimer is not { } timer)
+            return;
+
         // 动态调整延迟时间
         if (string.IsNullOrWhiteSpace(PanVerSearchBox.Text))
         {
-            if (reloadTimer.Interval.TotalMilliseconds != quickDelay)
-                reloadTimer.Interval = TimeSpan.FromMilliseconds(quickDelay);
+            if (timer.Interval.TotalMilliseconds != quickDelay)
+                timer.Interval = TimeSpan.FromMilliseconds(quickDelay);
         }
-        else if (reloadTimer.Interval.TotalMilliseconds != normalDelay)
+        else if (timer.Interval.TotalMilliseconds != normalDelay)
         {
-            reloadTimer.Interval = TimeSpan.FromMilliseconds(normalDelay);
+            timer.Interval = TimeSpan.FromMilliseconds(normalDelay);
         }
 
 
-        if (!reloadTimer.IsEnabled) reloadTimer.Start();
+        if (!timer.IsEnabled) timer.Start();
     }
 
     private void ReloadTimer_Tick(object sender, EventArgs e)
     {
+        if (reloadTimer is not { } timer)
+            return;
         // 检查是否超过当前设定的延迟时间没有新输入
         var elapsed = (DateTime.Now - lastInputTime).TotalMilliseconds;
-        var currentDelay = reloadTimer.Interval.TotalMilliseconds;
+        var currentDelay = timer.Interval.TotalMilliseconds;
 
         if (elapsed >= currentDelay && ModInstanceList.mcInstanceListLoader.State == ModBase.LoadState.Finished &&
             !isRefreshing)
@@ -92,17 +97,17 @@ public partial class PageSelectRight
                 McInstanceListUI(ModInstanceList.mcInstanceListLoader);
                 isRefreshing = false;
             }));
-            reloadTimer.Stop();
+            timer.Stop();
         }
     }
 
     private void PageSelectRight_Unloaded(object sender, RoutedEventArgs e)
     {
         // 清理计时器
-        if (reloadTimer is not null)
+        if (reloadTimer is { } timer)
         {
-            reloadTimer.Stop();
-            reloadTimer.Tick -= ReloadTimer_Tick;
+            timer.Stop();
+            timer.Tick -= ReloadTimer_Tick;
             reloadTimer = null;
         }
     }
@@ -402,10 +407,10 @@ public partial class PageSelectRight
         newItem.Tags = tags;
         try
         {
-            if (mcInstance.Logo.EndsWith(@"PCL\Logo.png"))
+            if (mcInstance.Logo?.EndsWith(@"PCL\Logo.png") == true)
                 newItem.Logo = mcInstance.PathInstance + @"PCL\Logo.png"; // 修复老版本中，存储的自定义 Logo 使用完整路径，导致移动后无法加载的 Bug
             else
-                newItem.Logo = mcInstance.Logo;
+                newItem.Logo = mcInstance.Logo ?? "";
         }
         catch (Exception ex)
         {
@@ -476,12 +481,12 @@ public partial class PageSelectRight
             btnCont.Click += (_, _) =>
             {
                 PageInstanceLeft.McInstance = version;
-                ModMain.frmMain.PageChange(FormMain.PageType.InstanceSetup);
+                ModMain.FrmMainRequired.PageChange(FormMain.PageType.InstanceSetup);
             };
             sender.MouseRightButtonUp += (_, _) =>
             {
                 PageInstanceLeft.McInstance = version;
-                ModMain.frmMain.PageChange(FormMain.PageType.InstanceSetup);
+                ModMain.FrmMainRequired.PageChange(FormMain.PageType.InstanceSetup);
             };
             sender.Buttons = new[] { btnStar, btnOpenFolder, btnDel, btnCont };
         }
@@ -510,8 +515,8 @@ public partial class PageSelectRight
         {
             // 正常实例
             ModInstanceList.McMcInstanceSelected = instance;
-            States.Game.SelectedInstance = ModInstanceList.McMcInstanceSelected.Name;
-            ModMain.frmMain.PageBack();
+            States.Game.SelectedInstance = ModInstanceList.McMcInstanceSelectedRequired.Name;
+            ModMain.FrmMainRequired.PageBack();
         }
         else
         {
@@ -522,7 +527,7 @@ public partial class PageSelectRight
 
     private void BtnDownload_Click(object sender, MouseButtonEventArgs e)
     {
-        ModMain.frmMain.PageChange(FormMain.PageType.Download, FormMain.PageSubType.DownloadInstall);
+        ModMain.FrmMainRequired.PageChange(FormMain.PageType.Download, FormMain.PageSubType.DownloadInstall);
     }
 
     // 修改此代码时，同时修改 PageInstanceOverall 中的代码
@@ -581,7 +586,7 @@ public partial class PageSelectRight
                         Lang.Number(parent.Children.Count - 2, "N0")); // 有一个占位符
                     parent.Children.Remove(item);
                     if (ModInstanceList.McMcInstanceSelected is not null && (mcInstance.PathInstance ?? "") ==
-                        (ModInstanceList.McMcInstanceSelected.PathInstance ?? ""))
+                        (ModInstanceList.McMcInstanceSelectedRequired.PathInstance ?? ""))
                         // 删除当前实例就更改选择
                         ModInstanceList.McMcInstanceSelected = (McInstance)((MyListItem)parent.Children[0]).Tag;
                     ModLoader.LoaderFolderRun(ModInstanceList.mcInstanceListLoader, ModFolder.mcFolderSelected,

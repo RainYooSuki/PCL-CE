@@ -22,7 +22,7 @@ public class ModSetup
 
         // === Launch ===
         Config.Launch.MemoryAllocationModeConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => LaunchRamType((int)e.Value!)));
+            e => ApplyInt(e, LaunchRamType)));
         States.Game.SelectedFolderConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
             e => LaunchFolderSelect((string)(e.Value ?? ""))));
         States.Game.SelectedInstanceConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
@@ -30,33 +30,33 @@ public class ModSetup
 
         // === Tool ===
         Config.Download.ThreadLimitConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => ToolDownloadThread((int)e.Value!)));
+            e => ApplyInt(e, ToolDownloadThread)));
         Config.Download.FileConnectionLimitConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => ToolDownloadFileConnection((int)e.Value!)));
+            e => ApplyInt(e, ToolDownloadFileConnection)));
         Config.Download.SpeedLimitConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => ToolDownloadSpeed((int)e.Value!)));
+            e => ApplyInt(e, ToolDownloadSpeed)));
 
         // === UI - Launcher ===
         Config.Preference.Theme.WindowOpacityConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiLauncherTransparent((int)e.Value!)));
+            e => ApplyInt(e, UiLauncherTransparent)));
         Config.Preference.Theme.ThemeSelectedConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiLauncherTheme((int)e.Value!)));
+            e => ApplyInt(e, UiLauncherTheme)));
         Config.Preference.Background.BackgroundColorfulConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiBackgroundColorful((bool)e.Value!)));
+            e => ApplyBool(e, UiBackgroundColorful)));
         Config.Preference.LockWindowSizeConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiLockWindowSize((bool)e.Value!)));
+            e => ApplyBool(e, UiLockWindowSize)));
 
         // UI - Video Background
         Config.Preference.Background.AutoPauseVideoConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiAutoPauseVideo((bool)e.Value!)));
+            e => ApplyBool(e, UiAutoPauseVideo)));
 
         // UI - Background Image
         Config.Preference.Background.WallpaperOpacityConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiBackgroundOpacity((int)e.Value!)));
+            e => ApplyInt(e, UiBackgroundOpacity)));
         Config.Preference.Background.WallpaperBlurRadiusConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiBackgroundBlur((int)e.Value!)));
+            e => ApplyInt(e, UiBackgroundBlur)));
         Config.Preference.Background.WallpaperSuitModeConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiBackgroundSuit((int)e.Value!)));
+            e => ApplyInt(e, UiBackgroundSuit)));
 
         // UI - Font
         Config.Preference.FontConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
@@ -64,35 +64,35 @@ public class ModSetup
 
         // UI - Homepage
         Config.Preference.Homepage.TypeConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiCustomType((int)e.Value!)));
+            e => ApplyInt(e, UiCustomType)));
 
         // UI - Blur
         Config.Preference.Blur.IsEnabledConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiBlur((bool)e.Value!)));
+            e => ApplyBool(e, UiBlur)));
         Config.Preference.Blur.RadiusConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiBlurValue((int)e.Value!)));
+            e => ApplyInt(e, UiBlurValue)));
         Config.Preference.Blur.SamplingRateConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiBlurSamplingRate((int)e.Value!)));
+            e => ApplyInt(e, UiBlurSamplingRate)));
         Config.Preference.Blur.KernelTypeConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiBlurType((int)e.Value!)));
+            e => ApplyInt(e, UiBlurType)));
 
         // UI - Title Bar
         Config.Preference.WindowTitleTypeConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiLogoType((int)e.Value!)));
+            e => ApplyInt(e, UiLogoType)));
         Config.Preference.WindowTitleCustomTextConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
             e => UiLogoText((string)(e.Value ?? ""))));
         Config.Preference.TopBarLeftAlignConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => UiLogoLeft((bool)e.Value!)));
+            e => ApplyBool(e, UiLogoLeft)));
 
         // === System ===
         Config.Debug.EnabledConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => SystemDebugMode((bool)e.Value!)));
+            e => ApplyBool(e, SystemDebugMode)));
         Config.Debug.AnimationSpeedConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => SystemDebugAnim((int)e.Value!)));
+            e => ApplyInt(e, SystemDebugAnim)));
         Config.Network.HttpProxy.CustomAddressConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
             e => SystemHttpProxy((string)(e.Value ?? ""))));
         Config.Network.HttpProxy.TypeConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => SystemHttpProxyType((int)e.Value!)));
+            e => ApplyInt(e, SystemHttpProxyType)));
         Config.Network.HttpProxy.CustomUsernameConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
             e => SystemHttpProxyCustomUsername((string)(e.Value ?? ""))));
         Config.Network.HttpProxy.CustomPasswordConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
@@ -100,9 +100,21 @@ public class ModSetup
 
         // === Version ===
         Config.Instance.MemorySolutionConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => VersionRamType((int)e.Value!)));
+            e => ApplyInt(e, VersionRamType)));
         Config.InstanceAuth.LoginRequirementSolutionConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
-            e => VersionServerLogin((int)e.Value!)));
+            e => ApplyInt(e, VersionServerLogin)));
+    }
+
+    private static void ApplyInt(ConfigEventArgs e, Action<int> apply)
+    {
+        if (e.Value is int value)
+            apply(value);
+    }
+
+    private static void ApplyBool(ConfigEventArgs e, Action<bool> apply)
+    {
+        if (e.Value is bool value)
+            apply(value);
     }
 
     /// <summary>
@@ -189,7 +201,7 @@ public class ModSetup
     {
         if (ModMain.frmSetupLaunch is null)
             return;
-        ModMain.frmSetupLaunch.RamType(type);
+        ModMain.FrmSetupLaunchRequired.RamType(type);
     }
 
     #endregion
@@ -226,7 +238,7 @@ public class ModSetup
     // 启动器
     public static void UiLauncherTransparent(int value)
     {
-        ModMain.frmMain.Opacity = value / 1000d + 0.4d;
+        ModMain.FrmMainRequired.Opacity = value / 1000d + 0.4d;
     }
 
     public static void UiLauncherTheme(int value)
@@ -242,9 +254,9 @@ public class ModSetup
     public static void UiLockWindowSize(bool value)
     {
         if (value)
-            ModMain.frmMain.RemoveResizer();
+            ModMain.FrmMainRequired.RemoveResizer();
         else
-            ModMain.frmMain.AddResizer();
+            ModMain.FrmMainRequired.AddResizer();
     }
 
     // 视频背景
@@ -266,110 +278,110 @@ public class ModSetup
     // 背景图片
     public static void UiBackgroundOpacity(int value)
     {
-        ModMain.frmMain.ImgBack.Opacity = value / 1000d;
+        ModMain.FrmMainRequired.ImgBack.Opacity = value / 1000d;
     }
 
     public static void UiBackgroundBlur(int value)
     {
-        ModMain.frmMain.ImgBack.Effect = value == 0 ? null : new BlurEffect { Radius = value + 1 };
-        ModMain.frmMain.ImgBack.Margin = new Thickness(-(value + 1) / 1.8d);
+        ModMain.FrmMainRequired.ImgBack.Effect = value == 0 ? null : new BlurEffect { Radius = value + 1 };
+        ModMain.FrmMainRequired.ImgBack.Margin = new Thickness(-(value + 1) / 1.8d);
     }
 
     public static void UiBackgroundSuit(int value)
     {
-        if (ModMain.frmMain.ImgBack.Background is null)
+        if (ModMain.FrmMainRequired.ImgBack.Background is null)
             return;
-        var width = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Width;
-        var height = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Height;
+        var width = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Width;
+        var height = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Height;
         if (value == 0)
         {
             // 智能：当图片较小时平铺，较大时适应
-            if (width < ModMain.frmMain.PanMain.ActualWidth / 2d && height < ModMain.frmMain.PanMain.ActualHeight / 2d)
+            if (width < ModMain.FrmMainRequired.PanMain.ActualWidth / 2d && height < ModMain.FrmMainRequired.PanMain.ActualHeight / 2d)
                 value = 4; // 平铺
             else
                 value = 2; // 适应
         }
 
-        ((ImageBrush)ModMain.frmMain.ImgBack.Background).TileMode = TileMode.None;
-        ((ImageBrush)ModMain.frmMain.ImgBack.Background).Viewport = new Rect(0d, 0d, 1d, 1d);
-        ((ImageBrush)ModMain.frmMain.ImgBack.Background).ViewportUnits = BrushMappingMode.RelativeToBoundingBox;
+        ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).TileMode = TileMode.None;
+        ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).Viewport = new Rect(0d, 0d, 1d, 1d);
+        ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ViewportUnits = BrushMappingMode.RelativeToBoundingBox;
         switch (value)
         {
             case 1: // 居中
             {
-                ModMain.frmMain.ImgBack.HorizontalAlignment = HorizontalAlignment.Center;
-                ModMain.frmMain.ImgBack.VerticalAlignment = VerticalAlignment.Center;
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).Stretch = Stretch.None;
-                ModMain.frmMain.ImgBack.Width = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Width;
-                ModMain.frmMain.ImgBack.Height = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Height;
+                ModMain.FrmMainRequired.ImgBack.HorizontalAlignment = HorizontalAlignment.Center;
+                ModMain.FrmMainRequired.ImgBack.VerticalAlignment = VerticalAlignment.Center;
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).Stretch = Stretch.None;
+                ModMain.FrmMainRequired.ImgBack.Width = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Width;
+                ModMain.FrmMainRequired.ImgBack.Height = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Height;
                 break;
             }
             case 2: // 适应
             {
-                ModMain.frmMain.ImgBack.HorizontalAlignment = HorizontalAlignment.Stretch;
-                ModMain.frmMain.ImgBack.VerticalAlignment = VerticalAlignment.Stretch;
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).Stretch = Stretch.UniformToFill;
-                ModMain.frmMain.ImgBack.Width = double.NaN;
-                ModMain.frmMain.ImgBack.Height = double.NaN;
+                ModMain.FrmMainRequired.ImgBack.HorizontalAlignment = HorizontalAlignment.Stretch;
+                ModMain.FrmMainRequired.ImgBack.VerticalAlignment = VerticalAlignment.Stretch;
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).Stretch = Stretch.UniformToFill;
+                ModMain.FrmMainRequired.ImgBack.Width = double.NaN;
+                ModMain.FrmMainRequired.ImgBack.Height = double.NaN;
                 break;
             }
             case 3: // 拉伸
             {
-                ModMain.frmMain.ImgBack.HorizontalAlignment = HorizontalAlignment.Stretch;
-                ModMain.frmMain.ImgBack.VerticalAlignment = VerticalAlignment.Stretch;
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).Stretch = Stretch.Fill;
-                ModMain.frmMain.ImgBack.Width = double.NaN;
-                ModMain.frmMain.ImgBack.Height = double.NaN;
+                ModMain.FrmMainRequired.ImgBack.HorizontalAlignment = HorizontalAlignment.Stretch;
+                ModMain.FrmMainRequired.ImgBack.VerticalAlignment = VerticalAlignment.Stretch;
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).Stretch = Stretch.Fill;
+                ModMain.FrmMainRequired.ImgBack.Width = double.NaN;
+                ModMain.FrmMainRequired.ImgBack.Height = double.NaN;
                 break;
             }
             case 4: // 平铺
             {
-                ModMain.frmMain.ImgBack.HorizontalAlignment = HorizontalAlignment.Stretch;
-                ModMain.frmMain.ImgBack.VerticalAlignment = VerticalAlignment.Stretch;
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).Stretch = Stretch.None;
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).TileMode = TileMode.Tile;
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).Viewport = new Rect(0d, 0d,
-                    ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Width,
-                    ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Height);
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).ViewportUnits = BrushMappingMode.Absolute;
-                ModMain.frmMain.ImgBack.Width = double.NaN;
-                ModMain.frmMain.ImgBack.Height = double.NaN;
+                ModMain.FrmMainRequired.ImgBack.HorizontalAlignment = HorizontalAlignment.Stretch;
+                ModMain.FrmMainRequired.ImgBack.VerticalAlignment = VerticalAlignment.Stretch;
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).Stretch = Stretch.None;
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).TileMode = TileMode.Tile;
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).Viewport = new Rect(0d, 0d,
+                    ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Width,
+                    ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Height);
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ViewportUnits = BrushMappingMode.Absolute;
+                ModMain.FrmMainRequired.ImgBack.Width = double.NaN;
+                ModMain.FrmMainRequired.ImgBack.Height = double.NaN;
                 break;
             }
             case 5: // 左上
             {
-                ModMain.frmMain.ImgBack.HorizontalAlignment = HorizontalAlignment.Left;
-                ModMain.frmMain.ImgBack.VerticalAlignment = VerticalAlignment.Top;
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).Stretch = Stretch.None;
-                ModMain.frmMain.ImgBack.Width = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Width;
-                ModMain.frmMain.ImgBack.Height = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Height;
+                ModMain.FrmMainRequired.ImgBack.HorizontalAlignment = HorizontalAlignment.Left;
+                ModMain.FrmMainRequired.ImgBack.VerticalAlignment = VerticalAlignment.Top;
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).Stretch = Stretch.None;
+                ModMain.FrmMainRequired.ImgBack.Width = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Width;
+                ModMain.FrmMainRequired.ImgBack.Height = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Height;
                 break;
             }
             case 6: // 右上
             {
-                ModMain.frmMain.ImgBack.HorizontalAlignment = HorizontalAlignment.Right;
-                ModMain.frmMain.ImgBack.VerticalAlignment = VerticalAlignment.Top;
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).Stretch = Stretch.None;
-                ModMain.frmMain.ImgBack.Width = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Width;
-                ModMain.frmMain.ImgBack.Height = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Height;
+                ModMain.FrmMainRequired.ImgBack.HorizontalAlignment = HorizontalAlignment.Right;
+                ModMain.FrmMainRequired.ImgBack.VerticalAlignment = VerticalAlignment.Top;
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).Stretch = Stretch.None;
+                ModMain.FrmMainRequired.ImgBack.Width = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Width;
+                ModMain.FrmMainRequired.ImgBack.Height = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Height;
                 break;
             }
             case 7: // 左下
             {
-                ModMain.frmMain.ImgBack.HorizontalAlignment = HorizontalAlignment.Left;
-                ModMain.frmMain.ImgBack.VerticalAlignment = VerticalAlignment.Bottom;
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).Stretch = Stretch.None;
-                ModMain.frmMain.ImgBack.Width = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Width;
-                ModMain.frmMain.ImgBack.Height = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Height;
+                ModMain.FrmMainRequired.ImgBack.HorizontalAlignment = HorizontalAlignment.Left;
+                ModMain.FrmMainRequired.ImgBack.VerticalAlignment = VerticalAlignment.Bottom;
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).Stretch = Stretch.None;
+                ModMain.FrmMainRequired.ImgBack.Width = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Width;
+                ModMain.FrmMainRequired.ImgBack.Height = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Height;
                 break;
             }
             case 8: // 右下
             {
-                ModMain.frmMain.ImgBack.HorizontalAlignment = HorizontalAlignment.Right;
-                ModMain.frmMain.ImgBack.VerticalAlignment = VerticalAlignment.Bottom;
-                ((ImageBrush)ModMain.frmMain.ImgBack.Background).Stretch = Stretch.None;
-                ModMain.frmMain.ImgBack.Width = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Width;
-                ModMain.frmMain.ImgBack.Height = ((ImageBrush)ModMain.frmMain.ImgBack.Background).ImageSource.Height;
+                ModMain.FrmMainRequired.ImgBack.HorizontalAlignment = HorizontalAlignment.Right;
+                ModMain.FrmMainRequired.ImgBack.VerticalAlignment = VerticalAlignment.Bottom;
+                ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).Stretch = Stretch.None;
+                ModMain.FrmMainRequired.ImgBack.Width = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Width;
+                ModMain.FrmMainRequired.ImgBack.Height = ((ImageBrush)ModMain.FrmMainRequired.ImgBack.Background).ImageSource.Height;
                 break;
             }
         }
@@ -401,53 +413,53 @@ public class ModSetup
         {
             case 0: // 无
             {
-                ModMain.frmSetupUI.PanCustomPreset.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.PanCustomLocal.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.PanCustomNet.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.HintCustom.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.HintCustomWarn.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.PanCustomPreset.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.PanCustomLocal.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.PanCustomNet.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.HintCustom.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.HintCustomWarn.Visibility = Visibility.Collapsed;
                 break;
             }
             case 1: // 本地
             {
-                ModMain.frmSetupUI.PanCustomPreset.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.PanCustomLocal.Visibility = Visibility.Visible;
-                ModMain.frmSetupUI.PanCustomNet.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.HintCustom.Visibility = Visibility.Visible;
-                ModMain.frmSetupUI.HintCustomWarn.Visibility =
+                ModMain.FrmSetupUIRequired.PanCustomPreset.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.PanCustomLocal.Visibility = Visibility.Visible;
+                ModMain.FrmSetupUIRequired.PanCustomNet.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.HintCustom.Visibility = Visibility.Visible;
+                ModMain.FrmSetupUIRequired.HintCustomWarn.Visibility =
                     States.Hint.UntrustedHomepage ? Visibility.Collapsed : Visibility.Visible;
-                ModMain.frmSetupUI.HintCustom.Text =
+                ModMain.FrmSetupUIRequired.HintCustom.Text =
                     Lang.Text("Setup.Ui.Homepage.LocalFile.Hint");
-                CustomEventService.SetEventType(ModMain.frmSetupUI.HintCustom, EventType.None);
+                CustomEventService.SetEventType(ModMain.FrmSetupUIRequired.HintCustom, EventType.None);
                 break;
             }
             case 2: // 联网
             {
-                ModMain.frmSetupUI.PanCustomPreset.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.PanCustomLocal.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.PanCustomNet.Visibility = Visibility.Visible;
-                ModMain.frmSetupUI.HintCustom.Visibility = Visibility.Visible;
-                ModMain.frmSetupUI.HintCustomWarn.Visibility =
+                ModMain.FrmSetupUIRequired.PanCustomPreset.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.PanCustomLocal.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.PanCustomNet.Visibility = Visibility.Visible;
+                ModMain.FrmSetupUIRequired.HintCustom.Visibility = Visibility.Visible;
+                ModMain.FrmSetupUIRequired.HintCustomWarn.Visibility =
                     States.Hint.UntrustedHomepage ? Visibility.Collapsed : Visibility.Visible;
-                ModMain.frmSetupUI.HintCustom.Text =
+                ModMain.FrmSetupUIRequired.HintCustom.Text =
                     Lang.Text("Setup.Ui.Homepage.NetUpdate.Hint");
-                CustomEventService.SetEventType(ModMain.frmSetupUI.HintCustom, EventType.OpenUrl);
-                CustomEventService.SetEventData(ModMain.frmSetupUI.HintCustom,
+                CustomEventService.SetEventType(ModMain.FrmSetupUIRequired.HintCustom, EventType.OpenUrl);
+                CustomEventService.SetEventData(ModMain.FrmSetupUIRequired.HintCustom,
                     "https://github.com/RainYooSuki/PCL-CE/discussions");
                 break;
             }
             case 3: // 预设
             {
-                ModMain.frmSetupUI.PanCustomPreset.Visibility = Visibility.Visible;
-                ModMain.frmSetupUI.PanCustomLocal.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.PanCustomNet.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.HintCustom.Visibility = Visibility.Collapsed;
-                ModMain.frmSetupUI.HintCustomWarn.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.PanCustomPreset.Visibility = Visibility.Visible;
+                ModMain.FrmSetupUIRequired.PanCustomLocal.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.PanCustomNet.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.HintCustom.Visibility = Visibility.Collapsed;
+                ModMain.FrmSetupUIRequired.HintCustomWarn.Visibility = Visibility.Collapsed;
                 break;
             }
         }
 
-        ModMain.frmSetupUI.CardCustom.TriggerForceResize();
+        ModMain.FrmSetupUIRequired.CardCustom.TriggerForceResize();
     }
 
     // 高级材质
@@ -456,7 +468,7 @@ public class ModSetup
         if (ModMain.frmSetupUI is null)
             return;
 
-        ModMain.frmSetupUI.PanBlurValue.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+        ModMain.FrmSetupUIRequired.PanBlurValue.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
         UiBlurValue(value ? Config.Preference.Blur.Radius : 0);
     }
 
@@ -483,51 +495,51 @@ public class ModSetup
         {
             case 0: // 无
             {
-                ModMain.frmMain.ShapeTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.BtnTitleHelp.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.ShapeHMCLTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.LabTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.ImageTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.CELogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.ShapeTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.BtnTitleHelp.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.ShapeHMCLTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.LabTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.ImageTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.CELogo.Visibility = Visibility.Collapsed;
                 if (ModMain.frmSetupUI is not null)
                 {
-                    ModMain.frmSetupUI.CheckLogoLeft.Visibility = Visibility.Visible;
-                    ModMain.frmSetupUI.PanLogoText.Visibility = Visibility.Collapsed;
-                    ModMain.frmSetupUI.PanLogoChange.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.CheckLogoLeft.Visibility = Visibility.Visible;
+                    ModMain.FrmSetupUIRequired.PanLogoText.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.PanLogoChange.Visibility = Visibility.Collapsed;
                 }
 
                 break;
             }
             case 1: // 默认
             {
-                ModMain.frmMain.ShapeTitleLogo.Visibility = Visibility.Visible;
-                ModMain.frmMain.BtnTitleHelp.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.ShapeHMCLTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.LabTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.ImageTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.CELogo.Visibility = Visibility.Visible;
+                ModMain.FrmMainRequired.ShapeTitleLogo.Visibility = Visibility.Visible;
+                ModMain.FrmMainRequired.BtnTitleHelp.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.ShapeHMCLTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.LabTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.ImageTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.CELogo.Visibility = Visibility.Visible;
                 if (ModMain.frmSetupUI is not null)
                 {
-                    ModMain.frmSetupUI.CheckLogoLeft.Visibility = Visibility.Collapsed;
-                    ModMain.frmSetupUI.PanLogoText.Visibility = Visibility.Collapsed;
-                    ModMain.frmSetupUI.PanLogoChange.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.CheckLogoLeft.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.PanLogoText.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.PanLogoChange.Visibility = Visibility.Collapsed;
                 }
 
                 break;
             }
             case 2: // 文本
             {
-                ModMain.frmMain.ShapeTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.BtnTitleHelp.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.ShapeHMCLTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.LabTitleLogo.Visibility = Visibility.Visible;
-                ModMain.frmMain.ImageTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.CELogo.Visibility = Visibility.Visible;
+                ModMain.FrmMainRequired.ShapeTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.BtnTitleHelp.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.ShapeHMCLTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.LabTitleLogo.Visibility = Visibility.Visible;
+                ModMain.FrmMainRequired.ImageTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.CELogo.Visibility = Visibility.Visible;
                 if (ModMain.frmSetupUI is not null)
                 {
-                    ModMain.frmSetupUI.CheckLogoLeft.Visibility = Visibility.Collapsed;
-                    ModMain.frmSetupUI.PanLogoText.Visibility = Visibility.Visible;
-                    ModMain.frmSetupUI.PanLogoChange.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.CheckLogoLeft.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.PanLogoText.Visibility = Visibility.Visible;
+                    ModMain.FrmSetupUIRequired.PanLogoChange.Visibility = Visibility.Collapsed;
                 }
 
                 _ = Config.Preference.WindowTitleCustomText;
@@ -535,26 +547,26 @@ public class ModSetup
             }
             case 3: // 图片
             {
-                ModMain.frmMain.ShapeTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.BtnTitleHelp.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.ShapeHMCLTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.LabTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.ImageTitleLogo.Visibility = Visibility.Visible;
-                ModMain.frmMain.CELogo.Visibility = Visibility.Visible;
+                ModMain.FrmMainRequired.ShapeTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.BtnTitleHelp.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.ShapeHMCLTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.LabTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.ImageTitleLogo.Visibility = Visibility.Visible;
+                ModMain.FrmMainRequired.CELogo.Visibility = Visibility.Visible;
                 if (ModMain.frmSetupUI is not null)
                 {
-                    ModMain.frmSetupUI.CheckLogoLeft.Visibility = Visibility.Collapsed;
-                    ModMain.frmSetupUI.PanLogoText.Visibility = Visibility.Collapsed;
-                    ModMain.frmSetupUI.PanLogoChange.Visibility = Visibility.Visible;
+                    ModMain.FrmSetupUIRequired.CheckLogoLeft.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.PanLogoText.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.PanLogoChange.Visibility = Visibility.Visible;
                 }
 
                 try
                 {
-                    ModMain.frmMain.ImageTitleLogo.Source = ModBase.exePath + @"PCL\Logo.png";
+                    ModMain.FrmMainRequired.ImageTitleLogo.Source = ModBase.exePath + @"PCL\Logo.png";
                 }
                 catch (Exception ex)
                 {
-                    ModMain.frmMain.ImageTitleLogo.Source = null;
+                    ModMain.FrmMainRequired.ImageTitleLogo.Source = null;
                     ModBase.Log(
                         ex,
                         "显示标题栏图片失败",
@@ -565,16 +577,16 @@ public class ModSetup
                 break;
             }
             case 4: //HMCL (愚人节)
-                ModMain.frmMain.ShapeTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.ShapeHMCLTitleLogo.Visibility = Visibility.Visible;
-                ModMain.frmMain.LabTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.ImageTitleLogo.Visibility = Visibility.Collapsed;
-                ModMain.frmMain.BtnTitleHelp.Visibility = Visibility.Visible;
+                ModMain.FrmMainRequired.ShapeTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.ShapeHMCLTitleLogo.Visibility = Visibility.Visible;
+                ModMain.FrmMainRequired.LabTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.ImageTitleLogo.Visibility = Visibility.Collapsed;
+                ModMain.FrmMainRequired.BtnTitleHelp.Visibility = Visibility.Visible;
                 if (ModMain.frmSetupUI is not null) 
                 {
-                    ModMain.frmSetupUI.CheckLogoLeft.Visibility = Visibility.Collapsed;
-                    ModMain.frmSetupUI.PanLogoText.Visibility = Visibility.Collapsed;
-                    ModMain.frmSetupUI.PanLogoChange.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.CheckLogoLeft.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.PanLogoText.Visibility = Visibility.Collapsed;
+                    ModMain.FrmSetupUIRequired.PanLogoChange.Visibility = Visibility.Collapsed;
                 }
 
                 break;
@@ -582,17 +594,17 @@ public class ModSetup
 
         UiLogoLeft(Config.Preference.TopBarLeftAlign);
         if (ModMain.frmSetupUI is not null)
-            ModMain.frmSetupUI.CardLogo.TriggerForceResize();
+            ModMain.FrmSetupUIRequired.CardLogo.TriggerForceResize();
     }
 
     public static void UiLogoText(string value)
     {
-        ModMain.frmMain.LabTitleLogo.Text = value;
+        ModMain.FrmMainRequired.LabTitleLogo.Text = value;
     }
 
     public static void UiLogoLeft(bool value)
     {
-        ModMain.frmMain.PanTitleMain.ColumnDefinitions[0].Width = new GridLength(
+        ModMain.FrmMainRequired.PanTitleMain.ColumnDefinitions[0].Width = new GridLength(
             value && Config.Preference.WindowTitleType == LauncherTitleType.None ? 0 : 1,
             GridUnitType.Star);
     }
@@ -665,7 +677,7 @@ public class ModSetup
     {
         if (ModMain.frmInstanceSetup is null)
             return;
-        ModMain.frmInstanceSetup.RamType(type);
+        ModMain.FrmInstanceSetupRequired.RamType(type);
     }
 
     // 服务器
@@ -677,7 +689,7 @@ public class ModSetup
         ModBase.WriteIni(ModFolder.mcFolderSelected + "PCL.ini", "InstanceCache", "");
         if (PageInstanceLeft.McInstance is null)
             return;
-        PageInstanceLeft.McInstance = new McInstance(PageInstanceLeft.McInstance.Name).Load();
+        PageInstanceLeft.McInstance = new McInstance(PageInstanceLeft.McInstanceRequired.Name).Load();
         ModLoader.LoaderFolderRun(ModInstanceList.mcInstanceListLoader, ModFolder.mcFolderSelected,
             ModLoader.LoaderFolderRunType.ForceRun, 1, @"versions\");
     }

@@ -14,22 +14,23 @@ public class LabColor
     /// </summary>
     internal Unicolour UnicolourInstance { get; }
 
-    private Oklab _Oklab { get => field ??= UnicolourInstance.Oklab; } = null!;
+    private Oklab? _Oklab;
+    private Oklab OklabValue => _Oklab ??= UnicolourInstance.Oklab;
 
     /// <summary>
     /// Light channel.
     /// </summary>
-    public double L => _Oklab.L;
+    public double L => OklabValue.L;
 
     /// <summary>
     /// A channel.
     /// </summary>
-    public double A => _Oklab.A;
+    public double A => OklabValue.A;
 
     /// <summary>
     /// B channel.
     /// </summary>
-    public double B => _Oklab.B;
+    public double B => OklabValue.B;
 
     /// <summary>
     /// Alpha channel.

@@ -464,19 +464,19 @@ public static class ModLocalComp
             }
         }
 
-        private string _Name;
+        private string? _Name;
 
         /// <summary>
         ///     Mod 的描述信息。
         /// </summary>
-        public string Description
+        public string? Description
         {
             get
             {
                 if (_Description is null)
                     Load();
-                if (_Description is null && FileUnavailableReason is not null)
-                    _Description = FileUnavailableReason.Message;
+                if (_Description is null && FileUnavailableReason is { } unavailableReason)
+                    _Description = unavailableReason.Message;
                 // If _Description Is Nothing Then _Description = Path
                 return _Description;
             }
@@ -493,7 +493,7 @@ public static class ModLocalComp
             }
         }
 
-        private string _Description;
+        private string? _Description;
 
         /// <summary>
         ///     文件类型标签。
@@ -541,7 +541,7 @@ public static class ModLocalComp
         /// <summary>
         ///     Mod 的版本，不保证符合版本格式规范。
         /// </summary>
-        public string Version
+        public string? Version
         {
             get
             {
@@ -559,12 +559,12 @@ public static class ModLocalComp
             }
         }
 
-        private string _Version;
+        private string? _Version;
 
         /// <summary>
         ///     用于依赖检查的 ModID。
         /// </summary>
-        public string ModId
+        public string? ModId
         {
             get
             {
@@ -589,7 +589,7 @@ public static class ModLocalComp
             }
         }
 
-        private string _ModId;
+        private string? _ModId;
 
         /// <summary>
         ///     其他可能的 ModID。
@@ -599,7 +599,7 @@ public static class ModLocalComp
         /// <summary>
         ///     Mod 的主页。
         /// </summary>
-        public string Url
+        public string? Url
         {
             get
             {
@@ -616,7 +616,7 @@ public static class ModLocalComp
         /// <summary>
         ///     Mod 的作者列表。
         /// </summary>
-        public string Authors
+        public string? Authors
         {
             get
             {
@@ -630,7 +630,7 @@ public static class ModLocalComp
             }
         }
 
-        private string _Authors;
+        private string? _Authors;
 
         /// <summary>
         ///     Litematic 文件的创建时间戳。
@@ -663,7 +663,7 @@ public static class ModLocalComp
         /// <summary>
         ///     Schem 读取到的原始名称。
         /// </summary>
-        public string SchemOriginalName
+        public string? SchemOriginalName
         {
             get
             {
@@ -672,12 +672,12 @@ public static class ModLocalComp
             }
         }
 
-        private string _schemOriginalName;
+        private string? _schemOriginalName;
 
         /// <summary>
         ///     Litematic 读取到的原始名称。
         /// </summary>
-        public string LitematicOriginalName
+        public string? LitematicOriginalName
         {
             get
             {
@@ -686,7 +686,7 @@ public static class ModLocalComp
             }
         }
 
-        private string _litematicOriginalName;
+        private string? _litematicOriginalName;
 
         /// <summary>
         ///     Litematic 文件的版本。
@@ -705,7 +705,7 @@ public static class ModLocalComp
         /// <summary>
         ///     Litematic 文件的包围盒大小。
         /// </summary>
-        public string LitematicEnclosingSize
+        public string? LitematicEnclosingSize
         {
             get
             {
@@ -714,7 +714,7 @@ public static class ModLocalComp
             }
         }
 
-        private string _litematicEnclosingSize;
+        private string? _litematicEnclosingSize;
 
         /// <summary>
         ///     Litematic 文件的区域数量。
@@ -761,7 +761,7 @@ public static class ModLocalComp
         /// <summary>
         ///     原版结构文件的游戏版本。
         /// </summary>
-        public string StructureGameVersion
+        public string? StructureGameVersion
         {
             get
             {
@@ -770,7 +770,7 @@ public static class ModLocalComp
             }
         }
 
-        private string _structureGameVersion;
+        private string? _structureGameVersion;
 
         /// <summary>
         ///     原版结构文件的数据版本。
@@ -789,7 +789,7 @@ public static class ModLocalComp
         /// <summary>
         ///     原版结构文件的作者。
         /// </summary>
-        public string StructureAuthor
+        public string? StructureAuthor
         {
             get
             {
@@ -798,7 +798,7 @@ public static class ModLocalComp
             }
         }
 
-        private string _structureAuthor;
+        private string? _structureAuthor;
 
         /// <summary>
         ///     Sponge Schematic 文件的版本。
@@ -817,7 +817,7 @@ public static class ModLocalComp
         /// <summary>
         ///     Mod 图标路径。
         /// </summary>
-        public string Logo { get; set; }
+        public string? Logo { get; set; }
 
         /// <summary>
         ///     依赖项，其中包括了 Minecraft 的版本要求。格式为 ModID - VersionRequirement，若无版本要求则为 Nothing。
@@ -1020,7 +1020,7 @@ public static class ModLocalComp
         /// </summary>
         internal void MarkLoaded() => isLoaded = true;
 
-        internal void SetJijMetadata(string name, string modId, string version)
+        internal void SetJijMetadata(string name, string? modId, string? version)
         {
             _Name = name;
             _ModId = modId;
@@ -1119,7 +1119,7 @@ public static class ModLocalComp
         /// <summary>
         ///     Mod 文件出错的原因。若无错误，则为 Nothing。
         /// </summary>
-        public Exception FileUnavailableReason
+        public Exception? FileUnavailableReason
         {
             get
             {
@@ -1128,7 +1128,7 @@ public static class ModLocalComp
             }
         }
 
-        private Exception _FileUnavailableReason;
+        private Exception? _FileUnavailableReason;
 
         // 2. 进行 .class 以外的信息获取
         // 成功：标记 IsInfoWithoutClassAvailable。
@@ -1344,7 +1344,7 @@ public static class ModLocalComp
             }
 
             // 对于其他文件，尝试作为 Jar 文件打开
-            ZipArchive jar = null;
+            ZipArchive? jar = null;
             try
             {
                 var fileInfo = new FileInfo(path);
@@ -1414,7 +1414,7 @@ public static class ModLocalComp
             lock (_loadLock)
             {
                 if (!_jijPending) return true;
-                ZipArchive jar = null;
+                ZipArchive? jar = null;
                 try
                 {
                     var fileInfo = new FileInfo(path);
@@ -1446,21 +1446,21 @@ public static class ModLocalComp
         }
 
         /// <summary>内嵌（Jar-in-Jar）子项声明的加载器（Fabric/Quilt/Forge/NeoForge）；仅内嵌项有值。</summary>
-        public string JijLoader { get; internal set; }
+        public string? JijLoader { get; internal set; }
 
         /// <summary>内嵌（Jar-in-Jar）子项声明的目标 Minecraft 版本范围；仅内嵌项有值。</summary>
-        public string JijTargetMcVersion { get; internal set; }
+        public string? JijTargetMcVersion { get; internal set; }
 
-        public string JijIdentifier { get; internal set; }
+        public string? JijIdentifier { get; internal set; }
 
-        public string JijVersionRange { get; internal set; }
+        public string? JijVersionRange { get; internal set; }
 
-        public string JijArtifactVersion { get; internal set; }
+        public string? JijArtifactVersion { get; internal set; }
 
         internal string? PreferredLoader { get; set; }
 
         /// <summary>本 Mod 检出的加载器（Fabric/Quilt/Forge/NeoForge），供依赖版本约束按方言求值；null=未知。</summary>
-        public string DetectedLoader { get; internal set; }
+        public string? DetectedLoader { get; internal set; }
 
         /// <summary>
         ///     从 Jar 文件中获取 Mod 信息。
@@ -1479,7 +1479,7 @@ public static class ModLocalComp
                                             jar.GetEntry("META-INF/mods.toml") is not null ||
                                             jar.GetEntry("META-INF/neoforge.mods.toml") is not null;
                     var infoEntry = hasModernMetadata ? null : jar.GetEntry("mcmod.info");
-                    string infoString = null;
+                    string? infoString = null;
                     if (infoEntry is not null)
                     {
                         infoString = ModBase.ReadFile(infoEntry.Open());
@@ -1582,7 +1582,7 @@ public static class ModLocalComp
                     var fabricEntry = string.Equals(loaderType, "Fabric", StringComparison.OrdinalIgnoreCase)
                         ? jar.GetEntry("fabric.mod.json")
                         : null;
-                    string fabricText = null;
+                    string? fabricText = null;
                     if (fabricEntry is not null)
                     {
                         fabricText = ModBase.ReadFile(fabricEntry.Open(), Encoding.UTF8);
@@ -1683,7 +1683,7 @@ public static class ModLocalComp
                     var quiltEntry = string.Equals(loaderType, "Quilt", StringComparison.OrdinalIgnoreCase)
                         ? jar.GetEntry("quilt.mod.json")
                         : null;
-                    string quiltText = null;
+                    string? quiltText = null;
                     if (quiltEntry is not null)
                     {
                         quiltText = ModBase.ReadFile(quiltEntry.Open(), Encoding.UTF8);
@@ -1743,14 +1743,14 @@ public static class ModLocalComp
             try
             {
                 // 获取 mods.toml 文件
-                ZipArchiveEntry tomlEntry = null;
+                ZipArchiveEntry? tomlEntry = null;
                 if (string.Equals(loaderType, "NeoForge", StringComparison.OrdinalIgnoreCase))
                     tomlEntry = jar.GetEntry("META-INF/neoforge.mods.toml")
                                 ?? jar.GetEntry("META-INF/mods.toml");
                 else if (string.Equals(loaderType, "Forge", StringComparison.OrdinalIgnoreCase))
                     tomlEntry = jar.GetEntry("META-INF/mods.toml")
                                 ?? jar.GetEntry("META-INF/neoforge.mods.toml");
-                string tomlText = null;
+                string? tomlText = null;
                 if (tomlEntry is not null)
                 {
                     using (var reader = new StreamReader(tomlEntry.Open()))
@@ -1850,7 +1850,7 @@ public static class ModLocalComp
                     }
 
                     // 从解析出的数据中提取 Mod 信息
-                    Dictionary<string, object> modEntry = null;
+                    Dictionary<string, object>? modEntry = null;
                     foreach (var subData in tomlData)
                         if (subData.Key == "mods")
                         {
@@ -1989,7 +1989,7 @@ public static class ModLocalComp
                 {
                     // 获取 fml_cache_annotation.json 文件
                     var fmlEntry = jar.GetEntry("META-INF/fml_cache_annotation.json");
-                    string fmlText = null;
+                    string? fmlText = null;
                     if (fmlEntry is not null)
                     {
                         fmlText = ModBase.ReadFile(fmlEntry.Open(), Encoding.UTF8);
@@ -2001,7 +2001,7 @@ public static class ModLocalComp
                         break;
                     var fmlJson = (JsonObject)ModBase.GetJson(fmlText);
                     // 获取可用 Json 项
-                    JsonObject fmlObject = null;
+                    JsonObject? fmlObject = null;
                     foreach (var ModFilePair in fmlJson)
                     {
                         var modFileAnnos = (JsonArray)ModFilePair.Value["annotations"];
@@ -2020,7 +2020,8 @@ public static class ModLocalComp
 
                     break;
                     Got: ;
-
+                    if (fmlObject is null)
+                        break;
                     // 从文件中获取 Mod 信息项
                     if (fmlObject.ContainsKey("useMetadata") &&
                         (fmlObject["useMetadata"]["value"] ?? "").ToString().ToLower() == "true")
@@ -2317,13 +2318,13 @@ public static class ModLocalComp
 
     public class CompLocalLoaderData
     {
-        public string compPath;
+        public string compPath = "";
         public CompType compType;
 
-        public KeyValuePair<List<LocalCompFile>, JsonObject> detailInfo;
-        public PageInstanceCompResource frm;
-        public McInstance gameVersion;
-        public List<CompLoaderType> loaders;
+        public KeyValuePair<List<LocalCompFile>, JsonObject>? detailInfo;
+        public PageInstanceCompResource? frm;
+        public McInstance? gameVersion;
+        public List<CompLoaderType> loaders = new();
     }
 
     // 加载资源列表
@@ -2398,6 +2399,8 @@ public static class ModLocalComp
 
     private static void CompResourceListLoad(LoaderTask<CompLocalLoaderData, List<LocalCompFile>> loader)
     {
+        if (loader.input.gameVersion is not { } gameVersion)
+            throw new InvalidOperationException("资源列表加载缺少 Minecraft 实例信息。");
         try
         {
             ModBase.RunInUiWait(() =>
@@ -2480,9 +2483,9 @@ public static class ModLocalComp
                             {
                                 if ((File.DirectoryName.ToLower() ?? "") != (rawName.TrimEnd('\\') ?? ""))
                                     if (!(PageInstanceLeft.McInstance is not null &&
-                                          PageInstanceLeft.McInstance.Info.HasForge &&
-                                          PageInstanceLeft.McInstance.Info.Drop < 130 && (File.Directory.Name ?? "") ==
-                                          (PageInstanceLeft.McInstance.Info.VanillaName ?? "")))
+                                          PageInstanceLeft.McInstanceRequired.Info.HasForge &&
+                                          PageInstanceLeft.McInstanceRequired.Info.Drop < 130 && (File.Directory.Name ?? "") ==
+                                          (PageInstanceLeft.McInstanceRequired.Info.VanillaName ?? "")))
                                         continue;
 
                                 if (LocalCompFile.IsCompFile(File.FullName, loader.input.compType))
@@ -2536,8 +2539,8 @@ public static class ModLocalComp
             var modUpdateList = new List<LocalCompFile>();
             // 仅 Mod 类型启用 Jar-in-Jar 缓存；资源包/光影/投影共用同一 loader，不能用其路径污染/剪裁 mod 缓存
             var jijEnabled = loader.input.compType == CompType.Mod;
-            var jijInstancePath = jijEnabled ? loader.input.gameVersion.PathInstance : null;
-            var preferredLoader = jijEnabled ? GetPreferredLoader(loader.input.gameVersion) : null;
+            var jijInstancePath = jijEnabled ? gameVersion.PathInstance : null;
+            var preferredLoader = jijEnabled ? GetPreferredLoader(gameVersion) : null;
             var jijGeneration = 0;
             Action? startJijResolve = null;
             ModJarInJarCache.UseInstance(jijInstancePath);
@@ -2568,7 +2571,7 @@ public static class ModLocalComp
                 // 读取 Comp 缓存
                 if (ModEntry.State == LocalCompFile.LocalFileStatus.Unavailable)
                     continue;
-                var cacheKey = ModEntry.ModrinthHash + loader.input.gameVersion.Info.VanillaName +
+                var cacheKey = ModEntry.ModrinthHash + gameVersion.Info.VanillaName +
                                loader.input.loaders.Join("");
                 if (cache.ContainsKey(cacheKey))
                 {
@@ -2655,12 +2658,14 @@ public static class ModLocalComp
 
     private static void CompUpdateDetailLoad(LoaderTask<CompLocalLoaderData, int> loader)
     {
-        var mods = loader.input.detailInfo.Key;
-        var cache = loader.input.detailInfo.Value;
+        if (loader.input.gameVersion is not { } gameVersion || loader.input.detailInfo is not { } detailInfo)
+            throw new InvalidOperationException("资源详情加载缺少实例或缓存信息。");
+        var mods = detailInfo.Key;
+        var cache = detailInfo.Value;
         // 获取作为检查目标的加载器和版本
         var modLoaders = loader.input.loaders;
         var compType = loader.input.compType;
-        var mcInstance = loader.input.gameVersion.Info.VanillaName;
+        var mcInstance = gameVersion.Info.VanillaName;
 
         // 开始网络获取
         ModBase.Log($"[Mod] 目标加载器：{string.Join("/", modLoaders)}，版本：{mcInstance}");
@@ -2746,7 +2751,8 @@ public static class ModLocalComp
                     {
                         Entry.changelogUrls.Add(
                             $"https://modrinth.com/mod/{modrinthUpdate[Entry.ModrinthHash]["project_id"]}/changelog?g={mcInstance}");
-                        Entry.UpdateFile.DownloadUrls.AddRange(updateFile.DownloadUrls);
+                        if (Entry.UpdateFile.DownloadUrls is { } targetUrls && updateFile.DownloadUrls is { } sourceUrls)
+                            targetUrls.AddRange(sourceUrls);
                         Entry.UpdateFile = updateFile;
                     }
                     else if (Entry.UpdateFile is null || updateFile.ReleaseDate >= Entry.UpdateFile.ReleaseDate)
@@ -2850,7 +2856,7 @@ public static class ModLocalComp
 
                     // 仅在加载器唯一时查找可能有更新的文件
                     if (modLoaders.Count != 1) continue;
-                    string newestVersion = null;
+                    string? newestVersion = null;
                     var newestFileIds = new List<int>();
                     foreach (var indexEntry in (JsonArray)projectJson["latestFilesIndexes"])
                     {
@@ -2928,7 +2934,8 @@ public static class ModLocalComp
                     {
                         // 合并下载源
                         Entry.changelogUrls.Add(changelogUrl);
-                        Entry.UpdateFile.DownloadUrls.AddRange(updateFile.DownloadUrls);
+                        if (Entry.UpdateFile.DownloadUrls is { } targetUrls && updateFile.DownloadUrls is { } sourceUrls)
+                            targetUrls.AddRange(sourceUrls);
                     }
                     else if (Entry.UpdateFile is null || updateFile.ReleaseDate > Entry.UpdateFile.ReleaseDate)
                     {
@@ -2985,15 +2992,15 @@ public static class ModLocalComp
     public static List<CompLoaderType> GetCurrentVersionModLoader()
     {
         var modLoaders = new List<CompLoaderType>();
-        if (PageInstanceLeft.McInstance.Info.HasForge)
+        if (PageInstanceLeft.McInstanceRequired.Info.HasForge)
             modLoaders.Add(CompLoaderType.Forge);
-        if (PageInstanceLeft.McInstance.Info.HasNeoForge)
+        if (PageInstanceLeft.McInstanceRequired.Info.HasNeoForge)
             modLoaders.Add(CompLoaderType.NeoForge);
-        if (PageInstanceLeft.McInstance.Info.HasFabric)
+        if (PageInstanceLeft.McInstanceRequired.Info.HasFabric)
             modLoaders.Add(CompLoaderType.Fabric);
-        if (PageInstanceLeft.McInstance.Info.HasQuilt)
+        if (PageInstanceLeft.McInstanceRequired.Info.HasQuilt)
             modLoaders.AddRange(new[] { CompLoaderType.Fabric, CompLoaderType.Quilt });
-        if (PageInstanceLeft.McInstance.Info.HasLiteLoader)
+        if (PageInstanceLeft.McInstanceRequired.Info.HasLiteLoader)
             modLoaders.Add(CompLoaderType.LiteLoader);
         if (!modLoaders.Any())
             modLoaders.AddRange(new[]

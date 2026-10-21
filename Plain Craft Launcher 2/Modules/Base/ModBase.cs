@@ -45,7 +45,6 @@ public static class ModBase
     public static readonly string upstreamVersion = Basics.Metadata.Version.UpstreamVersion;
     public static readonly string commitHash = Basics.Metadata.Version.Commit;
     public static readonly string commitHashShort = Basics.Metadata.Version.CommitDigest;
-    public static readonly int versionCode = Basics.VersionCode;
 
 #if DEBUG
     public const string versionBranchName = "Debug";
@@ -794,7 +793,7 @@ public static class ModBase
     /// </summary>
     public static string GetPathFromFullPath(string filePath)
     {
-        string getPathFromFullPathRet = default;
+        string getPathFromFullPathRet;
         if (!(filePath.Contains(@"\") || filePath.Contains("/")))
             throw new Exception("不包含路径：" + filePath);
         if (filePath.EndsWithF(@"\") || filePath.EndsWithF("/"))
@@ -886,7 +885,7 @@ public static class ModBase
     /// <summary>
     ///     读取文件，如果失败则返回空数组。
     /// </summary>
-    public static byte[] ReadFileBytes(string filePath, Encoding encoding = null)
+    public static byte[] ReadFileBytes(string filePath, Encoding? encoding = null)
     {
         try
         {
@@ -918,18 +917,16 @@ public static class ModBase
     ///     读取文件，如果失败则返回空字符串。
     /// </summary>
     /// <param name="filePath">文件完整或相对路径。</param>
-    public static string ReadFile(string filePath, Encoding encoding = null)
+    public static string ReadFile(string filePath, Encoding? encoding = null)
     {
-        string readFileRet = default;
         var fileBytes = ReadFileBytes(filePath);
-        readFileRet = encoding is null ? DecodeBytes(fileBytes) : encoding.GetString(fileBytes);
-        return readFileRet;
+        return encoding is null ? DecodeBytes(fileBytes) : encoding.GetString(fileBytes);
     }
 
     /// <summary>
     ///     读取流中的所有文本。
     /// </summary>
-    public static string ReadFile(Stream stream, Encoding encoding = null)
+    public static string ReadFile(Stream stream, Encoding? encoding = null)
     {
         try
         {
@@ -1226,7 +1223,7 @@ public static class ModBase
         ///     文件的 MD5、SHA1 或 SHA256。会根据输入字符串的长度自动判断种类。
         ///     不检查则为 Nothing。
         /// </summary>
-        public string hash;
+        public string? hash;
 
         /// <summary>
         ///     是否要求为 JSON 文件。
@@ -1240,7 +1237,7 @@ public static class ModBase
         /// </summary>
         public long minSize = -1;
 
-        public FileChecker(long minSize = -1, long actualSize = -1, string hash = null, bool canUseExistsFile = true,
+        public FileChecker(long minSize = -1, long actualSize = -1, string? hash = null, bool canUseExistsFile = true,
             bool isJson = false)
         {
             this.actualSize = actualSize;
@@ -1383,8 +1380,8 @@ public static class ModBase
     ///     尝试根据后缀名判断文件种类并解压文件，支持 gz 与 zip，会尝试将 Jar 以 zip 方式解压。
     ///     会尝试创建，但不会清空目标文件夹。
     /// </summary>
-    public static void ExtractFile(string compressFilePath, string destDirectory, Encoding encode = null,
-        Action<double> progressIncrementHandler = null)
+    public static void ExtractFile(string compressFilePath, string destDirectory, Encoding? encode = null,
+        Action<double>? progressIncrementHandler = null)
     {
         Directory.CreateDirectory(destDirectory);
         destDirectory = Path.GetFullPath(destDirectory);
@@ -1510,7 +1507,7 @@ public static class ModBase
     /// <summary>
     ///     复制文件夹，失败会抛出异常。
     /// </summary>
-    public static void CopyDirectory(string fromPath, string toPath, Action<double> progressIncrementHandler = null)
+    public static void CopyDirectory(string fromPath, string toPath, Action<double>? progressIncrementHandler = null)
     {
         fromPath = fromPath.Replace("/", @"\");
         if (!fromPath.EndsWithF(@"\"))
@@ -1926,10 +1923,9 @@ public static class ModBase
     /// </summary>
     public static List<string> RegexSearch(this string str, string regex, RegexOptions options = RegexOptions.None)
     {
-        List<string> regexSearchRet = default;
+        var regexSearchRet = new List<string>();
         try
         {
-            regexSearchRet = new List<string>();
             var regexSearchRes = new Regex(regex, options).Matches(str);
             if (regexSearchRes is null)
                 return regexSearchRet;
@@ -2129,13 +2125,13 @@ public static class ModBase
         /// <summary>
         ///     该项目对应的源数据。
         /// </summary>
-        public T item;
+        public required T item;
 
         /// <summary>
         ///     该项目用于搜索的文本源。
         ///     在搜索时，会对每个文本源单独加权，但单个文本源内的多个别名只取最高的一个的相似度。
         /// </summary>
-        public List<SearchSource> searchSource;
+        public required List<SearchSource> searchSource;
 
         /// <summary>
         ///     相似度。
@@ -2440,15 +2436,13 @@ public static class ModBase
     }
 
     private static int uuid = 1;
-    private static object uuidLock;
+    private static readonly object uuidLock = new();
 
     /// <summary>
     ///     获取一个全程序内不会重复的数字（伪 Uuid）。
     /// </summary>
     public static int GetUuid()
     {
-        if (uuidLock is null)
-            uuidLock = new object();
         lock (uuidLock)
         {
             uuid += 1;
@@ -2461,8 +2455,7 @@ public static class ModBase
     /// </summary>
     public static List<T> GetFullList<T>(IList data)
     {
-        List<T> getFullListRet = default;
-        getFullListRet = new List<T>();
+        var getFullListRet = new List<T>();
         for (int i = 0, loopTo = data.Count - 1; i <= loopTo; i++)
             if (data[i] is ICollection)
                 getFullListRet.AddRange((IEnumerable<T>)data[i]);
@@ -2578,7 +2571,7 @@ public static class ModBase
     /// <param name="arguments">运行参数。</param>
     /// <param name="timeout">等待该程序结束的最长时间（毫秒）。超时会抛出错误。</param>
     public static string ShellAndGetOutput(string fileName, string arguments = "", int timeout = 1000000,
-        string workingDirectory = null)
+        string? workingDirectory = null)
     {
         var info = new ProcessStartInfo
         {
@@ -2625,7 +2618,7 @@ public static class ModBase
     /// <summary>
     ///     在新的工作线程中执行代码。
     /// </summary>
-    public static Thread RunInNewThread(Action action, string name = null,
+    public static Thread RunInNewThread(Action action, string? name = null,
         ThreadPriority priority = ThreadPriority.Normal)
     {
         var th = new Thread(() =>
@@ -2812,7 +2805,7 @@ public static class ModBase
     /// </summary>
     /// <param name="name">参数名。</param>
     /// <param name="defaultValue">默认值。</param>
-    public static object GetProgramArgument(string name, object defaultValue = null)
+    public static object? GetProgramArgument(string name, object? defaultValue = null)
     {
         var allArguments = Interaction.Command().Split(" ");
         for (int i = 0, loopTo = allArguments.Length - 1; i <= loopTo; i++)
@@ -3048,7 +3041,7 @@ public static class ModBase
 
     #region UI
 
-    public static void SetLaunchFont(string fontName = null)
+    public static void SetLaunchFont(string? fontName = null)
     {
         try
         {
@@ -3593,7 +3586,7 @@ public static class ModBase
                     ? Lang.Text("Setup.Feedback.Unavailable.NotLatest.Action")
                     : Lang.Text("Setup.Feedback.Unavailable.CheckFailed.Action"),
                 Lang.Text("Common.Action.Cancel")) == 1)
-            ModMain.frmMain.PageChange(FormMain.PageType.Setup, FormMain.PageSubType.SetupUpdate);
+            ModMain.FrmMainRequired.PageChange(FormMain.PageType.Setup, FormMain.PageSubType.SetupUpdate);
 
         return false;
     }

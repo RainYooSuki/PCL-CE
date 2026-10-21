@@ -15,11 +15,10 @@ namespace PCL.Core.Test.IO.Storage.Cache;
 [TestClass]
 public class FileCacheStorageTest
 {
-    private FileCacheStorage _fileCache = null!;
-    private string _testCachePath = null!;
+    private readonly FileCacheStorage _fileCache;
+    private readonly string _testCachePath;
 
-    [TestInitialize]
-    public void Setup()
+    public FileCacheStorageTest()
     {
         _testCachePath = Path.Combine(Path.GetTempPath(), "pcl_file_cache_test_" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(_testCachePath);
@@ -233,9 +232,10 @@ public class FileCacheStorageTest
 
         // Act
         var hash = await _fileCache.StoreAsync(new MemoryStream(content));
-        using var retrievedStream = _fileCache.Retrieve(hash);
+        using var retrievedStream = _fileCache.Retrieve(hash)
+            ?? throw new AssertFailedException("Stored file could not be retrieved.");
         using var ms = new MemoryStream();
-        await retrievedStream!.CopyToAsync(ms);
+        await retrievedStream.CopyToAsync(ms);
 
         // Assert
         CollectionAssert.AreEqual(content, ms.ToArray());
@@ -394,8 +394,9 @@ public class FileCacheStorageTest
 
         // Assert - Should be in hash[0:2] subdirectory
         Assert.IsNotNull(filePath);
-        var directory = Path.GetDirectoryName(filePath);
-        var directoryName = new DirectoryInfo(directory!).Name;
+        var directory = Path.GetDirectoryName(filePath)
+            ?? throw new AssertFailedException("Stored file path has no parent directory.");
+        var directoryName = new DirectoryInfo(directory).Name;
         Assert.AreEqual(hash[..2], directoryName, "File should be in [hash:2] subdirectory");
     }
 

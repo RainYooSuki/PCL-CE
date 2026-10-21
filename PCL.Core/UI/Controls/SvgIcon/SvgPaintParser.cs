@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows.Media;
 
@@ -33,9 +34,9 @@ internal static class SvgPaintParser
         }
     }
 
-    private static bool _TryParseRgbFunction(string value, out Brush brush)
+    private static bool _TryParseRgbFunction(string value, [NotNullWhen(true)] out Brush? brush)
     {
-        brush = null!;
+        brush = null;
 
         if (!value.StartsWith("rgb", StringComparison.OrdinalIgnoreCase))
             return false;

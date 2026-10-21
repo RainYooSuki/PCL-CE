@@ -21,7 +21,7 @@ public class MyImage : Image
     /// <summary>
     ///     实际被呈现的图片地址。
     /// </summary>
-    public string ActualSource
+    public string? ActualSource
     {
         get => field;
         set
@@ -43,7 +43,7 @@ public class MyImage : Image
                     ModBase.Log(ex, $"加载图片失败（{value}）");
                     try
                     {
-                        if (value.StartsWithF(ModBase.pathTemp) && File.Exists(value)) File.Delete(value);
+                        if (value is not null && value.StartsWithF(ModBase.pathTemp) && File.Exists(value)) File.Delete(value);
                     }
                     catch
                     {
@@ -56,19 +56,20 @@ public class MyImage : Image
 
     private void Load() // 属性读取顺序修正：在完成 XAML 属性读取后再触发图片加载（#4868）
     {
-        if (Source is null)
+        var source = Source;
+        if (source is null)
         {
             ActualSource = null;
             return;
         }
 
-        if (!Source.StartsWithF("http"))
+        if (!source.StartsWithF("http"))
         {
-            ActualSource = Source;
+            ActualSource = source;
             return;
         }
 
-        var url = Source;
+        var url = source;
         var tempPath = GetTempPath(url);
         var tempFile = new FileInfo(tempPath);
         var enableCache = this.EnableCache;
@@ -93,7 +94,8 @@ public class MyImage : Image
                     return;
                 }
 
-                resp = await DownloadImageAsync(FallbackSource);
+                if (FallbackSource is { } fallbackSource)
+                    resp = await DownloadImageAsync(fallbackSource);
                 if (!string.IsNullOrEmpty(resp))
                 {
                     ActualSource = resp;
@@ -187,7 +189,7 @@ public class MyImage : Image
     ///     若输入以 http 开头的字符串，则会尝试下载图片然后显示，图片会保存为本地缓存。
     ///     支持 WebP 格式的图片。
     /// </summary>
-    public new string Source // 覆写 Image 的 Source 属性
+    public new string? Source // 覆写 Image 的 Source 属性
     {
         get => field;
         set
@@ -206,13 +208,13 @@ public class MyImage : Image
     public new static readonly DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(string),
         typeof(MyImage), new PropertyMetadata((sender, e) =>
         {
-            if (sender is not null) ((MyImage)sender).Source = e.NewValue.ToString();
+            if (sender is not null) ((MyImage)sender).Source = e.NewValue as string;
         }));
 
     /// <summary>
     ///     当 Source 首次下载失败时，会从该备用地址加载图片。
     /// </summary>
-    public string FallbackSource { get; set; }
+    public string? FallbackSource { get; set; }
 
     /// <summary>
     ///     正在下载网络图片时显示的本地图片。

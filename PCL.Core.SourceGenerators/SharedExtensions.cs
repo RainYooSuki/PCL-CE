@@ -142,7 +142,7 @@ public static class SharedExtensions
                 t = t.ContainingType;
             }
             var ns = symbol.ContainingNamespace?.ToDisplayString();
-            if (!string.IsNullOrEmpty(ns)) parts.Push(ns!);
+            if (ns is { Length: > 0 }) parts.Push(ns);
             return string.Join(".", parts);
         }
     }

@@ -21,18 +21,22 @@ public static class Basics
     /// <summary>
     /// 启动器元数据。
     /// </summary>
-    public static MetadataModel Metadata { get; } = JsonSerializer.Deserialize<MetadataModel>(
-        Assembly.GetEntryAssembly()!.GetManifestResourceStream("PCL.metadata.json")!, JsonCompat.SerializerOptions)!;
+    public static MetadataModel Metadata { get; } = _LoadMetadata();
+
+    private static MetadataModel _LoadMetadata()
+    {
+        var assembly = Assembly.GetEntryAssembly()
+            ?? throw new InvalidOperationException("Unable to locate the entry assembly.");
+        using var stream = assembly.GetManifestResourceStream("PCL.metadata.json")
+            ?? throw new InvalidOperationException("Unable to locate the launcher metadata resource.");
+        return JsonSerializer.Deserialize<MetadataModel>(stream, JsonCompat.SerializerOptions)
+            ?? throw new InvalidDataException("The launcher metadata resource is invalid.");
+    }
 
     /// <summary>
     /// 版本名称。
     /// </summary>
     public static string VersionName => Metadata.Version.BaseName;
-
-    /// <summary>
-    /// 版本内部代号。
-    /// </summary>
-    public static int VersionCode => Metadata.Version.Code;
 
     /// <summary>
     /// 版本分支名。
@@ -61,7 +65,8 @@ public static class Basics
     /// <summary>
     /// 当前进程可执行文件的绝对路径。
     /// </summary>
-    public static string ExecutablePath { get; } = Environment.ProcessPath!;
+    public static string ExecutablePath { get; } = Environment.ProcessPath
+        ?? throw new InvalidOperationException("Unable to determine the current executable path.");
 
     /// <summary>
     /// 当前进程可执行文件所在的目录。若有需求，请使用 <see cref="Path.Combine(string[])"/> 而不是自行拼接路径。

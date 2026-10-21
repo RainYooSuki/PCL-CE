@@ -29,7 +29,8 @@ public partial class PageDownloadCompDetail
     private void Init()
     {
         ModAnimation.AniControlEnabled += 1;
-        _project = ModMain.frmMain.pageCurrent.additional.Value.CompProject;
+        _project = ModMain.FrmMainRequired.pageCurrent.additional.Value.CompProject ??
+                       throw new InvalidOperationException("资源详情页缺少项目信息。");
         PanBack.ScrollToHome();
         // 重启加载器
         if (_isFirstInit)
@@ -104,7 +105,7 @@ public partial class PageDownloadCompDetail
                         {
                             HintService.Hint(
                                 Lang.Text("Download.Comp.Detail.Task.Failed", myLoader.name,
-                                    myLoader.Error.ToString()), HintType.Error);
+                                    myLoader.Error?.ToString() ?? ""), HintType.Error);
                             break;
                         }
                         case ModBase.LoadState.Aborted:
@@ -123,8 +124,8 @@ public partial class PageDownloadCompDetail
             };
             loader.Start(Path.Combine(ModFolder.mcFolderSelected, "versions", instanceName));
             ModLoader.LoaderTaskbarAdd(loader);
-            ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-            ModMain.frmMain.BtnExtraDownload.Ribble();
+            ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+            ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
         }
 
         catch (Exception ex)
@@ -147,9 +148,9 @@ public partial class PageDownloadCompDetail
             var loaderName = $"{(_project.FromCurseForge ? "CurseForge" : "Modrinth")} {Lang.Text("Download.Comp.Detail.WorldDownload")}：{_project.TranslatedName} ";
 
             // 确认默认保存位置
-            string defaultFolder = null;
+            string? defaultFolder = null;
             var subFolder = @"saves\";
-            Func<McInstance, bool> isVersionSuitable = null;
+            Func<McInstance, bool> isVersionSuitable;
             // 获取资源所需的加载器
             var allowedLoaders = new List<ModComp.CompLoaderType>();
             if (file.ModLoaders.Any())
@@ -180,7 +181,7 @@ public partial class PageDownloadCompDetail
             }
             else if (ModInstanceList.McMcInstanceSelected is not null && isVersionSuitable(ModInstanceList.McMcInstanceSelected))
             {
-                defaultFolder = $"{ModInstanceList.McMcInstanceSelected.PathIndie}{subFolder}";
+                defaultFolder = $"{ModInstanceList.McMcInstanceSelectedRequired.PathIndie}{subFolder}";
                 Directory.CreateDirectory(defaultFolder);
                 ModBase.Log($"[Comp] 使用当前实例作为默认下载位置：{defaultFolder}");
             }
@@ -242,8 +243,8 @@ public partial class PageDownloadCompDetail
                 { OnStateChanged = ModDownloadLib.LoaderStateChangedHintOnly };
             loader.Start();
             ModLoader.LoaderTaskbarAdd(loader);
-            ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-            ModMain.frmMain.BtnExtraDownload.Ribble();
+            ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+            ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
         }
 
         catch (Exception ex)
@@ -283,7 +284,7 @@ public partial class PageDownloadCompDetail
                 };
 
                 // 确认默认保存位置
-                string defaultFolder = null;
+                string? defaultFolder = null;
                 var allowedLoaders = new List<ModComp.CompLoaderType>();
                 if (file.Type != ModComp.CompType.ModPack)
                 {
@@ -340,7 +341,7 @@ public partial class PageDownloadCompDetail
                     else if (ModInstanceList.McMcInstanceSelected is not null &&
                              isVersionSuitable(ModInstanceList.McMcInstanceSelected))
                     {
-                        defaultFolder = $"{ModInstanceList.McMcInstanceSelected.PathIndie}{subFolder}";
+                        defaultFolder = $"{ModInstanceList.McMcInstanceSelectedRequired.PathIndie}{subFolder}";
                         Directory.CreateDirectory(defaultFolder);
                         ModBase.Log($"[Comp] 使用当前实例作为默认下载位置：{defaultFolder}");
                     }
@@ -561,8 +562,8 @@ public partial class PageDownloadCompDetail
                     loader.Start(1);
                     ModLoader.LoaderTaskbarAdd(loader);
 
-                    ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-                    ModMain.frmMain.BtnExtraDownload.Ribble();
+                    ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+                    ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
                 });
             }
             catch (Exception ex)
@@ -671,9 +672,10 @@ public partial class PageDownloadCompDetail
 
     public void LoadTargetFromAdditional()
     {
-        var additional = ModMain.frmMain.pageCurrent.additional.Value;
-        _project = additional.CompProject;
-        _targetInstance = additional.TargetVersion;
+        var additional = ModMain.FrmMainRequired.pageCurrent.additional.Value;
+        _project = additional.CompProject ??
+                   throw new InvalidOperationException("资源详情页缺少项目信息。");
+        _targetInstance = additional.TargetVersion ?? "";
         _targetLoader = additional.TargetLoader;
         _pageType = additional.ResourceType;
     }
@@ -694,9 +696,7 @@ public partial class PageDownloadCompDetail
         {
             case ModBase.LoadState.Failed:
             {
-                var errorMessage = "";
-                if (_compFileLoader.Error is not null)
-                    errorMessage = _compFileLoader.Error.Message;
+                var errorMessage = _compFileLoader.Error?.Message ?? "";
                 if (errorMessage.Contains(Lang.Text("Common.Error.InvalidJson")))
                 {
                     ModBase.Log("[Comp] 下载的文件 Json 列表损坏，已自动重试", ModBase.LogLevel.Debug);
@@ -778,8 +778,8 @@ public partial class PageDownloadCompDetail
         var results = GetResults();
 
         // 初始化筛选器
-        List<string> instanceFilters = null;
-        List<string> modLoaderFilters = null;
+        var instanceFilters = new List<string>();
+        var modLoaderFilters = new List<string>();
 
         void updateFilters()
         {
@@ -895,8 +895,8 @@ public partial class PageDownloadCompDetail
                 }
 
             // 自动选择
-            MyRadioButton instanceToCheck = null;
-            MyRadioButton modLoaderToCheck = null;
+            MyRadioButton? instanceToCheck = null;
+            MyRadioButton? modLoaderToCheck = null;
             if (!string.IsNullOrEmpty(_targetInstance))
             {
                 var targetFile = results.FirstOrDefault(v => v.GameVersions.Contains(_targetInstance));
@@ -942,7 +942,7 @@ public partial class PageDownloadCompDetail
             if (modLoaderToCheck is null && (_pageType == ModComp.CompType.Mod))
                 modLoaderToCheck = (MyRadioButton)PanModLoaderFilter.Children[index];
             instanceToCheck.Checked = true;
-            if (_pageType == ModComp.CompType.Mod)
+            if (_pageType == ModComp.CompType.Mod && modLoaderToCheck is not null)
                 modLoaderToCheck.Checked = true;
         }
 
@@ -1040,9 +1040,9 @@ public partial class PageDownloadCompDetail
         try
         {
             PanResults.Children.Clear();
-            var additional = ModMain.frmMain.pageCurrent.additional;
+            var additional = ModMain.FrmMainRequired.pageCurrent.additional;
             var additionalTitles = additional is not null
-                ? additional.Value.ExpandedTitles
+                ? additional.Value.ExpandedTitles ?? new List<string>()
                 : new List<string>();
 
             foreach (var pair in dict)
@@ -1087,8 +1087,8 @@ public partial class PageDownloadCompDetail
                         {
                             foreach (var item in list)
                                 stack.Children.Add(item.ToListItem(
-                                    (sender, e) => ModMain.frmDownloadCompDetail.Install_Click((MyListItem)sender, e),
-                                    ModMain.frmDownloadCompDetail.Save_Click, badDisplayName));
+                                    (sender, e) => ModMain.FrmDownloadCompDetailRequired.Install_Click((MyListItem)sender, e),
+                                    ModMain.FrmDownloadCompDetailRequired.Save_Click, badDisplayName));
                             break;
                         }
                         case ModComp.CompType.World:
@@ -1096,8 +1096,8 @@ public partial class PageDownloadCompDetail
                             foreach (var item in list)
                                 stack.Children.Add(item.ToListItem(
                                     (sender, e) =>
-                                        ModMain.frmDownloadCompDetail.InstallWorld_Click((MyListItem)sender, e),
-                                    ModMain.frmDownloadCompDetail.Save_Click, badDisplayName));
+                                        ModMain.FrmDownloadCompDetailRequired.InstallWorld_Click((MyListItem)sender, e),
+                                    ModMain.FrmDownloadCompDetailRequired.Save_Click, badDisplayName));
                             break;
                         }
 
@@ -1105,7 +1105,7 @@ public partial class PageDownloadCompDetail
                         {
                             ModComp.CompFilesCardPreload(stack, list);
                             foreach (var item in list)
-                                stack.Children.Add(item.ToListItem(ModMain.frmDownloadCompDetail.Save_Click,
+                                stack.Children.Add(item.ToListItem(ModMain.FrmDownloadCompDetailRequired.Save_Click,
                                     badDisplayName: badDisplayName));
                             break;
                         }

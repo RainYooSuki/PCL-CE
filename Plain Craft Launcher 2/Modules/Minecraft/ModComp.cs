@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Compression;
@@ -259,7 +260,7 @@ public static class ModComp
 
     public class CompFavorites
     {
-        private static List<FavData> _FavoritesList;
+        private static List<FavData>? _FavoritesList;
 
         /// <summary>
         ///     收藏的工程列表
@@ -268,10 +269,11 @@ public static class ModComp
         {
             get
             {
-                if (_FavoritesList is null)
+                var favorites = _FavoritesList;
+                if (favorites is null)
                 {
                     var rawData = States.Game.CompFavorites;
-                    List<FavData> rawList = null;
+                    List<FavData>? rawList = null;
                     // 尝试作为新格式解析
                     try
                     {
@@ -294,10 +296,11 @@ public static class ModComp
                     // 最终兜底：确保至少有一个收藏夹
                     if (rawList is null || rawList.Count == 0) rawList = new List<FavData> { GetNewFav(Lang.Text("Download.Comp.Detail.Favorites.DefaultName"), null) };
                     _FavoritesList = rawList;
+                    favorites = rawList;
                     Save();
                 }
 
-                return _FavoritesList;
+                return favorites;
             }
             set
             {
@@ -440,7 +443,8 @@ public static class ModComp
         /// </summary>
         public static void Save()
         {
-            FavoritesList = _FavoritesList;
+            if (_FavoritesList is not { } favorites) return;
+            FavoritesList = favorites;
         }
 
         /// <summary>
@@ -670,7 +674,7 @@ public static class ModComp
                                 return;
                             }
 
-                            ModMain.frmMain.PageChange(new FormMain.PageStackData
+                            ModMain.FrmMainRequired.PageChange(new FormMain.PageStackData
                             {
                                 page = FormMain.PageType.CompDetail,
                                 additional = (compProjects.First(), new List<string>(), string.Empty, CompLoaderType.Any,
@@ -896,7 +900,7 @@ public static class ModComp
         /// <summary>
         ///     CurseForge 工程的数字 ID。Modrinth 工程的乱码 ID。
         /// </summary>
-        public readonly string Id;
+        public readonly string Id = "";
 
         /// <summary>
         ///     最后一次更新的时间。可能为 Nothing。
@@ -938,7 +942,7 @@ public static class ModComp
         /// </summary>
         public readonly string Website;
 
-        private CompDatabaseEntry _DatabaseEntry;
+        private CompDatabaseEntry? _DatabaseEntry;
 
         // 数据库信息
 
@@ -948,7 +952,7 @@ public static class ModComp
         ///     Logo 图片的下载地址。
         ///     若为 Nothing 则没有，保证不为空字符串。
         /// </summary>
-        public string LogoUrl;
+        public string? LogoUrl;
 
         // 实例化
 
@@ -1000,17 +1004,17 @@ public static class ModComp
         {
             public bool FromCurseForge;
             public CompType Type;
-            public string Slug;
-            public string Id;
+            public string Slug = "";
+            public string Id = "";
             public List<int> CurseForgeFileIds = [];
-            public string RawName;
-            public string Description;
-            public string Website;
+            public string RawName = "";
+            public string Description = "";
+            public string Website = "";
             public DateTime? LastUpdate;
             public int DownloadCount;
             public List<CompLoaderType> ModLoaders = [];
             public List<string> Tags = [];
-            public string LogoUrl;
+            public string? LogoUrl;
             public List<int> Drops = [];
         }
 
@@ -1412,7 +1416,7 @@ public static class ModComp
         /// <summary>
         ///     关联的数据库条目。若为 Nothing 则没有。
         /// </summary>
-        private CompDatabaseEntry DatabaseEntry
+        private CompDatabaseEntry? DatabaseEntry
         {
             get
             {
@@ -1448,13 +1452,13 @@ public static class ModComp
         /// <summary>
         ///     中文描述。若为 Nothing 则没有。
         /// </summary>
-        public Task<string> ChineseDescription => GetChineseDescriptionAsync();
+        public Task<string?> ChineseDescription => GetChineseDescriptionAsync();
 
-        private async Task<string> GetChineseDescriptionAsync()
+        private async Task<string?> GetChineseDescriptionAsync()
         {
             var from = FromCurseForge ? "curseforge" : "modrinth";
             var para = FromCurseForge ? "modId" : "project_id";
-            string result = null;
+            string? result = null;
 
             var descHash = $"{Id}{ModBase.GetStringMD5(Description)}";
             var cacheFilePath = $@"{ModBase.pathTemp}Cache\CompTranslation.ini";
@@ -1904,7 +1908,7 @@ public static class ModComp
         /// <summary>
         ///     筛选 MC 版本。
         /// </summary>
-        public string gameVersion = null;
+        public string? gameVersion = null;
 
         /// <summary>
         ///     筛选 Mod 加载器类别。
@@ -1914,13 +1918,13 @@ public static class ModComp
         /// <summary>
         ///     搜索的文本内容。
         /// </summary>
-        public string searchText;
+        public string searchText = "";
 
         /// <summary>
         ///     在进行中文搜索时，CurseForge 的替代搜索文本。
         ///     由于 CurseForge API 在有任意关键词未匹配的时候就不显示结果，所以不能使用与 Modrinth 相同的算法。
         /// </summary>
-        public string curseForgeAltSearchText;
+        public string? curseForgeAltSearchText;
 
         /// <summary>
         ///     搜索结果排序方式。
@@ -2183,7 +2187,7 @@ public static class ModComp
         /// <summary>
         ///     当前的错误信息。如果没有则为 Nothing。
         /// </summary>
-        public string errorMessage = null;
+        public string? errorMessage;
 
         public int modrinthOffset;
         public int modrinthTotal = -1;
@@ -2521,7 +2525,7 @@ public static class ModComp
         }
 
         // 最终处理关键字：分割、去重
-        void processKeywords(ref string text)
+        void processKeywords(ref string? text)
         {
             if (text is null) return;
             text = text.ToLowerInvariant();
@@ -2568,7 +2572,7 @@ public static class ModComp
         while (true)
         {
             var rawResults = new List<CompProject>();
-            Exception lastError = null;
+            Exception? lastError = null;
             var resultsLock = new object();
 
             // 1.14 以下 Forge 筛选处理
@@ -2759,7 +2763,7 @@ public static class ModComp
         /// <summary>
         ///     下载的文件名。
         /// </summary>
-        public readonly string FileName;
+        public readonly string FileName = "";
 
         /// <summary>
         ///     该文件来自 CurseForge 还是 Modrinth。
@@ -2778,12 +2782,12 @@ public static class ModComp
         /// <summary>
         ///     文件的 SHA1 或 MD5。
         /// </summary>
-        public readonly string Hash;
+        public readonly string? Hash;
 
         /// <summary>
         ///     用于唯一性鉴别该文件的 ID。CurseForge 中为 123456 的大整数，Modrinth 中为英文乱码的 Version 字段。
         /// </summary>
-        public readonly string Id;
+        public readonly string Id = "";
 
         /// <summary>
         ///     支持的 Mod 加载器列表。可能为空。
@@ -2798,7 +2802,7 @@ public static class ModComp
         /// <summary>
         ///     该文件所属项目的 ID。
         /// </summary>
-        public readonly string ProjectId;
+        public readonly string ProjectId = "";
 
         /// <summary>
         ///     该文件的所有必要依赖工程的原始 ID。
@@ -2834,18 +2838,18 @@ public static class ModComp
         /// <summary>
         ///     文件描述名（并非文件名，是自定义的字段）。对很多 Mod，这会给出 Mod 版本号。
         /// </summary>
-        public string DisplayName;
+        public string DisplayName = "";
 
         /// <summary>
         ///     文件所有可能的下载源。
         /// </summary>
-        public List<string> DownloadUrls;
+        public List<string>? DownloadUrls;
 
         /// <summary>
         ///     Mod 版本号。
         ///     不一定是标准格式。CurseForge 上默认为 Nothing。
         /// </summary>
-        public string Version;
+        public string? Version;
 
         // 实例化
 
@@ -2868,7 +2872,7 @@ public static class ModComp
                 DownloadCount = data["DownloadCount"].ToObject<int>();
                 Status = (CompFileStatus)data["Status"].ToObject<int>();
                 if (data.ContainsKey("FileName"))
-                    FileName = data["FileName"].ToString();
+                    FileName = data["FileName"]?.ToString() ?? "";
                 if (data.ContainsKey("DownloadUrls"))
                     DownloadUrls = data["DownloadUrls"].ToObject<List<string>>();
                 if (data.ContainsKey("ModLoaders"))
@@ -2906,7 +2910,7 @@ public static class ModComp
                     ReleaseDate = data["fileDate"].ToObject<DateTime>();
                     Status = (CompFileStatus)data["releaseType"].ToObject<int>();
                     DownloadCount = (int)data["downloadCount"];
-                    FileName = (string)data["fileName"];
+                    FileName = (string?)data["fileName"] ?? "";
                     Hash =
                         (string)((JsonArray)data["hashes"]).ToList().FirstOrDefault(s => s["algo"].ToObject<int>() == 1)?[
                             "value"];
@@ -2986,7 +2990,7 @@ public static class ModComp
                     if (((JsonArray)data["files"]).Any()) // 可能为空
                     {
                         var file = data["files"][0];
-                        FileName = (string)file["filename"];
+                        FileName = (string?)file["filename"] ?? "";
                         DownloadUrls = ModDownload.DlSourceModDownloadGet(file["url"].ToString()); // 同时添加了镜像源
                         Hash = (string)file["hashes"]["sha1"];
                     }
@@ -3136,7 +3140,8 @@ public static class ModComp
         /// <summary>
         ///     下载信息是否可用。
         /// </summary>
-        public bool Available => FileName is not null && DownloadUrls is not null;
+        [MemberNotNullWhen(true, nameof(DownloadUrls))]
+        public bool Available => !string.IsNullOrEmpty(FileName) && DownloadUrls is not null;
 
         /// <summary>
         /// 获取下载信息。
@@ -3163,9 +3168,9 @@ public static class ModComp
             string? version,
             CompLoaderType modLoader = CompLoaderType.Any)
         {
-            if (DownloadUrls is null)
+            if (DownloadUrls is null || string.IsNullOrEmpty(FileName))
             {
-                throw new InvalidCastException("DownloadUrls 为空");
+                throw new InvalidCastException("下载信息不完整");
             }
             
             return new DownloadFile(HandleModrinthDownloadUrls(DownloadUrls, reason, version, modLoader),
@@ -3242,7 +3247,7 @@ public static class ModComp
             json.Add("RawGameVersions", new JsonArray(RawGameVersions.Select(s => (JsonNode)s).ToArray()));
             json.Add("GameVersions", new JsonArray(GameVersions.Select(s => (JsonNode)s).ToArray()));
             json.Add("Status", (int)Status);
-            if (FileName is not null)
+            if (!string.IsNullOrEmpty(FileName))
                 json.Add("FileName", FileName);
             if (DownloadUrls is not null)
                 json.Add("DownloadUrls", new JsonArray(DownloadUrls.Select(s => (JsonNode)s).ToArray()));
@@ -3344,7 +3349,7 @@ public static class ModComp
     public static List<CompFile> CompFilesGet(string projectId, bool fromCurseForge)
     {
         // 1. 获取工程对象（使用 TryGetValue 提高效率并防止并发异常）
-        CompProject targetProject = null;
+        CompProject? targetProject = null;
         if (!compProjectCache.TryGetValue(projectId, out targetProject))
         {
             var url = fromCurseForge
@@ -3361,6 +3366,8 @@ public static class ModComp
             }
             // 假设 CompProject 构造函数内已处理缓存，否则此处应添加缓存逻辑
         }
+        if (targetProject is null)
+            throw new InvalidOperationException($"无法获取资源工程：{projectId}");
 
         // 2. 获取并缓存文件列表
         if (!compFilesCache.ContainsKey(projectId))
@@ -3707,8 +3714,8 @@ public static class ModComp
         };
         loader.Start(1);
         ModLoader.LoaderTaskbarAdd(loader);
-        ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-        ModMain.frmMain.BtnExtraDownload.Ribble();
+        ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
     }
 
     /// <summary>根据资源类型返回实例内的目标子文件夹（与 Save_Click 一致）。</summary>

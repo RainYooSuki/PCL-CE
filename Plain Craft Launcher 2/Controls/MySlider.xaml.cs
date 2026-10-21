@@ -8,9 +8,9 @@ namespace PCL;
 
 public partial class MySlider
 {
-    public delegate void ChangeEventHandler(object sender, bool user);
+    public delegate void ChangeEventHandler(object? sender, bool user);
 
-    public delegate void PreviewChangeEventHandler(object sender, ModBase.RouteEventArgs e);
+    public delegate void PreviewChangeEventHandler(object? sender, ModBase.RouteEventArgs e);
 
     // 自定义属性
 
@@ -19,7 +19,7 @@ public partial class MySlider
 
     // 拖动
 
-    public Delegate getHintText;
+    public Delegate? getHintText;
 
     // 基础
 
@@ -132,7 +132,7 @@ public partial class MySlider
     public event ChangeEventHandler? Change;
     public event PreviewChangeEventHandler? PreviewChange;
 
-    private void RefreshWidth(object sender, SizeChangedEventArgs? e)
+    private void RefreshWidth(object? sender, SizeChangedEventArgs? e)
     {
         if (e is not null)
             PanMain.Width = e.NewSize.Width;
@@ -144,14 +144,14 @@ public partial class MySlider
         ModBase.SetLeft(ShapeDot, newWidth);
     }
 
-    private void DragStart(object sender, MouseButtonEventArgs e)
+    private void DragStart(object? sender, MouseButtonEventArgs e)
     {
         CaptureMouse();
         MouseMove += OnDragMouseMove;
         e.Handled = true; // 防止 ScrollViewer 失焦问题
         ModMain.dragControl = this;
         RefreshColor();
-        ModMain.frmMain.DragDoing();
+        ModMain.frmMain?.DragDoing();
         ModAnimation.AniStart(
             ModAnimation.AaScaleTransform(ShapeDot, 1.3d - ((ScaleTransform)ShapeDot.RenderTransform).ScaleX, 40,
                 ease: new ModAnimation.AniEaseOutFluent()), "MySlider Scale " + Uuid);
@@ -169,7 +169,7 @@ public partial class MySlider
         RefreshPopup();
     }
     
-    private void OnDragMouseMove(object sender, MouseEventArgs e)
+    private void OnDragMouseMove(object? sender, MouseEventArgs e)
     {
         DragDoing();
     }
@@ -260,7 +260,7 @@ public partial class MySlider
         Focus(); // 确保按键能改变值
     }
 
-    private void MySlider_KeyDown(object sender, KeyEventArgs e)
+    private void MySlider_KeyDown(object? sender, KeyEventArgs e)
     {
         // 拒绝一边拖动一边用按键改变
         if (ReferenceEquals(this, ModMain.dragControl))

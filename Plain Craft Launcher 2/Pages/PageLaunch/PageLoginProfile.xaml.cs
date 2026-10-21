@@ -111,8 +111,8 @@ public partial class PageLoginProfile
 
         ModBase.RunInUi(() =>
         {
-            ModMain.frmLaunchLeft.RefreshPage(true);
-            ModMain.frmLaunchLeft.BtnLaunch.IsEnabled = true;
+            ModMain.FrmLaunchLeftRequired.RefreshPage(true);
+            ModMain.FrmLaunchLeftRequired.BtnLaunch.IsEnabled = true;
         });
     }
 

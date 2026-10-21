@@ -121,7 +121,7 @@ namespace PCL;
         ///     对老版本格式，例如 1.20.3，会被转换为 20.0.3。
         ///     若没有版本号，例如旧快照，则为 9999.0.0。
         /// </summary>
-        public Version vanilla;
+        public Version vanilla = new(9999, 0, 0);
 
         // 原版
 
@@ -129,7 +129,7 @@ namespace PCL;
         ///     原版版本名。
         ///     如 26.1，26.1-snapshot-1，1.12.2，16w01a。
         /// </summary>
-        public string VanillaName;
+        public string VanillaName = "";
 
         /// <summary>
         ///     原版版本号是否有效。

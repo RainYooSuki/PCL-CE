@@ -7,7 +7,7 @@ namespace PCL.Core.Test.Validate;
 public class FolderPathValidatorTest
 {
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public TestContext TestContext { get; set; }
+    public TestContext? TestContext { get; set; }
     
     [TestMethod]
     [DataRow(@"C:\Program Files", true)]
@@ -26,7 +26,7 @@ public class FolderPathValidatorTest
         {
             foreach (var error in result.Errors)
             {
-                TestContext.WriteLine(error.ErrorMessage);
+                TestContext?.WriteLine(error.ErrorMessage);
             }
         }
         Assert.AreEqual(expected, result.IsValid);

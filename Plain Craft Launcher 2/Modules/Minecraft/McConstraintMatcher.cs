@@ -6,7 +6,7 @@ namespace PCL;
 /// <summary>按 Forge/NeoForge Maven 区间或 Fabric/Quilt SemVer 谓词求值版本约束。</summary>
 public static class McConstraintMatcher
 {
-    private static bool IsForgeLike(string loaderType) =>
+    private static bool IsForgeLike(string? loaderType) =>
         string.Equals(loaderType, "Forge", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(loaderType, "NeoForge", StringComparison.OrdinalIgnoreCase);
 
@@ -25,8 +25,8 @@ public static class McConstraintMatcher
     ///     判断内嵌副本在 <paramref name="instanceMc" /> 下的匹配类型：精确命中(文件名/版本含该版本词) &gt;
     ///     范围覆盖(约束满足) &gt; 无约束(恒加载) &gt; 不兼容。用于多版本 wrapper 选出当前实例会加载的那份并标记。
     /// </summary>
-    public static MatchKind Match(string fileName, string version, string constraint, string loaderType,
-        string instanceMc)
+    public static MatchKind Match(string? fileName, string? version, string? constraint, string? loaderType,
+        string? instanceMc)
     {
         if (string.IsNullOrWhiteSpace(instanceMc)) return MatchKind.None;
         if (ContainsVersionToken(fileName, instanceMc) || ContainsVersionToken(version, instanceMc))
@@ -39,7 +39,7 @@ public static class McConstraintMatcher
     ///     <paramref name="version" /> 是否满足 <paramref name="constraint" />。约束为空视为无限制（满足）。
     ///     <paramref name="loaderType" /> 决定方言；为 null/未知时先按 semver 再按 Maven 兜底。
     /// </summary>
-    public static bool Satisfies(string constraint, string loaderType, string version)
+    public static bool Satisfies(string? constraint, string? loaderType, string? version)
     {
         if (string.IsNullOrWhiteSpace(constraint)) return true;
         if (string.IsNullOrWhiteSpace(version)) return false;
@@ -77,7 +77,7 @@ public static class McConstraintMatcher
     private static int Cmp(string a, string b) => McVersionComparer.CompareVersion(StripV(a), StripV(b));
 
     /// <summary>按 Maven ComparableVersion 规则比较版本。</summary>
-    public static int CompareMavenVersions(string left, string right)
+    public static int CompareMavenVersions(string? left, string? right)
     {
         left = StripV(left?.Trim() ?? "");
         right = StripV(right?.Trim() ?? "");
@@ -92,7 +92,7 @@ public static class McConstraintMatcher
     }
 
     /// <summary>Fabric 扩展 SemVer 排序；不符合 SemVer 的版本按规范回退为字典序。</summary>
-    public static int CompareFabricVersions(string left, string right)
+    public static int CompareFabricVersions(string? left, string? right)
     {
         left = StripBuild(left?.Trim() ?? "");
         right = StripBuild(right?.Trim() ?? "");
@@ -105,7 +105,7 @@ public static class McConstraintMatcher
     ///     约束是否至少有一个可解析的版本边界，供 provider 检查时判断能否可靠地报告版本不符。
     ///     Maven 区间的上界同样是有效边界，例如 <c>(,2.0)</c> 必须拒绝 3.0，不能因缺少下界而 fail-open。
     /// </summary>
-    public static bool HasComparableBound(string constraint)
+    public static bool HasComparableBound(string? constraint)
     {
         if (string.IsNullOrWhiteSpace(constraint)) return false;
         foreach (var interval in SplitTopLevel(constraint))
@@ -391,7 +391,7 @@ public static class McConstraintMatcher
     #region 版本 token（文件名/版本号精确命中兜底）
 
     // version 是否作为完整版本词出现在 haystack 中（"1.21" 不命中 "1.21.2" 或 "9.1.20"）
-    public static bool ContainsVersionToken(string haystack, string version)
+    public static bool ContainsVersionToken(string? haystack, string? version)
     {
         if (string.IsNullOrEmpty(haystack) || string.IsNullOrEmpty(version)) return false;
         var i = haystack.IndexOf(version, StringComparison.Ordinal);

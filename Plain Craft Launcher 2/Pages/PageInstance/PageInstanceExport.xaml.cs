@@ -24,23 +24,23 @@ public class ExportOption : DependencyObject
 
     public string Title
     {
-        get => (string)GetValue(TitleProperty);
+        get => GetValue(TitleProperty) as string ?? "";
         set => SetValue(TitleProperty, value);
     }
 
     public string Description
     {
-        get => (string)GetValue(DescriptionProperty);
+        get => GetValue(DescriptionProperty) as string ?? "";
         set => SetValue(DescriptionProperty, value);
     }
 
-    public string Rules { get; set; }
+    public string? Rules { get; set; }
 
     /// <summary>
     ///     如果 Rules 为空，则根据 ShowRules 的内容判断是否应该显示这个复选框。
     ///     如果 ShowRules 也为空，则始终显示。
     /// </summary>
-    public string ShowRules { get; set; }
+    public string? ShowRules { get; set; }
 
     public bool DefaultChecked { get; set; }
     public bool RequireModLoader { get; set; }
@@ -73,7 +73,7 @@ public partial class PageInstanceExport : IRefreshable
     private void PageInstanceExport_Loaded()
     {
         ModAnimation.AniControlEnabled += 1;
-        if ((currentVersion ?? "") != (PageInstanceLeft.McInstance.PathInstance ?? ""))
+        if ((currentVersion ?? "") != (PageInstanceLeft.McInstanceRequired.PathInstance ?? ""))
             RefreshAll(); // 切换到了另一个实例，重置页面
         ModAnimation.AniControlEnabled -= 1;
     }
@@ -82,15 +82,15 @@ public partial class PageInstanceExport : IRefreshable
     {
         ModBase.Log("[Export] 刷新导出页面");
         HintOptiFine.Visibility =
-            PageInstanceLeft.McInstance.Info.HasOptiFine ? Visibility.Visible : Visibility.Collapsed;
-        currentVersion = PageInstanceLeft.McInstance.PathInstance;
+            PageInstanceLeft.McInstanceRequired.Info.HasOptiFine ? Visibility.Visible : Visibility.Collapsed;
+        currentVersion = PageInstanceLeft.McInstanceRequired.PathInstance;
         TextExportName.Text = "";
-        TextExportName.HintText = PageInstanceLeft.McInstance.Name;
+        TextExportName.HintText = PageInstanceLeft.McInstanceRequired.Name;
         TextExportVersion.Text = "";
         TextExportVersion.HintText = "1.0.0";
         CheckAdvancedInclude.Checked = false;
         CheckAdvancedModrinth.Checked = false;
-        GetExportOption(CheckOptionsBasic).Description = PageInstanceLeft.McInstance.GetDefaultDescription();
+        GetExportOption(CheckOptionsBasic).Description = PageInstanceLeft.McInstanceRequired.GetDefaultDescription();
         ResetConfigOverrides();
         ReloadAllSubOptions();
         RefreshAllOptionsUI();
@@ -154,7 +154,7 @@ public partial class PageInstanceExport : IRefreshable
     {
         PanOptionsOtherFolders.Children.Clear();
 
-        var pathIndie = PageInstanceLeft.McInstance.PathIndie;
+        var pathIndie = PageInstanceLeft.McInstanceRequired.PathIndie;
         var rootDir = new DirectoryInfo(pathIndie);
         if (!rootDir.Exists)
         {
@@ -228,7 +228,7 @@ public partial class PageInstanceExport : IRefreshable
         panel.Children.Clear();
         foreach (var Folder in folders)
         {
-            var targetFolder = new DirectoryInfo(PageInstanceLeft.McInstance.PathIndie + Folder);
+            var targetFolder = new DirectoryInfo(PageInstanceLeft.McInstanceRequired.PathIndie + Folder);
             if (!targetFolder.Exists)
                 continue;
             // 查找文件夹下的对应项
@@ -329,7 +329,7 @@ public partial class PageInstanceExport : IRefreshable
 
         ; // 检查文件夹不为空
         // 一般是由于无法访问，或是一个指向已不存在的文件夹的链接（例如使用 mklink 创造的 resource 文件夹链接）
-        var pathInfo = new DirectoryInfo(PageInstanceLeft.McInstance.PathIndie);
+        var pathInfo = new DirectoryInfo(PageInstanceLeft.McInstanceRequired.PathIndie);
         allEntries.AddRange(pathInfo.EnumerateFiles().Select(f => f.Name));
         foreach (var SubFolder in pathInfo.EnumerateDirectories().Where(IsValidDirectory))
         {
@@ -345,15 +345,17 @@ public partial class PageInstanceExport : IRefreshable
         bool IsVisible(ExportOption targetOption)
         {
             // 检查需要 OptiFine 或 Mod 加载器
-            if (targetOption.RequireOptiFine && !PageInstanceLeft.McInstance.Info.HasOptiFine)
+            if (targetOption.RequireOptiFine && !PageInstanceLeft.McInstanceRequired.Info.HasOptiFine)
                 return false;
-            if (targetOption.RequireModLoader && !PageInstanceLeft.McInstance.Modable)
+            if (targetOption.RequireModLoader && !PageInstanceLeft.McInstanceRequired.Modable)
                 return false;
-            if (targetOption.RequireModLoaderOrOptiFine && !PageInstanceLeft.McInstance.Info.HasOptiFine &&
-                !PageInstanceLeft.McInstance.Modable)
+            if (targetOption.RequireModLoaderOrOptiFine && !PageInstanceLeft.McInstanceRequired.Info.HasOptiFine &&
+                !PageInstanceLeft.McInstanceRequired.Modable)
                 return false;
             // 粗略检查是否可能有符合规则的文件/文件夹
-            return StandardizeLines((targetOption.Rules ?? targetOption.ShowRules).Split('|'), true).Any(rule =>
+            if ((targetOption.Rules ?? targetOption.ShowRules) is not { } ruleSource)
+                return false;
+            return StandardizeLines(ruleSource.Split('|'), true).Any(rule =>
             {
                 if (rule.StartsWithF("!"))
                     return false; // 只看正向规则
@@ -378,9 +380,9 @@ public partial class PageInstanceExport : IRefreshable
                 if (rule.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Count() >= 3)
                 {
                     if (rule.EndsWithF(@"\"))
-                        return IsValidDirectory(new DirectoryInfo(PageInstanceLeft.McInstance.PathIndie + rule)); // 文件夹有效
+                        return IsValidDirectory(new DirectoryInfo(PageInstanceLeft.McInstanceRequired.PathIndie + rule)); // 文件夹有效
 
-                    return File.Exists(PageInstanceLeft.McInstance.PathIndie + rule);
+                    return File.Exists(PageInstanceLeft.McInstanceRequired.PathIndie + rule);
                     // 文件有效
                 }
 
@@ -472,7 +474,7 @@ public partial class PageInstanceExport : IRefreshable
     ///     从配置文件中读取的规则。
     ///     如果不为 Nothing，则会覆写当前勾选的规则并禁用对应 UI。
     /// </summary>
-    private List<string> RulesOverrides
+    private List<string>? RulesOverrides
     {
         get => field;
         set
@@ -810,12 +812,12 @@ public partial class PageInstanceExport : IRefreshable
         {
             if ((OngoingLoader.name ?? "") != (loaderName ?? ""))
                 continue;
-            ModMain.frmMain.PageChange(FormMain.PageType.TaskManager);
+            ModMain.FrmMainRequired.PageChange(FormMain.PageType.TaskManager);
             return;
         }
 
         // 确认导出位置
-        string packPath = null;
+        string? packPath = null;
         if (!string.IsNullOrWhiteSpace(configPackPath) && !configPackPath.EndsWithF(@"\") &&
             !configPackPath.EndsWithF("/"))
             try
@@ -853,7 +855,7 @@ public partial class PageInstanceExport : IRefreshable
         // 缓存所需参数
         var cacheFolder = ModMain.RequestTaskTempFolder();
         var overridesFolder = Path.Combine(cacheFolder, "modpack", "overrides");
-        var mcInstance = PageInstanceLeft.McInstance;
+        var mcInstance = PageInstanceLeft.McInstanceRequired;
         var pathIndie = mcInstance.PathIndie;
         var checkHostedAssets = (bool)!CheckAdvancedInclude.Checked;
         var modrinthUploadMode = (bool)CheckAdvancedModrinth.Checked;
@@ -893,9 +895,8 @@ public partial class PageInstanceExport : IRefreshable
                 loader.output = [];
                 // 复制实例文件
                 var progress = 0;
-            Action<DirectoryInfo> searchFolder = null;
-            searchFolder = folder =>
-            {
+                void SearchFolder(DirectoryInfo folder)
+                {
                 // 文件夹：进一步搜索
                 foreach (var SubFolder in folder.EnumerateDirectories("*", SearchOption.TopDirectoryOnly))
                 {
@@ -906,7 +907,7 @@ public partial class PageInstanceExport : IRefreshable
                     if (new[] { "structureCacheV1", ".fabric", ".git", "avatar-cache", "cosmetic-cache" }.Contains(
                             SubFolder.Name))
                         continue;
-                    searchFolder(SubFolder);
+                    SearchFolder(SubFolder);
                 }
 
                 // 文件：检查规则并复制
@@ -945,8 +946,8 @@ public partial class PageInstanceExport : IRefreshable
                         progress = 0;
                     }
                 }
-            };
-            searchFolder(new DirectoryInfo(pathIndie));
+                }
+                SearchFolder(new DirectoryInfo(pathIndie));
             ModBase.Log($"[Export] 复制 overrides 文件完成，有 {loader.output.Count} 个文件需要联网检查");
             loader.Progress = 0.95d;
             // 复制追加内容到根目录
@@ -1209,9 +1210,9 @@ public partial class PageInstanceExport : IRefreshable
             { OnStateChanged = ModDownloadLib.LoaderStateChangedHintOnly };
         mainLoader.Start();
         ModLoader.LoaderTaskbarAdd(mainLoader);
-        ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-        ModMain.frmMain.BtnExtraDownload.Ribble();
-        ModMain.frmMain.PageChange(FormMain.PageType.TaskManager);
+        ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
+        ModMain.FrmMainRequired.PageChange(FormMain.PageType.TaskManager);
     }
 
     #endregion

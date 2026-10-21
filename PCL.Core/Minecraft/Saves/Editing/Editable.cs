@@ -36,5 +36,5 @@ public readonly record struct Editable<T> where T : struct
     }
 
     /// <summary>返回值的字符串表示，无值时返回 "&lt;unspecified&gt;"。</summary>
-    public override string ToString() => _hasValue ? _value!.ToString() ?? "" : "<unspecified>";
+    public override string ToString() => _hasValue ? _value.ToString() ?? "" : "<unspecified>";
 }

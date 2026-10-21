@@ -124,7 +124,7 @@ public class LocalizationTest
         return document.Descendants()
             .Select(element => element.Attribute(keyAttributeName)?.Value)
             .Where(key => !string.IsNullOrWhiteSpace(key))
-            .Select(key => key!)
+            .OfType<string>()
             .ToArray();
     }
 

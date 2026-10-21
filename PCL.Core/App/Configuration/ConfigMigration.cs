@@ -49,8 +49,8 @@ public class ConfigMigration
             where File.Exists(path) && _TryFindShortestPath(path, target, migrations, out solution)
             select path
         ).Any();
-        if (!found) return false;
-        foreach (var migration in solution!) migration.OnMigration(migration.From, migration.To);
+        if (!found || solution is null) return false;
+        foreach (var migration in solution) migration.OnMigration(migration.From, migration.To);
         return true;
     }
 

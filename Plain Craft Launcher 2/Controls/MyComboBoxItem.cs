@@ -10,7 +10,7 @@ public class MyComboBoxItem : ComboBoxItem
 
     private const int animationTimeIn = 100;
     private const int animationTimeOut = 300;
-    private string backColorName;
+    private string backColorName = "";
     private double fontOpacity;
 
     // 基础
@@ -93,7 +93,7 @@ public class MyComboBoxItem : ComboBoxItem
         return value.Content?.ToString() ?? "";
     }
 
-    private void MyComboBoxItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    private void MyComboBoxItem_MouseLeftButtonUp(object? sender, MouseButtonEventArgs e)
     {
         ModBase.Log("[Control] 选择下拉列表项：" + ToString());
     }

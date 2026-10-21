@@ -29,8 +29,7 @@ public partial class PageSetupUpdate
             if (await UpdateManager.remoteServer.IsLatestAsync(
                     UpdateChannel.stable,
                     SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64,
-                    SemVer.Parse(ModBase.versionBaseName),
-                    ModBase.versionCode))
+                    SemVer.Parse(ModBase.versionBaseName)))
             {
                 ModBase.Log("[Update] 已是最新版本");
                 return UpdateStatus.Latest;

@@ -14,10 +14,9 @@ namespace PCL.Core.Test.Hash;
 [TestClass]
 public class HashCacheTest
 {
-    private string _tempDir = null!;
+    private readonly string _tempDir;
 
-    [TestInitialize]
-    public void Initialize()
+    public HashCacheTest()
     {
         _tempDir = Path.Combine(Path.GetTempPath(), "PCLTest", "HashCache", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDir);

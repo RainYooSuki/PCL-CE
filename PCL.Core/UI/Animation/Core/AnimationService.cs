@@ -19,7 +19,7 @@ public sealed class AnimationService : GeneralService
     #region Lifecycle
 
     private static LifecycleContext? _context;
-    private static LifecycleContext Context => _context!;
+    private static LifecycleContext Context => _context ?? throw _GetUninitializedException();
 
     private AnimationService() : base("animation", "动画")
     {
@@ -50,20 +50,38 @@ public sealed class AnimationService : GeneralService
         ValueProcessorManager.Register(new ThicknessValueProcessor());
     }
 
-    private static Channel<(IAnimation Animation, IAnimatable Target)> _animationChannel = null!;
-    // private static Channel<IAnimationFrame> _frameChannel = null!;
-    private static Channel<(IAnimationFrame Frame, IAnimation Source)> _frameChannel = null!;
-    // private static ConcurrentDictionary<IAnimatable, IAnimationFrame> _frameDictionary = null!;
+    private static Channel<(IAnimation Animation, IAnimatable Target)>? _animationChannel;
+    // private static Channel<IAnimationFrame>? _frameChannel;
+    private static Channel<(IAnimationFrame Frame, IAnimation Source)>? _frameChannel;
+    // private static ConcurrentDictionary<IAnimatable, IAnimationFrame>? _frameDictionary;
     private static ConcurrentDictionary<string, IAnimation> _namedAnimations = new();
-    private static IClock _clock = null!;
-    private static AsyncCountResetEvent _resetEvent = null!;
+    private static IClock? _clock;
+    private static AsyncCountResetEvent? _resetEvent;
     private static int _taskCount;
-    private static CancellationTokenSource _cts = null!;
-    
+    private static CancellationTokenSource? _cts;
+    private static IUIAccessProvider? _uiAccessProvider;
+
+    private static InvalidOperationException _GetUninitializedException()
+        => new("Animation service is not initialized.");
+
+    private static Channel<(IAnimation Animation, IAnimatable Target)> AnimationChannel
+        => _animationChannel ?? throw _GetUninitializedException();
+
+    private static Channel<(IAnimationFrame Frame, IAnimation Source)> FrameChannel
+        => _frameChannel ?? throw _GetUninitializedException();
+
+    private static IClock Clock => _clock ?? throw _GetUninitializedException();
+    private static AsyncCountResetEvent ResetEvent => _resetEvent ?? throw _GetUninitializedException();
+    private static CancellationTokenSource Cts => _cts ?? throw _GetUninitializedException();
+
     public static int Fps { get; set; } = 60;
     public static double Scale { get; set; } = 0.1d;
 
-    public static IUIAccessProvider UIAccessProvider { get; private set; } = null!;
+    public static IUIAccessProvider UIAccessProvider
+    {
+        get => _uiAccessProvider ?? throw _GetUninitializedException();
+        private set => _uiAccessProvider = value;
+    }
     
     private static void _Initialize()
     {
@@ -87,11 +105,11 @@ public sealed class AnimationService : GeneralService
         UIAccessProvider = new WpfUIAccessProvider(Lifecycle.CurrentApplication.Dispatcher);
         _ = UIAccessProvider.InvokeAsync(async () =>
         {
-            if (_cts.IsCancellationRequested) return;
-            while (await _frameChannel.Reader.WaitToReadAsync())
+            if (Cts.IsCancellationRequested) return;
+            while (await FrameChannel.Reader.WaitToReadAsync())
             {
                 // 读取数据
-                while (_frameChannel.Reader.TryRead(out var item))
+                while (FrameChannel.Reader.TryRead(out var item))
                 {
                     // 如果动画源已被标记取消，直接丢弃该帧，不进行处理
                     if (item.Source.Status == AnimationStatus.Canceled) 
@@ -107,8 +125,8 @@ public sealed class AnimationService : GeneralService
 
         // 初始化 Clock 并注册 Tick 事件
         _clock = new WinMMClock(Fps);
-        _clock.Tick += ClockOnTick;
-        _clock.Start();
+        Clock.Tick += ClockOnTick;
+        Clock.Start();
         
         // 运行动画计算 Task
         for (var i = 0; i < _taskCount; i++)
@@ -120,15 +138,15 @@ public sealed class AnimationService : GeneralService
     private static void _Uninitialize()
     {
         // 取消动画计算 Task
-        _cts.Cancel();
-        _cts.Dispose();
+        Cts.Cancel();
+        Cts.Dispose();
         
         // 停止 Clock 并注销 Tick 事件
-        _clock.Tick -= ClockOnTick;
-        _clock.Stop();
+        Clock.Tick -= ClockOnTick;
+        Clock.Stop();
         
         // 将 ResetEvent 释放
-        _resetEvent.Dispose();
+        ResetEvent.Dispose();
         
         // 清理 Dictionary
         _namedAnimations.Clear();
@@ -137,7 +155,7 @@ public sealed class AnimationService : GeneralService
     private static void ClockOnTick(object? sender, long e)
     {
         // 通知所有等待的动画计算 Task 进行下一帧计算
-        _resetEvent.Set(_taskCount);
+        ResetEvent.Set(_taskCount);
     }
 
     private static async Task _AnimationComputeTaskAsync()
@@ -146,10 +164,10 @@ public sealed class AnimationService : GeneralService
         var animationList = new List<(IAnimation Animation, IAnimatable Target)>(8);
         
         // 持续监听 Channel 中的动画
-        while (!_cts.IsCancellationRequested)
+        while (!Cts.IsCancellationRequested)
         {
             // 读取所有可用的动画到本地列表
-            while (_animationChannel.Reader.TryRead(out var animation))
+            while (AnimationChannel.Reader.TryRead(out var animation))
             {
                 // 将动画添加到本地列表
                 animationList.Add(animation);
@@ -158,7 +176,7 @@ public sealed class AnimationService : GeneralService
             // 如果没有动画，直接等下一帧
             if (animationList.Count == 0)
             {
-                await _resetEvent.WaitAsync();
+                await ResetEvent.WaitAsync();
                 continue;
             }
 
@@ -190,13 +208,13 @@ public sealed class AnimationService : GeneralService
                 // 如果没有计算帧（当动画为 SequentialAnimationGroup 或 ParallelAnimationGroup 这种动画集合时），跳过
                 if (frame is null) continue;
                 // 将动画帧写入 Channel
-                _frameChannel.Writer.TryWrite((frame, animationEntry.Animation));
+                FrameChannel.Writer.TryWrite((frame, animationEntry.Animation));
                 // 增加当前帧计数
                 animationEntry.Animation.CurrentFrame++;
             }
             
             // 等待 Tick 事件的通知
-            await _resetEvent.WaitAsync();
+            await ResetEvent.WaitAsync();
         }
     }
 
@@ -224,7 +242,7 @@ public sealed class AnimationService : GeneralService
         
         animation.Completed += (_, _) => tcs.SetResult();
         
-        _animationChannel.Writer.TryWrite((animation, target));
+        AnimationChannel.Writer.TryWrite((animation, target));
         return tcs.Task;
     }
     
@@ -232,7 +250,7 @@ public sealed class AnimationService : GeneralService
     {
         _HandleNamedAnimationConflict(animation);
         
-        _animationChannel.Writer.TryWrite((animation, target));
+        AnimationChannel.Writer.TryWrite((animation, target));
     }
     
     public static void CancelAnimationByName(string name)

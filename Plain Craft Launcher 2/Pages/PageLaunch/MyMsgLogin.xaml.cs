@@ -40,7 +40,7 @@ public partial class MyMsgLogin
         myConverter.CompletionHandler?.Invoke(result);
         ModBase.RunInUi(Close);
         Thread.Sleep(200);
-        ModMain.frmMain.ShowWindowToTop();
+        ModMain.FrmMainRequired.ShowWindowToTop();
     }
 
     private void Init()
@@ -188,7 +188,8 @@ public partial class MyMsgLogin
             Btn3.Name += ModBase.GetUuid();
             myConverter = converter;
             ShapeLine.StrokeThickness = ModBase.GetWPFSize(1d);
-            data = (JsonObject)converter.Content;
+            if (converter.Content is not JsonObject content) throw new InvalidDataException("登录弹窗缺少 OAuth 上下文数据。");
+            data = content;
             Init();
         }
         catch (Exception ex)
@@ -210,10 +211,10 @@ public partial class MyMsgLogin
             // 动画
             Opacity = 0d;
             ModAnimation.AniStart(
-                ModAnimation.AaColor(ModMain.frmMain.PanMsgBackground, BlurBorder.BackgroundProperty,
+                ModAnimation.AaColor(ModMain.FrmMainRequired.PanMsgBackground, BlurBorder.BackgroundProperty,
                     (myConverter.IsWarn
                         ? new ModBase.MyColor(140d, 80d, 0d, 0d)
-                        : new ModBase.MyColor(90d, 0d, 0d, 0d)) - ModMain.frmMain.PanMsgBackground.Background, 200),
+                        : new ModBase.MyColor(90d, 0d, 0d, 0d)) - ModMain.FrmMainRequired.PanMsgBackground.Background, 200),
                 "PanMsgBackground Background");
             ModAnimation.AniStart(
                 new[]
@@ -246,9 +247,9 @@ public partial class MyMsgLogin
             ModAnimation.AaCode(() =>
             {
                 if (!ModMain.WaitingMyMsgBox.Any())
-                    ModAnimation.AniStart(ModAnimation.AaColor(ModMain.frmMain.PanMsgBackground,
+                    ModAnimation.AniStart(ModAnimation.AaColor(ModMain.FrmMainRequired.PanMsgBackground,
                         BlurBorder.BackgroundProperty,
-                        new ModBase.MyColor(0d, 0d, 0d, 0d) - ModMain.frmMain.PanMsgBackground.Background, 200,
+                        new ModBase.MyColor(0d, 0d, 0d, 0d) - ModMain.FrmMainRequired.PanMsgBackground.Background, 200,
                         ease: new ModAnimation.AniEaseOutFluent(ModAnimation.AniEasePower.Weak)));
             }, 30),
             ModAnimation.AaOpacity(this, -Opacity, 80, 20),
@@ -261,11 +262,11 @@ public partial class MyMsgLogin
     }
 
     // 实现回车和 Esc 的接口（#4857）
-    public void Btn1_Click(object sender, MouseButtonEventArgs e)
+    public void Btn1_Click(object? sender, EventArgs? e)
     {
     }
 
-    public void Btn3_Click(object sender, MouseButtonEventArgs e)
+    public void Btn3_Click(object? sender, EventArgs? e)
     {
         Finished(new ThreadInterruptedException());
     }
@@ -274,7 +275,7 @@ public partial class MyMsgLogin
     {
         // On Error Resume Next
         if (e.GetPosition(ShapeLine).Y <= 2d)
-            ModMain.frmMain.DragMove();
+            ModMain.FrmMainRequired.DragMove();
     }
 
     #endregion

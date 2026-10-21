@@ -26,7 +26,7 @@ public class MyComboBox : ComboBox
     // 修复 WPF Bug：下拉框文本修改后，依然误认为还选择着此前的选项，导致再次点击该选项时内容不变
     private bool isTextChanging;
     private double realWidth; // 由于下拉框 Popup 宽度与 Width 一致，故不能为 NaN（Auto）
-    private MyTextBox textBox;
+    private MyTextBox? textBox;
 
     // 基础
     public int Uuid = ModBase.GetUuid();
@@ -50,7 +50,7 @@ public class MyComboBox : ComboBox
 
     public string HintText
     {
-        get => (string)GetValue(HintTextProperty);
+        get => GetValue(HintTextProperty) as string ?? "";
         set => SetValue(HintTextProperty, value);
     }
 
@@ -84,7 +84,7 @@ public class MyComboBox : ComboBox
 
     public bool DropDownWidthSync { get; set; } = true;
 
-    public ContentPresenter ContentPresenter => (ContentPresenter)Template.FindName("PART_Content", this);
+    public ContentPresenter? ContentPresenter => Template.FindName("PART_Content", this) as ContentPresenter;
     public event TextChangedEventHandler? TextChanged;
 
     public override void OnApplyTemplate()
@@ -94,14 +94,16 @@ public class MyComboBox : ComboBox
             return;
         try
         {
-            textBox = (MyTextBox)Template.FindName("PART_EditableTextBox", this);
+            textBox = Template.FindName("PART_EditableTextBox", this) as MyTextBox;
+            if (textBox is null)
+                return;
             textBox.AddHandler(LostFocusEvent, new RoutedEventHandler((_, _) => RefreshColor()));
             textBox.changedEventList.Add((sender, e) => TextChanged?.Invoke(sender, (TextChangedEventArgs)e));
             textBox.Tag = Tag; // 有时需要用文本框的 Tag 来写入设置
             if (string.IsNullOrEmpty(Text))
                 textBox.Text = _Text;
             else
-                TextChanged?.Invoke(this, null);
+                TextChanged?.Invoke(this, new TextChangedEventArgs(textBox, UndoAction.None));
             if (HintText.Length > 0)
                 textBox.HintText = HintText;
             textBox.SetResourceReference(TextBoxBase.CaretBrushProperty, "ColorBrushGray1");
@@ -190,7 +192,7 @@ public class MyComboBox : ComboBox
         try
         {
             var popup = (Grid)Template.FindName("PanPopup", this);
-            popup.Opacity = ModMain.frmMain.Opacity;
+            popup.Opacity = ModMain.FrmMainRequired.Opacity;
             if (!DropDownWidthSync)
                 popup.MinWidth = ActualWidth;
         }
@@ -214,13 +216,15 @@ public class MyComboBox : ComboBox
         if (isTextChanging || !IsEditable)
             return;
         if (SelectedItem is null || Text == SelectedItem.ToString()) return;
+        if (textBox is not { } editableTextBox)
+            return;
         {
             var rawText = Text;
-            var rawSelectionStart = textBox.SelectionStart;
+            var rawSelectionStart = editableTextBox.SelectionStart;
             isTextChanging = true;
             SelectedItem = null;
             Text = rawText;
-            textBox.SelectionStart = rawSelectionStart;
+            editableTextBox.SelectionStart = rawSelectionStart;
             isTextChanging = false;
         }
     }

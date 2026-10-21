@@ -10,7 +10,8 @@ namespace PCL.Core.App.Essentials;
 public sealed class UpdateService : GeneralService
 {
     private static LifecycleContext? _context;
-    private static LifecycleContext Context => _context!;
+    private static LifecycleContext Context =>
+        _context ?? throw new InvalidOperationException("Update service context is not initialized.");
 
     private UpdateService() : base("update", "更新", false) { _context = ServiceContext; }
 

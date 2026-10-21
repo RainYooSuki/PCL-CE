@@ -183,7 +183,7 @@ public partial class MySkin
                 throw new Exception("图片大小不足，长为 " + image.pic.Height + "，宽为 " + image.pic.Width);
             }
 
-            MyBitmap skinHead = null;
+            MyBitmap? skinHead = null;
             // 头发层（附加层）
             if (image.pic.Width >= 64 && image.pic.Height >= 32)
             {
@@ -285,7 +285,7 @@ public partial class MySkin
     /// <summary>
     ///     刷新皮肤缓存。
     /// </summary>
-    public static void RefreshCache(ModLoader.LoaderTask<ModBase.EqualableList<string>, string> sender = null)
+    public static void RefreshCache(ModLoader.LoaderTask<ModBase.EqualableList<string>, string>? sender = null)
     {
         var hasLoaderRunning =
             PageLaunchLeft.skinLoaders.Any(skinLoader => skinLoader.State == ModBase.LoadState.Loading);

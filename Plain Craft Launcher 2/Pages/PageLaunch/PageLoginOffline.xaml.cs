@@ -22,7 +22,7 @@ public partial class PageLoginOffline
     private void BtnBack_Click(object sender, EventArgs e)
     {
         ProfileService.IsCreatingProfile = false;
-        ModBase.RunInUi(() => ModMain.frmLaunchLeft.RefreshPage(true));
+        ModBase.RunInUi(() => ModMain.FrmLaunchLeftRequired.RefreshPage(true));
     }
 
     private void RadioUuid_Checked(object sender, ModBase.RouteEventArgs e)
@@ -50,7 +50,7 @@ public partial class PageLoginOffline
                         Lang.Text("Launch.Account.Offline.InvalidPlayerId.Title"), Lang.Text("Common.Action.Continue"), Lang.Text("Common.Action.Cancel"), isWarn: true, forceWait: true) == 2)
                 return;
         // UUID
-        string userUuid = null;
+        string userUuid;
         if (RadioUuidCustom.Checked)
         {
             // 自定义输入检查
@@ -87,6 +87,6 @@ public partial class PageLoginOffline
         ProfileService.Add(newProfile);
         ProfileService.IsCreatingProfile = false;
         HintService.Hint(Lang.Text("Launch.Account.Profile.Created"), HintType.Success);
-        ModBase.RunInUi(() => ModMain.frmLaunchLeft.RefreshPage(true));
+        ModBase.RunInUi(() => ModMain.FrmLaunchLeftRequired.RefreshPage(true));
     }
 }

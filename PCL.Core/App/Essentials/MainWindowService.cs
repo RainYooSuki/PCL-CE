@@ -10,13 +10,15 @@ public sealed class MainWindowService : GeneralService
     public static Func<Window>? Loading { private get; set; }
 
     private static LifecycleContext? _context;
-    private static LifecycleContext Context => _context!;
+    private static LifecycleContext Context =>
+        _context ?? throw new InvalidOperationException("Main window service context is not initialized.");
     private MainWindowService() : base("window", "主窗体", false) { _context = ServiceContext; }
     
     public override void Start()
     {
         Context.Debug("正在初始化 WPF 窗体");
-        var window = Loading!.Invoke();
+        var window = Loading?.Invoke()
+            ?? throw new InvalidOperationException("The main window loader is not configured.");
         window.Loaded += (_, _) => Lifecycle.OnWindowCreated();
         Lifecycle.CurrentApplication.MainWindow = window;
         Context.Trace("窗体创建完毕");

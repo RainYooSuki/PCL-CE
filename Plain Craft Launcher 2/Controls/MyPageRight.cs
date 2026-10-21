@@ -62,11 +62,10 @@ public class MyPageRight : AdornerDecorator
 
     #region 加载器
 
-    private ModLoader.LoaderBase pageLoader;
+    private ModLoader.LoaderBase? pageLoader;
     private Func<object>? pageLoaderInputInvoke;
-    private MyLoading? pageLoaderUi;
-    private FrameworkElement panLoader;
-    private FrameworkElement panContent;
+    private FrameworkElement? panLoader;
+    private FrameworkElement? panContent;
     private FrameworkElement? panAlways;
     private bool pageLoaderAutoRun;
 
@@ -89,7 +88,6 @@ public class MyPageRight : AdornerDecorator
         this.panContent = panContent;
         this.panAlways = panAlways;
         pageLoader = realLoader;
-        pageLoaderUi = loaderUi;
         pageLoaderInputInvoke = inputInvoke;
         pageLoaderAutoRun = autoRun;
         // 添加结束 Invoke
@@ -110,7 +108,7 @@ public class MyPageRight : AdornerDecorator
         // 初次运行加载器
         if (pageLoaderAutoRun)
         {
-            if (pageLoader is ModLoader.LoaderTask task)
+            if (realLoader is ModLoader.LoaderTask task)
             {
                 task.Start(task.StartGetInputNoType(null, pageLoaderInputInvoke));
             }
@@ -119,15 +117,15 @@ public class MyPageRight : AdornerDecorator
                 object? input = null;
                 if (pageLoaderInputInvoke is not null)
                     input = pageLoaderInputInvoke();
-                pageLoader.Start(input);
+                realLoader.Start(input);
             }
         }
 
-        if (pageLoader.State == ModBase.LoadState.Finished && finishedInvoke is not null)
+        if (realLoader.State == ModBase.LoadState.Finished && finishedInvoke is not null)
             ModBase.RunInUiWait(() => finishedInvoke(realLoader)); // 加载器已提前完成，直接触发事件
         // 设置加载环
-        pageLoaderUi.State = realLoader;
-        pageLoaderUi.Click += (_, _) =>
+        loaderUi.State = realLoader;
+        loaderUi.Click += (_, _) =>
         {
             if (realLoader.State == ModBase.LoadState.Failed) PageLoaderRestart();
         }; // 点击重试事件
@@ -138,15 +136,17 @@ public class MyPageRight : AdornerDecorator
     {
         if (!pageLoaderAutoRun)
             return;
-        if (pageLoader is LoaderTask task)
+        if (pageLoader is not { } loader)
+            return;
+        if (loader is LoaderTask task)
         {
-            pageLoader.Start(task.StartGetInputNoType(input, pageLoaderInputInvoke), isForceRestart);
+            loader.Start(task.StartGetInputNoType(input, pageLoaderInputInvoke), isForceRestart);
         }
         else
         {
             if (input is null && pageLoaderInputInvoke is not null)
                 input = pageLoaderInputInvoke;
-            pageLoader.Start(input, isForceRestart);
+            loader.Start(input, isForceRestart);
         }
     }
 
@@ -299,8 +299,8 @@ public class MyPageRight : AdornerDecorator
         }
         else
         {
-            panContent.Visibility = Visibility.Collapsed;
-            panLoader.Visibility = Visibility.Collapsed;
+            panContent?.Visibility = Visibility.Collapsed;
+            panLoader?.Visibility = Visibility.Collapsed;
             if (panAlways is not null)
                 panAlways.Visibility = Visibility.Collapsed;
         }
@@ -456,7 +456,7 @@ public class MyPageRight : AdornerDecorator
         {
             case PageStates.LoaderStayForce:
             {
-                if (pageLoader.State == ModBase.LoadState.Finished)
+                if (pageLoader?.State == ModBase.LoadState.Finished)
                 {
                     PageState = PageStates.LoaderExit;
                     TriggerExitAnimation(panLoader);
@@ -551,9 +551,9 @@ public class MyPageRight : AdornerDecorator
     #region 动画
 
     // 逐个进入动画
-    public void TriggerEnterAnimation(params FrameworkElement[] elements)
+    public void TriggerEnterAnimation(params FrameworkElement?[] elements)
     {
-        var realElements = elements.Where(e => e is not null);
+        var realElements = elements.OfType<FrameworkElement>();
         foreach (var Element in realElements)
             Element.Visibility = Visibility.Visible; // 页面均处于默认的隐藏状态
         var aniList = new List<ModAnimation.AniData>();
@@ -603,9 +603,9 @@ public class MyPageRight : AdornerDecorator
     }
 
     // 逐个退出动画
-    public void TriggerExitAnimation(params FrameworkElement[] elements)
+    public void TriggerExitAnimation(params FrameworkElement?[] elements)
     {
-        var realElements = elements.Where(e => e is not null);
+        var realElements = elements.OfType<FrameworkElement>();
         var aniList = new List<ModAnimation.AniData>();
         var delay = 0;
         foreach (var Element in realElements)
@@ -682,7 +682,7 @@ public class MyPageRight : AdornerDecorator
     }
 
     // 查找列表中的第一个滚动条
-    private MyScrollBar GetFirstScrollViewer(IEnumerable<FrameworkElement> elements)
+    private MyScrollBar? GetFirstScrollViewer(IEnumerable<FrameworkElement> elements)
     {
         foreach (var Element in elements)
         {

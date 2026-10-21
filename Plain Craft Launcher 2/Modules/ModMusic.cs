@@ -58,7 +58,7 @@ public static class ModMusic
                 if (reader.TotalTime.TotalMilliseconds > 0d)
                 {
                     var progress = reader.CurrentTime.TotalMilliseconds / reader.TotalTime.TotalMilliseconds;
-                    ModBase.RunInUi(() => ModMain.frmMain.BtnExtraMusic.Progress = progress);
+                    ModBase.RunInUi(() => ModMain.FrmMainRequired.BtnExtraMusic.Progress = progress);
                 }
 
                 Thread.Sleep(100);
@@ -232,18 +232,18 @@ public static class ModMusic
             {
                 if ((musicAllList?.Any() is { } arg1 ? arg1 : null) == false)
                 {
-                    ModMain.frmMain.BtnExtraMusic.Show = false;
+                    ModMain.FrmMainRequired.BtnExtraMusic.Show = false;
                 }
                 else
                 {
-                    ModMain.frmMain.BtnExtraMusic.Show = true;
+                    ModMain.FrmMainRequired.BtnExtraMusic.Show = true;
                     var fileName = ModBase.GetFileNameWithoutExtentionFromPath(musicCurrent);
                     var isSingle = musicAllList.Count == 1;
                     string tipText;
                     if (MusicState == MusicStates.Pause)
                     {
-                        ModMain.frmMain.BtnExtraMusic.SvgIcon = "lucide/play";
-                        ModMain.frmMain.BtnExtraMusic.LogoScale = 0.8d;
+                        ModMain.FrmMainRequired.BtnExtraMusic.SvgIcon = "lucide/play";
+                        ModMain.FrmMainRequired.BtnExtraMusic.LogoScale = 0.8d;
                         tipText = Lang.Text(
                             isSingle
                                 ? "Music.ToolTip.Paused.Single"
@@ -252,8 +252,8 @@ public static class ModMusic
                     }
                     else
                     {
-                        ModMain.frmMain.BtnExtraMusic.SvgIcon = "lucide/music";
-                        ModMain.frmMain.BtnExtraMusic.LogoScale = 1d;
+                        ModMain.FrmMainRequired.BtnExtraMusic.SvgIcon = "lucide/music";
+                        ModMain.FrmMainRequired.BtnExtraMusic.LogoScale = 1d;
                         tipText = Lang.Text(
                             isSingle
                                 ? "Music.ToolTip.Playing.Single"
@@ -261,8 +261,8 @@ public static class ModMusic
                             fileName);
                     }
 
-                    ModMain.frmMain.BtnExtraMusic.ToolTip = tipText;
-                    ToolTipService.SetVerticalOffset(ModMain.frmMain.BtnExtraMusic,
+                    ModMain.FrmMainRequired.BtnExtraMusic.ToolTip = tipText;
+                    ToolTipService.SetVerticalOffset(ModMain.FrmMainRequired.BtnExtraMusic,
                         tipText.Contains("\n") ? 10 : 16);
                 }
 

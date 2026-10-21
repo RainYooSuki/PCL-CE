@@ -43,8 +43,8 @@ public static class ModJarInJarCache
 
     private class _Store
     {
-        public string CachePath;
-        public Dictionary<string, CacheEntry> Entries; // null = 未加载
+        public string CachePath = "";
+        public Dictionary<string, CacheEntry>? Entries; // null = 未加载
         public bool Dirty;
     }
 
@@ -58,7 +58,7 @@ public static class ModJarInJarCache
 
     private class CacheFile
     {
-        public string Version { get; set; }
+        public string? Version { get; set; }
         public Dictionary<string, CacheEntry> Entries { get; set; } = new();
     }
 
@@ -99,27 +99,29 @@ public static class ModJarInJarCache
             : path;
     }
 
-    private static void _EnsureLoaded(_Store store)
+    private static Dictionary<string, CacheEntry> _EnsureLoaded(_Store store)
     {
-        if (store.Entries is not null) return;
-        store.Entries = new Dictionary<string, CacheEntry>();
+        if (store.Entries is { } existing) return existing;
+        var entries = new Dictionary<string, CacheEntry>();
+        store.Entries = entries;
         try
         {
-            if (!File.Exists(store.CachePath)) return;
+            if (!File.Exists(store.CachePath)) return entries;
             using var fs = File.OpenRead(store.CachePath);
             using var gz = new GZipStream(fs, CompressionMode.Decompress);
             using var doc = JsonDocument.Parse(gz);
             var root = doc.RootElement;
             // 格式版本不符：丢整表（旧整数版本也会在此安全失效）
             if (!root.TryGetProperty("Version", out var ver) || ver.ValueKind != JsonValueKind.String ||
-                ver.GetString() != FormatVersion) return;
-            if (!root.TryGetProperty("Entries", out var entries) || entries.ValueKind != JsonValueKind.Object) return;
+                ver.GetString() != FormatVersion) return entries;
+            if (!root.TryGetProperty("Entries", out var entriesElement) || entriesElement.ValueKind != JsonValueKind.Object)
+                return entries;
             // 逐条容错：单条损坏只丢那条，不丢整表
-            foreach (var prop in entries.EnumerateObject())
+            foreach (var prop in entriesElement.EnumerateObject())
                 try
                 {
                     var entry = prop.Value.Deserialize<CacheEntry>();
-                    if (entry is not null && _IsValidTree(entry.Tree)) store.Entries[prop.Name] = entry;
+                    if (entry is not null && _IsValidTree(entry.Tree)) entries[prop.Name] = entry;
                 }
                 catch (Exception ex)
                 {
@@ -130,6 +132,8 @@ public static class ModJarInJarCache
         {
             ModBase.Log(ex, "读取 Jar-in-Jar 缓存失败，已重置", ModBase.LogLevel.Developer);
         }
+
+        return entries;
     }
 
     private static bool _IsValidTree(List<EmbeddedModNode> tree)
@@ -164,8 +168,8 @@ public static class ModJarInJarCache
         if (store is null) return null;
         lock (_lock)
         {
-            _EnsureLoaded(store);
-            if (store.Entries.TryGetValue(_NormalizeKey(path), out var e) && e.LastModified == lastModified &&
+            var entries = _EnsureLoaded(store);
+            if (entries.TryGetValue(_NormalizeKey(path), out var e) && e.LastModified == lastModified &&
                 e.Size == size)
                 return e.Tree;
             return null;
@@ -178,8 +182,8 @@ public static class ModJarInJarCache
         if (store is null) return;
         lock (_lock)
         {
-            _EnsureLoaded(store);
-            store.Entries[_NormalizeKey(path)] =
+            var entries = _EnsureLoaded(store);
+            entries[_NormalizeKey(path)] =
                 new CacheEntry { LastModified = lastModified, Size = size, Tree = tree };
             store.Dirty = true;
         }
@@ -196,11 +200,11 @@ public static class ModJarInJarCache
         lock (_lock)
         {
             var list = keepPaths as ICollection<string> ?? keepPaths.ToList();
-            _EnsureLoaded(store);
+            var entries = _EnsureLoaded(store);
             var keep = new HashSet<string>(list.Select(_NormalizeKey), StringComparer.OrdinalIgnoreCase);
-            var stale = store.Entries.Keys.Where(k => !keep.Contains(k)).ToList();
+            var stale = entries.Keys.Where(k => !keep.Contains(k)).ToList();
             if (stale.Count == 0) return;
-            foreach (var k in stale) store.Entries.Remove(k);
+            foreach (var k in stale) entries.Remove(k);
             store.Dirty = true;
         }
     }
@@ -217,24 +221,28 @@ public static class ModJarInJarCache
 
     private static void _FlushStore(_Store store)
     {
-        if (!store.Dirty || store.Entries is null) return;
+        var entries = store.Entries;
+        if (!store.Dirty || entries is null) return;
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(store.CachePath)!);
+            var cacheDirectory = Path.GetDirectoryName(store.CachePath);
+            if (cacheDirectory is null)
+                throw new InvalidOperationException($"无法确定 Jar-in-Jar 缓存目录：{store.CachePath}");
+            Directory.CreateDirectory(cacheDirectory);
             var tmp = store.CachePath + ".tmp";
             byte[] bytes;
             using (var ms = new MemoryStream())
             {
                 using (var gz = new GZipStream(ms, CompressionLevel.Optimal, true))
                     JsonSerializer.Serialize(gz,
-                        new CacheFile { Version = FormatVersion, Entries = store.Entries }, _jsonOpts);
+                        new CacheFile { Version = FormatVersion, Entries = entries }, _jsonOpts);
                 bytes = ms.ToArray();
             }
 
             File.WriteAllBytes(tmp, bytes);
             File.Move(tmp, store.CachePath, true);
             // 清理旧版明文缓存（.json → .bin 迁移后残留）
-            var legacy = Path.Combine(Path.GetDirectoryName(store.CachePath)!, "JarInJar.json");
+            var legacy = Path.Combine(cacheDirectory, "JarInJar.json");
             if (File.Exists(legacy)) File.Delete(legacy);
             store.Dirty = false;
         }
@@ -248,14 +256,14 @@ public static class ModJarInJarCache
 /// <summary>内嵌模组的轻量序列化节点（供缓存与后续依赖分析使用）。</summary>
 public class EmbeddedModNode
 {
-    public string FileName { get; set; }
-    public string ModId { get; set; }
-    public string Name { get; set; }
-    public string Version { get; set; }
+    public string FileName { get; set; } = "";
+    public string? ModId { get; set; }
+    public string Name { get; set; } = "";
+    public string? Version { get; set; }
 
-    public string Loader { get; set; }
+    public string? Loader { get; set; }
 
-    public string TargetMcVersion { get; set; }
+    public string? TargetMcVersion { get; set; }
 
     /// <summary>本内嵌 mod 的全部依赖声明；同一 ID 的不同范围/可选性分别保留。</summary>
     public List<EmbeddedDependency> DependencyRows { get; set; } = new();
@@ -269,18 +277,18 @@ public class EmbeddedModNode
     /// <summary>具有独立版本的别名（主要是 Forge/NeoForge multi-mod JAR 的兄弟 mod）。</summary>
     public Dictionary<string, string> ProvidedVersions { get; set; } = new();
 
-    public string JijIdentifier { get; set; }
+    public string? JijIdentifier { get; set; }
 
-    public string JijVersionRange { get; set; }
+    public string? JijVersionRange { get; set; }
 
-    public string JijArtifactVersion { get; set; }
+    public string? JijArtifactVersion { get; set; }
 
     public List<EmbeddedModNode> Children { get; set; } = new();
 }
 
 public class EmbeddedDependency
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = "";
     public string? Raw { get; set; }
     public bool Optional { get; set; }
 }
@@ -288,7 +296,7 @@ public class EmbeddedDependency
 public class EmbeddedConflict
 {
     public string? DeclarerId { get; set; }
-    public string Target { get; set; }
+    public string Target { get; set; } = "";
     public string? Raw { get; set; }
     public bool Hard { get; set; }
 }

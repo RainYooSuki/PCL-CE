@@ -11,6 +11,7 @@ public class FromToAnimationBase<T> : AnimationBase, IFromToAnimation
 {
     public IEasing Easing { get; set; } = new LinearEasing();
 
+    // default(T) is the intentional "not provided" sentinel consumed by _RunCore.
     public T From { get; set; } = default!;
 
     public T? To { get; set; }
@@ -24,7 +25,9 @@ public class FromToAnimationBase<T> : AnimationBase, IFromToAnimation
         get => CurrentValue;
         set
         {
-            if (value is not T typed) throw new InvalidCastException($"无法将 {value!.GetType()} 转换为 {typeof(T)}");
+            if (value is not T typed)
+                throw new InvalidCastException(
+                    $"无法将 {(value is null ? "null" : value.GetType().ToString())} 转换为 {typeof(T)}");
             CurrentValue = typed;
         }
     }
@@ -81,12 +84,16 @@ public class FromToAnimationBase<T> : AnimationBase, IFromToAnimation
         ArgumentNullException.ThrowIfNull(To);
 
         // 记录初始值
-        _startValue = (T)target.GetValue()!;
+        var targetValue = target.GetValue();
+        if (targetValue is not T startValue)
+            throw new InvalidCastException(
+                $"无法将 {(targetValue is null ? "null" : targetValue.GetType().ToString())} 转换为 {typeof(T)}");
+        _startValue = startValue;
 
         // 如果 From 为空，则根据动画值类型设置初始值
-        if (!ValueProcessorManager.Equal(_startValue, From))
+        if (!ValueProcessorManager.Equal(startValue, From))
         {
-           From = ValueType == AnimationValueType.Relative ? ValueProcessorManager.DefaultValue<T>() : _startValue;
+           From = ValueType == AnimationValueType.Relative ? ValueProcessorManager.DefaultValue<T>() : startValue;
         }
 
         // 计算总帧数
@@ -116,13 +123,20 @@ public class FromToAnimationBase<T> : AnimationBase, IFromToAnimation
             return null;
         }
         
+        if (CurrentValue is not { } currentValue)
+            throw new InvalidOperationException("The current animation value is not initialized.");
+        if (From is not { } fromValue)
+            throw new InvalidOperationException("The animation source value is not initialized.");
+        if (_startValue is not { } startValue)
+            throw new InvalidOperationException("The animation start value is not initialized.");
+
         return new FromToAnimationFrame<T>
         {
             Target = target,
             Value = ValueType == AnimationValueType.Relative
-                ? CurrentValue!
-                : ValueProcessorManager.Subtract(CurrentValue!, From!),
-            StartValue = ValueType == AnimationValueType.Relative ? _startValue! : From!
+                ? currentValue
+                : ValueProcessorManager.Subtract(currentValue, fromValue),
+            StartValue = ValueType == AnimationValueType.Relative ? startValue : fromValue
         };
     }
 }

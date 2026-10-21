@@ -98,14 +98,14 @@ public static class ModSkin
         };
 
         var skinString = ModNet.NetGetCodeByRequestRetry(url + uuid);
-        if (string.IsNullOrEmpty((string?)skinString))
+        if (string.IsNullOrEmpty(skinString))
             throw new InvalidDataException(Lang.Text("Minecraft.Skin.Error.SkinReturnEmpty"));
 
         // 解析皮肤 Property
-        string skinValue = null;
+        string? skinValue = null;
         try
         {
-            var json = (JsonObject)ModBase.GetJson((string)skinString);
+            var json = (JsonObject)ModBase.GetJson(skinString);
             foreach (var property in json["properties"].AsArray())
                 if (property["name"]?.ToString() == "textures")
                 {
@@ -123,6 +123,9 @@ public static class ModSkin
                 ModBase.LogLevel.Developer);
             throw new InvalidDataException(Lang.Text("Minecraft.Skin.Error.NoSkinData"), ex);
         }
+
+        if (skinValue is null)
+            throw new InvalidDataException(Lang.Text("Minecraft.Skin.Error.PropertyNotFound"));
 
         // 解码 Base64 并解析 JSON
         var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(skinValue));

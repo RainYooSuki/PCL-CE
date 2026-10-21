@@ -86,8 +86,10 @@ public sealed partial class PromoteService
     /// 提权进程接收到操作请求时触发的事件，接收一个字符串作为操作命令并返回一个字符串作为结果。<br/>
     /// <b>注意：如果你不知道这是做什么的，请勿覆盖默认实现。</b>请使用 <see cref="AddOperationFunction"/>。
     /// </summary>
+    private static Func<string, string?>? _operate;
+
     public static Func<string, string?> Operate {
-        private get => field ??= command =>
+        private get => _operate ??= command =>
         {
             var split = command.Split([' '], 2);
             _OperationFunctions.TryGetValue(split[0], out var operation);
@@ -102,8 +104,8 @@ public sealed partial class PromoteService
                 return OperationErrExceptionThrown;
             }
         };
-        set;
-    } = null!;
+        set => _operate = value;
+    }
     
     private static string _ShortenString(string str)
     {
@@ -122,7 +124,13 @@ public sealed partial class PromoteService
         Context.Info("正在连接提权通信管道");
         var process = Process.GetProcessById(int.Parse(pid));
         // 验证来源
-        var mainProcessPath = Path.GetFullPath(process.MainModule!.FileName);
+        var mainModule = process.MainModule;
+        if (mainModule is null)
+        {
+            Context.Error("无法获取来源进程的模块信息");
+            return;
+        }
+        var mainProcessPath = Path.GetFullPath(mainModule.FileName);
         if (!string.Equals(mainProcessPath, Basics.ExecutablePath, StringComparison.OrdinalIgnoreCase))
         {
             Context.Error("来源验证失败，正在退出");

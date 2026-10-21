@@ -16,7 +16,7 @@ public static class ModFolder
     /// <summary>
     ///     当前的 Minecraft 文件夹路径，以"\"结尾。
     /// </summary>
-    public static string mcFolderSelected;
+    public static string mcFolderSelected = "";
 
     /// <summary>
     ///     当前的 Minecraft 文件夹列表。
@@ -36,9 +36,9 @@ public static class ModFolder
         ///     文件夹路径。
         ///     以 \ 结尾，例如 "D:\Game\MC\.minecraft\"。
         /// </summary>
-        public string Location;
+        public string Location = "";
 
-        public string Name;
+        public string Name = "";
         public Types type;
 
         public override bool Equals(object? obj)

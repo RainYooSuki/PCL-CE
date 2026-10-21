@@ -137,7 +137,8 @@ public partial class PageDownloadInstall
             }
             case MyLoading.MyLoadingState.Error:
             {
-                var message = ((ModLoader.LoaderBase)loader.State).Error.Message;
+                var stateError = ((ModLoader.LoaderBase)loader.State).Error;
+                var message = stateError?.Message ?? "";
                 return message == Lang.Text("Download.Install.State.NoVersion")
                     ? Lang.Text("Download.Install.State.NoVersion")
                     : Lang.Text("Download.Install.State.GetFailed", message);
@@ -316,7 +317,7 @@ public partial class PageDownloadInstall
         }, "FrmDownloadInstall SelectPageSwitch");
     }
 
-    public void MinecraftSelected(MyListItem sender, MouseButtonEventArgs e)
+    public void MinecraftSelected(MyListItem sender, MouseButtonEventArgs? e)
     {
         _vanillaName = sender.Title;
         _vanillaData = (JsonObject)(dynamic)sender.Tag;
@@ -870,7 +871,7 @@ public partial class PageDownloadInstall
     /// <summary>
     ///     获取实例图标。
     /// </summary>
-    private string GetSelectLogo()
+    private string? GetSelectLogo()
     {
         if (selectedFabric is not null) return "pack://application:,,,/images/Blocks/Fabric.png";
 
@@ -1106,7 +1107,7 @@ public partial class PageDownloadInstall
             stack.Children.Add(
                 ModDownloadLib.McDownloadListItem(
                     (JsonObject)item,
-                    (sender, e) => ModMain.frmDownloadInstall.MinecraftSelected((MyListItem)sender, e),
+                    (sender, e) => ModMain.FrmDownloadInstallRequired.MinecraftSelected((MyListItem)sender, e),
                     false
                 )
             );
@@ -1131,7 +1132,7 @@ public partial class PageDownloadInstall
         if (LoadOptiFine is null || LoadOptiFine.State.LoadingState == MyLoading.MyLoadingState.Run)
             return Lang.Text("Download.Install.State.Loading");
         if (LoadOptiFine.State.LoadingState == MyLoading.MyLoadingState.Error)
-            return $"{Lang.Text("Download.Install.State.GetVersionListFailed")}{((ModLoader.LoaderBase)LoadOptiFine.State).Error.Message}";
+            return $"{Lang.Text("Download.Install.State.GetVersionListFailed")}{(((ModLoader.LoaderBase)LoadOptiFine.State).Error?.Message ?? "")}";
         // 检查 Forge 1.13 - 1.14.3：全部不兼容
         if (_selectedLoaderType == ModLoaderType.Forge && McVersionComparer.CompareVersion(_vanillaName, "1.13") >= 0 &&
             McVersionComparer.CompareVersion("1.14.3", _vanillaName) >= 0) return Lang.Text("Download.Install.Compat.IncompatibleWithLoader", _selectedLoaderType);
@@ -1823,7 +1824,7 @@ public partial class PageDownloadInstall
     }
 
     // 选择与清除
-    private void FabricApi_Selected(MyListItem sender, EventArgs e)
+    private void FabricApi_Selected(MyListItem sender, EventArgs? e)
     {
         selectedFabricApi = (ModComp.CompFile)(dynamic)sender.Tag;
         selectedAPIName = "Fabric API";
@@ -1852,7 +1853,7 @@ public partial class PageDownloadInstall
         if (LoadLegacyFabric is null || LoadLegacyFabric.State.LoadingState == MyLoading.MyLoadingState.Run)
             return Lang.Text("Download.Install.State.Loading");
         if (LoadLegacyFabric.State.LoadingState == MyLoading.MyLoadingState.Error)
-            return $"{Lang.Text("Download.Install.State.GetVersionListFailed")}{((ModLoader.LoaderBase)LoadLegacyFabric.State).Error.Message}";
+            return $"{Lang.Text("Download.Install.State.GetVersionListFailed")}{(((ModLoader.LoaderBase)LoadLegacyFabric.State).Error?.Message ?? "")}";
         foreach (JsonObject Version in ModDownload.dlLegacyFabricListLoader.output.Value["game"].AsArray())
             if ((Version["version"].ToString() ?? "") == (_vanillaName ?? ""))
             {
@@ -1959,7 +1960,7 @@ public partial class PageDownloadInstall
         if (LoadLegacyFabricApi is null || LoadLegacyFabricApi.State.LoadingState == MyLoading.MyLoadingState.Run)
             return Lang.Text("Download.Install.State.Loading");
         if (LoadLegacyFabricApi.State.LoadingState == MyLoading.MyLoadingState.Error)
-            return $"{Lang.Text("Download.Install.State.GetVersionListFailed")}{((ModLoader.LoaderBase)LoadLegacyFabricApi.State).Error.Message}";
+            return $"{Lang.Text("Download.Install.State.GetVersionListFailed")}{(((ModLoader.LoaderBase)LoadLegacyFabricApi.State).Error?.Message ?? "")}";
         if (selectedAPIName is not null && !ReferenceEquals(selectedAPIName, "Legacy Fabric API"))
             return Lang.Text("Download.Install.Compat.IncompatibleWithLoader", selectedAPIName);
         if (ModDownload.dlLegacyFabricApiLoader.output is null)
@@ -2040,7 +2041,7 @@ public partial class PageDownloadInstall
     }
 
     // 选择与清除
-    private void LegacyFabricApi_Selected(MyListItem sender, EventArgs e)
+    private void LegacyFabricApi_Selected(MyListItem sender, EventArgs? e)
     {
         selectedLegacyFabricApi = (ModComp.CompFile)(dynamic)sender.Tag;
         selectedAPIName = "Legacy Fabric API";
@@ -2175,7 +2176,7 @@ public partial class PageDownloadInstall
     }
 
     // 选择与清除
-    private void OptiFabric_Selected(MyListItem sender, EventArgs e)
+    private void OptiFabric_Selected(MyListItem sender, EventArgs? e)
     {
         selectedOptiFabric = (ModComp.CompFile)(dynamic)sender.Tag;
         CardOptiFabric.IsSwapped = true;
@@ -2202,7 +2203,7 @@ public partial class PageDownloadInstall
         if (LoadLabyMod is null || LoadLabyMod.State.LoadingState == MyLoading.MyLoadingState.Run)
             return Lang.Text("Download.Install.State.Loading");
         if (LoadLabyMod.State.LoadingState == MyLoading.MyLoadingState.Error)
-            return $"{Lang.Text("Download.Install.State.GetVersionListFailed")}{((ModLoader.LoaderBase)LoadLabyMod.State).Error.Message}";
+            return $"{Lang.Text("Download.Install.State.GetVersionListFailed")}{(((ModLoader.LoaderBase)LoadLabyMod.State).Error?.Message ?? "")}";
         // 检查 Loader
         if (GetLoaderError(LoadLabyMod) is not null)
             return GetLoaderError(LoadLabyMod);

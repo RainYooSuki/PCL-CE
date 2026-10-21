@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using PCL.Core.Utils.Exts;
 
 namespace PCL.Core.App.Configuration;
@@ -24,18 +25,20 @@ public class ConfigItem<TValue>(
     public Type Type => typeof(TValue);
 
     private Func<TValue>? _defaultValueConstructor = defaultValue;
-    private TValue? _defaultValue;
-    private bool _defaultValueHasSet = false;
+    private StrongBox<TValue>? _defaultValue;
 
     #region 默认值逻辑
 
     private TValue _GetDefaultValue()
     {
-        if (_defaultValueHasSet) return _defaultValue!;
-        _defaultValue = _defaultValueConstructor!();
-        _defaultValueHasSet = true;
+        if (_defaultValue is { } cached)
+            return cached.Value;
+        if (_defaultValueConstructor is not { } constructor)
+            throw new InvalidOperationException("The configuration default value has already been consumed.");
+        var defaultValue = constructor();
+        _defaultValue = new StrongBox<TValue>(defaultValue);
         _defaultValueConstructor = null;
-        return _defaultValue;
+        return defaultValue;
     }
 
     /// <summary>
@@ -43,7 +46,7 @@ public class ConfigItem<TValue>(
     /// </summary>
     public TValue DefaultValue => _GetDefaultValue();
 
-    public object DefaultValueNoType => DefaultValue ?? default!;
+    public object? DefaultValueNoType => DefaultValue;
 
     #endregion
 
@@ -54,7 +57,8 @@ public class ConfigItem<TValue>(
 
     #region 值获取和修改
 
-    private IConfigProvider _Provider { get => field ??= ConfigService.GetProvider(Source); } = null!;
+    private IConfigProvider? _provider;
+    private IConfigProvider _Provider => _provider ??= ConfigService.GetProvider(Source);
 
     private ConfigValueCache<TValue> _valueCache = new();
 
@@ -117,14 +121,14 @@ public class ConfigItem<TValue>(
             if (e.Cancelled) return DefaultValue;
             if (e.NewValueReplacement is not null) return (TValue)e.NewValueReplacement;
         }
-        if (!exists) value = DefaultValue;
-        if (newValue) _ProcessNewCache(value!, argument);
-        return value!;
+        if (!exists || value is null) value = DefaultValue;
+        if (newValue) _ProcessNewCache(value, argument);
+        return value;
     }
 
-    public object GetValueNoType(object? argument = null)
+    public object? GetValueNoType(object? argument = null)
     {
-        return GetValue(argument) ?? default!;
+        return GetValue(argument);
     }
 
     /// <summary>
@@ -158,7 +162,8 @@ public class ConfigItem<TValue>(
         catch (InvalidCastException)
         {
             // 兼容龙猫妙妙小代码直接传入 string 值的行为
-            if (value is string v) return SetValue(v.Convert<TValue>()!, argument);
+            if (value is string v && v.Convert<TValue>() is { } converted)
+                return SetValue(converted, argument);
             var msg = $"Value convert failed (required: {Type.FullName}, provided: {value.GetType().FullName})";
             throw new InvalidCastException(msg);
         }
@@ -348,7 +353,7 @@ public interface ConfigItem
     /// 没有泛型的 <see cref="ConfigItem{T}.GetValue"/>。<br/>
     /// 我们都不想给非引用类型装箱，但是龙猫想。
     /// </summary>
-    public object GetValueNoType(object? argument = null);
+    public object? GetValueNoType(object? argument = null);
 
     /// <summary>
     /// 没有泛型的 <see cref="ConfigItem{T}.SetValue"/>。<br/>
@@ -360,7 +365,7 @@ public interface ConfigItem
     /// 没有泛型的 <see cref="ConfigItem{T}.DefaultValue"/>。<br/>
     /// 我们都不想给非引用类型装箱，但是龙猫想。
     /// </summary>
-    public object DefaultValueNoType { get; }
+    public object? DefaultValueNoType { get; }
 
     /// <summary>
     /// 是否启用值缓存，默认为 <c>true</c>。设为 <c>false</c> 将清除已存在的缓存。

@@ -71,7 +71,7 @@ public partial class Application
             if (Config.Preference.ShowStartupLogo)
             {
                 ModMain.frmStart = new SplashScreen(@"Images\icon.ico");
-                ModMain.frmStart.Show(false, true);
+                ModMain.FrmStartRequired.Show(false, true);
             }
 
             // 设置初始化
@@ -144,7 +144,7 @@ public partial class Application
     // 结束
     private static void _ApplicationSessionEnding(object sender, SessionEndingCancelEventArgs e)
     {
-        ModMain.frmMain.EndProgram(false);
+        ModMain.FrmMainRequired.EndProgram(false);
     }
 
     /**

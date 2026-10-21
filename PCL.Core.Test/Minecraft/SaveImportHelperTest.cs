@@ -8,10 +8,9 @@ namespace PCL.Core.Test.Minecraft;
 [TestClass]
 public class SaveImportHelperTest
 {
-    private string _tempDirectory = null!;
+    private readonly string _tempDirectory;
 
-    [TestInitialize]
-    public void Initialize()
+    public SaveImportHelperTest()
     {
         _tempDirectory = Path.Combine(Path.GetTempPath(), "PCLTest", "WorldImportHelper", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDirectory);

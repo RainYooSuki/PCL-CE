@@ -6,7 +6,7 @@ namespace PCL.Core.Test.Validate;
 [TestClass]
 public class FolderNameValidatorTest
 {
-    public TestContext TestContext { get; set; }
+    public TestContext? TestContext { get; set; }
     
     [TestMethod]
     [DataRow(" 测试 ", false)]
@@ -25,7 +25,7 @@ public class FolderNameValidatorTest
         {
             foreach (var error in result.Errors)
             {
-                TestContext.WriteLine(error.ErrorMessage);
+                TestContext?.WriteLine(error.ErrorMessage);
             }
         }
         Assert.AreEqual(expected, result.IsValid);

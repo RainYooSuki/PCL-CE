@@ -11,13 +11,17 @@ namespace PCL.Core.Test.Utils.Secret;
 public class EncryptHelperKeyTest
 {
     private static readonly byte[] Entropy = "PCL CE Encryption Key"u8.ToArray();
-    private string _tempDir = null!;
+    private readonly string _tempDir;
+
+    public EncryptHelperKeyTest()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), "PCLCE_KeyTest_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_tempDir);
+    }
 
     [TestInitialize]
     public void Setup()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), "PCLCE_KeyTest_" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(_tempDir);
         EncryptHelper.OverrideKeyFile(Path.Combine(_tempDir, "UserKey.bin"));
         EncryptHelper.ResetKeyCache();
     }

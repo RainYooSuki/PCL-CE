@@ -30,7 +30,7 @@ public static class ModLoader
     public static void LoaderTaskbarAdd<T>(LoaderCombo<T> loader)
     {
         if (ModMain.frmSpeedLeft is not null)
-            ModMain.frmSpeedLeft.TaskRemove(loader);
+            ModMain.FrmSpeedLeftRequired.TaskRemove(loader);
         loaderTaskbar.Add(loader);
         ModBase.Log($"[Taskbar] {loader.name} 已加入任务列表");
     }
@@ -56,7 +56,7 @@ public static class ModLoader
                 loaderTaskbarProgress = newProgress;
             else
                 loaderTaskbarProgress = loaderTaskbarProgress * 0.9d + newProgress * 0.1d;
-            ModBase.RunInUi(() => ModMain.frmMain.BtnExtraDownload.Progress = loaderTaskbarProgress);
+            ModBase.RunInUi(() => ModMain.FrmMainRequired.BtnExtraDownload.Progress = loaderTaskbarProgress);
             // 更新任务栏信息
             if (!loaderTaskbar.Any() || loaderTaskbarProgress == 1d)
             {
@@ -69,14 +69,14 @@ public static class ModLoader
             else
             {
                 newState = TaskbarItemProgressState.Normal;
-                ModMain.frmMain.TaskbarItemInfo.ProgressValue = loaderTaskbarProgress;
+                ModMain.FrmMainRequired.TaskbarItemInfo.ProgressValue = loaderTaskbarProgress;
             }
 
             if (loaderTaskbarProgressLast != newState)
             {
                 loaderTaskbarProgressLast = newState;
-                ModMain.frmMain.TaskbarItemInfo.ProgressState = newState;
-                ModMain.frmMain.BtnExtraDownload.ShowRefresh();
+                ModMain.FrmMainRequired.TaskbarItemInfo.ProgressState = newState;
+                ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
             }
         }
         catch (Exception ex)
@@ -220,7 +220,7 @@ public static class ModLoader
         /// <summary>
         ///     父加载器。
         /// </summary>
-        public LoaderBase parent;
+        public LoaderBase? parent;
 
         /// <summary>
         ///     该加载器是否显示在列表中。
@@ -241,14 +241,13 @@ public static class ModLoader
         /// <summary>
         ///     最上级的加载器。
         /// </summary>
-        public LoaderBase RealParent
+        public LoaderBase? RealParent
         {
             get
             {
-                LoaderBase realParentRet = default;
+                LoaderBase? realParentRet = parent;
                 try
                 {
-                    realParentRet = parent;
                     while (realParentRet is not null && realParentRet.parent is not null)
                         realParentRet = realParentRet.parent;
                 }
@@ -323,7 +322,7 @@ public static class ModLoader
         /// <summary>
         ///     若加载器出错，可提供给外部参考的异常。
         /// </summary>
-        public Exception Error { get; set; }
+        public Exception? Error { get; set; }
 
         // 进度监控
         /// <summary>
@@ -383,7 +382,7 @@ public static class ModLoader
         public event ILoadingTrigger.LoadingStateChangedEventHandler? LoadingStateChanged;
         public event ILoadingTrigger.ProgressChangedEventHandler? ProgressChanged;
 
-        public virtual void InitParent(LoaderBase parent)
+        public virtual void InitParent(LoaderBase? parent)
         {
             this.parent = parent;
         }
@@ -765,7 +764,7 @@ public static class ModLoader
             set => throw new Exception("多重加载器不支持设置进度");
         }
 
-        public override void InitParent(LoaderBase parent)
+        public override void InitParent(LoaderBase? parent)
         {
             this.parent = parent;
             foreach (var Loader in loaders)
@@ -855,7 +854,7 @@ public static class ModLoader
                         loader.Abort();
                     }
 
-                    ModMain.frmMain.BtnExtraDownload.ShowRefresh();
+                    ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
                     return;
                 }
             }
@@ -968,7 +967,7 @@ public static class ModLoader
             {
                 RaisePreviewFinish();
                 State = ModBase.LoadState.Finished;
-                ModMain.frmMain.BtnExtraDownload.ShowRefresh();
+                ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
             }
         }
 
@@ -1010,7 +1009,7 @@ public static class ModLoader
     /// </summary>
     public class LoaderCombo<InputType> : LoaderCombo
     {
-        public InputType typedInput;
+        public InputType? typedInput;
 
         public LoaderCombo(string name, IEnumerable<LoaderBase> loaders) : base(name, loaders) { }
 

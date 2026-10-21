@@ -7,7 +7,7 @@ namespace PCL.Core.Test.Validate;
 public class FileNameValidatorTest
 {
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public TestContext TestContext { get; set; }
+    public TestContext? TestContext { get; set; }
 
     [TestMethod]
     [DataRow("foobar.txt", true)]
@@ -27,7 +27,7 @@ public class FileNameValidatorTest
         {
             foreach (var error in result.Errors)
             {
-                TestContext.WriteLine(error.ErrorMessage);
+                TestContext?.WriteLine(error.ErrorMessage);
             }
         }
         Assert.AreEqual(expected, result.IsValid);
@@ -46,7 +46,7 @@ public class FileNameValidatorTest
         {
             foreach (var error in result.Errors)
             {
-                TestContext.WriteLine(error.ErrorMessage);
+                TestContext?.WriteLine(error.ErrorMessage);
             }
         }
         Assert.AreEqual(expected, result.IsValid);

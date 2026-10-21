@@ -25,41 +25,50 @@ public class LifecycleScopeGenerator : IIncrementalGenerator
         NewDependencyInjectionPointAttributeType
     ];
 
-    private record ScopeMethodModel
-    {
-        public string MethodName { get; init; } = null!;
-        public bool Awaitable { get; init; }
-    }
+    private record ScopeMethodModel(string MethodName, bool Awaitable);
 
-    private record StartMethodModel : ScopeMethodModel;
+    private record StartMethodModel(string MethodName, bool Awaitable)
+        : ScopeMethodModel(MethodName, Awaitable);
 
-    private record StopMethodModel : ScopeMethodModel;
+    private record StopMethodModel(string MethodName, bool Awaitable)
+        : ScopeMethodModel(MethodName, Awaitable);
 
     private record CommandHandlerMethodModel(
+        string MethodName,
+        bool Awaitable,
         string Command,
         bool HasCommandModelArg,
         bool HasIsCallbackArg,
         (string Name, string TypeName, bool hasDefaultValue, object? DefaultValue)[] SplitArgs
-    ) : ScopeMethodModel;
+    ) : ScopeMethodModel(MethodName, Awaitable);
 
     private record DependencyInjectionMethodModel(
+        string MethodName,
+        bool Awaitable,
         string Identifier,
         int Targets,
         string ParameterType
-    ) : ScopeMethodModel;
+    ) : ScopeMethodModel(MethodName, Awaitable);
 
     private record NewDependencyInjectionPointModel(
+        string MethodName,
+        bool Awaitable,
         string Identifier
-    ) : ScopeMethodModel;
+    ) : ScopeMethodModel(MethodName, Awaitable);
 
-    private class ScopeModel
+    private class ScopeModel(
+        string namespaceName,
+        string typeName,
+        string identifier,
+        string name,
+        bool supportAsync)
     {
-        public string Namespace { get; init; } = null!;
-        public string TypeName { get; init; } = null!;
+        public string Namespace { get; } = namespaceName;
+        public string TypeName { get; } = typeName;
         public string QualifiedTypeName => $"{Namespace}.{TypeName}";
-        public string Identifier { get; init; } = null!;
-        public string Name { get; init; } = null!;
-        public bool SupportAsync { get; init; }
+        public string Identifier { get; } = identifier;
+        public string Name { get; } = name;
+        public bool SupportAsync { get; } = supportAsync;
         public List<ScopeMethodModel> Methods { get; } = [];
     }
 
@@ -74,22 +83,20 @@ public class LifecycleScopeGenerator : IIncrementalGenerator
                 if (ctx.TargetSymbol is not INamedTypeSymbol typeSymbol) return null;
                 var attr = ctx.Attributes[0];
                 var args = attr.ConstructorArguments;
-                var scopeIdentifier = args[0].Value!.ToString();
-                var scopeName = args[1].Value!.ToString();
+                if (args.Length < 2) return null;
+                var scopeIdentifier = args[0].Value?.ToString();
+                var scopeName = args[1].Value?.ToString();
+                if (scopeIdentifier is null || scopeName is null) return null;
                 var scopeAsyncStart = true;
                 if (args.Length > 2 && args[2].Value is bool v) scopeAsyncStart = v;
                 var ns = typeSymbol.ContainingNamespace.ToDisplayString();
                 var typeName = typeSymbol.Name;
-                return (typeSymbol, new ScopeModel
-                {
-                    Namespace = ns,
-                    TypeName = typeName,
-                    Identifier = scopeIdentifier,
-                    Name = scopeName,
-                    SupportAsync = scopeAsyncStart
-                });
+                return (typeSymbol, new ScopeModel(ns, typeName, scopeIdentifier, scopeName, scopeAsyncStart));
             }
-        ).Where(static i => i is not null).Select(static (i, _) => i.GetValueOrDefault());
+        ).SelectMany(static (candidate, _) =>
+            candidate is { } value
+                ? new[] { value }
+                : Array.Empty<(INamedTypeSymbol, ScopeModel)>());
         var collected = candidates.Collect();
         context.RegisterSourceOutput(collected, _CollectSources);
     }
@@ -102,19 +109,18 @@ public class LifecycleScopeGenerator : IIncrementalGenerator
             foreach (var member in symbol.GetMembers())
             {
                 if (member is not IMethodSymbol method) continue;
-                var attrTypeName = string.Empty;
                 var attr = method.GetAttributes().FirstOrDefault(data =>
-                {
-                    attrTypeName = data.AttributeClass?.GetSimplifiedTypeName();
-                    return attrTypeName is not null && _MethodAttributeTypes.Contains(attrTypeName);
-                });
+                    data.AttributeClass is { } attributeClass
+                    && _MethodAttributeTypes.Contains(attributeClass.GetSimplifiedTypeName()));
                 if (attr is null) continue;
+                var attrTypeName = attr.AttributeClass?.GetSimplifiedTypeName();
+                if (attrTypeName is null) continue;
                 var methodName = method.Name;
                 var awaitable = method.IsAwaitable();
                 ScopeMethodModel? methodModel = attrTypeName switch
                 {
-                    StartMethodAttributeType => new StartMethodModel { MethodName = methodName, Awaitable = awaitable },
-                    StopMethodAttributeType => new StopMethodModel { MethodName = methodName, Awaitable = awaitable },
+                    StartMethodAttributeType => new StartMethodModel(methodName, awaitable),
+                    StopMethodAttributeType => new StopMethodModel(methodName, awaitable),
                     CommandHandlerMethodAttributeType => GetCommandHandlerMethodModel(),
                     DependencyInjectionMethodAttributeType => GetDependencyInjectionMethodModel(),
                     NewDependencyInjectionPointAttributeType => GetNewDependencyInjectionPointModel(),
@@ -125,7 +131,10 @@ public class LifecycleScopeGenerator : IIncrementalGenerator
                 CommandHandlerMethodModel? GetCommandHandlerMethodModel()
                 {
                     if (awaitable) return null;
-                    var command = attr.ConstructorArguments[0].Value!.ToString();
+                    var constructorArgs = attr.ConstructorArguments;
+                    if (constructorArgs.Length < 1
+                        || constructorArgs[0].Value?.ToString() is not { } command)
+                        return null;
                     var paraArray = method.Parameters;
                     var skip = 0;
                     var hasCommandModelArg = paraArray.Length > 0
@@ -143,35 +152,31 @@ public class LifecycleScopeGenerator : IIncrementalGenerator
                         let hasDefaultValue = para.HasExplicitDefaultValue
                         select (name, typeName, hasDefaultValue, hasDefaultValue ? para.ExplicitDefaultValue : null)
                     ).ToArray();
-                    return new CommandHandlerMethodModel(command, hasCommandModelArg, hasIsCallbackArg, splitArgs)
-                    {
-                        MethodName = methodName,
-                        Awaitable = false
-                    };
+                    return new CommandHandlerMethodModel(
+                        methodName,
+                        false,
+                        command,
+                        hasCommandModelArg,
+                        hasIsCallbackArg,
+                        splitArgs);
                 }
                 DependencyInjectionMethodModel? GetDependencyInjectionMethodModel()
                 {
                     var args = attr.ConstructorArguments;
-                    var identifier = args[0].Value!.ToString();
-                    var targets = (int)args[1].Value!;
+                    if (args.Length < 2
+                        || args[0].Value?.ToString() is not { } identifier
+                        || args[1].Value is not int targets)
+                        return null;
                     if (method.Parameters.FirstOrDefault() is not { } param) return null;
                     var paramType = param.Type.GetFullyQualifiedName();
-                    return new DependencyInjectionMethodModel(identifier, targets, paramType)
-                    {
-                        MethodName = methodName,
-                        Awaitable = awaitable
-                    };
+                    return new DependencyInjectionMethodModel(methodName, awaitable, identifier, targets, paramType);
                 }
                 NewDependencyInjectionPointModel? GetNewDependencyInjectionPointModel()
                 {
                     var args = attr.ConstructorArguments;
                     if (args.Length > 1 && args[1].Value is false) return null; // lifecycleAutoInvoke is set to false
-                    var identifier = args[0].Value!.ToString();
-                    return new NewDependencyInjectionPointModel(identifier)
-                    {
-                        MethodName = methodName,
-                        Awaitable = awaitable
-                    };
+                    if (args.Length < 1 || args[0].Value?.ToString() is not { } identifier) return null;
+                    return new NewDependencyInjectionPointModel(methodName, awaitable, identifier);
                 }
             }
             spc.AddSource($"{model.QualifiedTypeName}.g.cs", _GenerateScopeSource(model));

@@ -39,12 +39,12 @@ public class LifecycleServiceTypesGenerator : IIncrementalGenerator
 
         // 生成代码
         context.RegisterSourceOutput(combinedProvider, 
-            static (spc, data) => _Execute(spc, data.Left.FirstOrDefault() ?? new List<string>(), [..data.Right.Where(x => x is not null).Select(x => x!)]));
+            static (spc, data) => _Execute(spc, data.Left.FirstOrDefault() ?? new List<string>(), [..data.Right.OfType<LifecycleServiceInfo>()]));
     }
 
     private static List<string>? _GetValidLifecycleStates(string? content)
     {
-        if (string.IsNullOrEmpty(content))
+        if (content is null || content.Length == 0)
             return null;
 
         var validStates = new List<string>();
@@ -113,23 +113,24 @@ public class LifecycleServiceTypesGenerator : IIncrementalGenerator
         var state = "Unknown";
         var priority = 0;
 
-        if (lifecycleAttribute.ArgumentList?.Arguments.Count > 0)
+        var argumentList = lifecycleAttribute.ArgumentList;
+        if (argumentList is { Arguments.Count: > 0 })
         {
             // 解析第一个参数（状态）
-            var firstArg = lifecycleAttribute.ArgumentList.Arguments[0];
+            var firstArg = argumentList.Arguments[0];
             if (firstArg.Expression is MemberAccessExpressionSyntax memberAccess)
             {
                 state = memberAccess.Name.Identifier.ValueText;
             }
 
             // 查找 Priority 参数（支持命名参数和位置参数）
-            var priorityArg = lifecycleAttribute.ArgumentList.Arguments
+            var priorityArg = argumentList.Arguments
                 .FirstOrDefault(arg => arg.NameEquals?.Name.Identifier.ValueText == "Priority");
 
             // 如果没有找到命名的Priority参数，检查第二个位置参数
-            if (priorityArg is null && lifecycleAttribute.ArgumentList.Arguments.Count > 1)
+            if (priorityArg is null && argumentList.Arguments.Count > 1)
             {
-                priorityArg = lifecycleAttribute.ArgumentList.Arguments[1];
+                priorityArg = argumentList.Arguments[1];
             }
 
             if (priorityArg is not null)

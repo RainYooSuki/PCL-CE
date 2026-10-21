@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
@@ -59,10 +60,10 @@ public sealed class YggdrasilConnectProvider : IAuthenticateProvider
         _yggdrasilServer = yggdrasilServer;
     }
 
-    public static bool TryGetBuiltInClientId(string host, out string clientId)
+    public static bool TryGetBuiltInClientId(string host, [NotNullWhen(true)] out string? clientId)
     {
         var normalizedHost = host.Trim().TrimEnd('.');
-        return _BuiltInClientIds.TryGetValue(normalizedHost, out clientId!);
+        return _BuiltInClientIds.TryGetValue(normalizedHost, out clientId);
     }
 
     public Task InitializeAsync(CancellationToken token)

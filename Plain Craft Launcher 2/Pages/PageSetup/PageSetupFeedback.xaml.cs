@@ -98,9 +98,14 @@ public partial class PageSetupFeedback
             var pullRequestToken = issue["pull_request"];
             if (pullRequestToken is not null && pullRequestToken.GetValueKind() != JsonValueKind.Null) continue;
 
-            var item = issue.Deserialize<Feedback>()!;
-            item.User = issue["user"]!["login"]!.ToString();
-            item.Id = issue["number"]!.ToString();
+            var item = issue.Deserialize<Feedback>();
+            if (item is null) continue;
+            var userLogin = (issue["user"] as JsonObject)?["login"]?.ToString();
+            var issueId = issue["number"]?.ToString();
+            if (string.IsNullOrEmpty(userLogin) || string.IsNullOrEmpty(issueId))
+                continue;
+            item.User = userLogin;
+            item.Id = issueId;
 
             var issueType = Lang.Text("Setup.Feedback.Uncategorized");
             var typeToken = issue["type"];

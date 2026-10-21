@@ -12,7 +12,7 @@ namespace PCL;
 
 public partial class PageInstanceCompJarInJar
 {
-    private ModJarInJarIndex _index = null!;
+    private ModJarInJarIndex? _index;
     private string? _instanceMc;
     private string _search = "";
 
@@ -66,7 +66,8 @@ public partial class PageInstanceCompJarInJar
             .Where(m => !m.IsFolder && m.State != CompFile.LocalFileStatus.Unavailable)
             .ToList();
         _instanceMc = PageInstanceLeft.McInstance?.Info?.VanillaName;
-        _index = new ModJarInJarIndex(allMods, _instanceMc);
+        var index = new ModJarInJarIndex(allMods, _instanceMc);
+        _index = index;
         PanLoad.Visibility = Visibility.Collapsed;
 
         PanWarnList.Children.Clear();
@@ -74,7 +75,7 @@ public partial class PageInstanceCompJarInJar
         {
             if (host.State != CompFile.LocalFileStatus.Fine) continue;
             if (_Match(host)) _AppendMissingWarning(host, null, host.DetectedLoader);
-            foreach (var node in _index.GetLoadableEmbedded(host))
+            foreach (var node in index.GetLoadableEmbedded(host))
                 if (_Match(node))
                     _AppendMissingWarning(node, host, node.JijLoader);
         }
@@ -84,7 +85,7 @@ public partial class PageInstanceCompJarInJar
 
         PanConflictList.Children.Clear();
         var conflictCount = 0;
-        foreach (var (a, b, hard) in _index.FindActiveConflicts())
+        foreach (var (a, b, hard) in index.FindActiveConflicts())
         {
             if (!_Match(a) && !_Match(b)) continue;
             PanConflictList.Children.Add(_MakeConflictRow(a, b, hard));
@@ -105,7 +106,7 @@ public partial class PageInstanceCompJarInJar
                 relationCount++;
             }
 
-            foreach (var node in _index.GetLoadableEmbedded(host))
+            foreach (var node in index.GetLoadableEmbedded(host))
             {
                 var nodeDeps = ModJarInJarIndex.BuildOwnDependencies(node, node.JijLoader)
                     .Where(d => !ModDependencyIds.IsPlatform(d.DepId)).ToList();
@@ -152,14 +153,15 @@ public partial class PageInstanceCompJarInJar
 
     private void _AppendMissingWarning(CompFile mod, CompFile? parent, string? loader)
     {
+        if (_index is not { } index) return;
         var probed = ModJarInJarIndex.BuildOwnDependencies(mod, loader)
             .Where(d => !ModDependencyIds.IsPlatform(d.DepId) && !d.Optional)
-            .Select(d => (d, status: _index.Analyze(mod, d)))
+            .Select(d => (d, status: index.Analyze(mod, d)))
             .ToList();
         var missing = probed.Where(x => x.status == JijDepStatus.Missing).Select(x => x.d.DepId).ToList();
         var mismatch = probed.Where(x => x.status == JijDepStatus.VersionMismatch)
             .Select(x => Lang.Text("Instance.Resource.Mod.JarInJar.Warning.VersionMismatch.Detail",
-                x.d.DepId, x.d.Raw ?? "*", string.Join(", ", _index.GetProviderVersions(mod, x.d.DepId))))
+                x.d.DepId, x.d.Raw ?? "*", string.Join(", ", index.GetProviderVersions(mod, x.d.DepId))))
             .ToList();
         // 版本匹配的 provider 全部被禁用：运行时同样不可用，需提示（用户重新启用即可修复）
         var disabled = probed.Where(x => x.status == JijDepStatus.Disabled).Select(x => x.d.DepId).ToList();
@@ -210,8 +212,9 @@ public partial class PageInstanceCompJarInJar
 
     private void _BuildBundledContent(StackPanel stack, CompFile mod)
     {
+        if (_index is not { } index) return;
         var selected = mod.State == CompFile.LocalFileStatus.Fine
-            ? _index.GetLoadableEmbedded(mod).ToHashSet()
+            ? index.GetLoadableEmbedded(mod).ToHashSet()
             : new HashSet<CompFile>();
         AppendTreeRows(stack, mod.EmbeddedMods, 0, selected);
     }
@@ -291,7 +294,8 @@ public partial class PageInstanceCompJarInJar
 
     private Panel BuildDependencyRow(CompFile mod, ModJarInJarIndex.DepRow dep)
     {
-        var status = _index.Analyze(mod, dep);
+        if (_index is not { } index) return new StackPanel();
+        var status = index.Analyze(mod, dep);
         var optional = dep.Optional;
         var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(8, 2, 0, 2) };
         var text = dep.Raw is null ? dep.DepId : dep.DepId + " " + dep.Raw;

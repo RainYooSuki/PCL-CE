@@ -8,12 +8,10 @@ namespace PCL.Core.App;
 /// </summary>
 /// <param name="BaseVersion">基本版本号, 如 <c>2.14.1</c></param>
 /// <param name="Suffix">后缀, 如 <c>beta.1</c></param>
-/// <param name="Code">内部版本代号, 如 <c>712</c></param>
 /// <param name="UpstreamVersion">上游版本, 如 <c>2.12.0</c></param>
 public sealed record LauncherVersionModel(
     [property: JsonPropertyName("base")] string BaseVersion,
     [property: JsonPropertyName("suffix")] string Suffix,
-    [property: JsonPropertyName("code")] int Code,
     [property: JsonPropertyName("upstream")] string UpstreamVersion
 ) {
     private static readonly (string Name, int Code) _CompilationBranchInfo =
@@ -37,9 +35,14 @@ public sealed record LauncherVersionModel(
     /// 发行版本名。CI 构建通过 <c>PCL_RELEASE_VERSION</c> 注入 Release Tag；
     /// 本地构建回退到 <see cref="BaseName"/>。
     /// </summary>
-    public string ReleaseVersion { get; } = string.IsNullOrWhiteSpace(_SecretReleaseVersion)
-        ? BaseVersion + (string.IsNullOrWhiteSpace(Suffix) ? "" : "-" + Suffix)
-        : _SecretReleaseVersion!;
+    public string ReleaseVersion { get; } = _GetReleaseVersion(BaseVersion, Suffix);
+
+    private static string _GetReleaseVersion(string baseVersion, string suffix)
+    {
+        if (string.IsNullOrWhiteSpace(_SecretReleaseVersion))
+            return baseVersion + (string.IsNullOrWhiteSpace(suffix) ? "" : "-" + suffix);
+        return _SecretReleaseVersion;
+    }
     
     /// <summary>
     /// 发行分支名
@@ -68,7 +71,7 @@ public sealed record LauncherVersionModel(
 
     public override string ToString()
     {
-        return $"{BranchName} {BaseName} ({Code}, {CommitDigest})";
+        return $"{BranchName} {ReleaseVersion} ({CommitDigest})";
     }
 }
 

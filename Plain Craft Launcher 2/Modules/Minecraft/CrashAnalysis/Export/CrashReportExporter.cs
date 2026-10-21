@@ -402,7 +402,7 @@ internal sealed class CrashReportExporter
             var mismatch = new List<string>();
             var disabled = new List<string>();
 
-            void Probe(ModLocalComp.LocalCompFile who, string loader)
+            void Probe(ModLocalComp.LocalCompFile who, string? loader)
             {
                 foreach (var d in ModJarInJarIndex.BuildOwnDependencies(who, loader))
                 {

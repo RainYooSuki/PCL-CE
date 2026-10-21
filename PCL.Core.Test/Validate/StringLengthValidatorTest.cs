@@ -7,7 +7,7 @@ namespace PCL.Core.Test.Validate;
 public class StringLengthValidatorTest
 {
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public TestContext TestContext { get; set; }
+    public TestContext? TestContext { get; set; }
 
     [TestMethod]
     [DataRow("关注洛天依谢谢喵", true)]
@@ -23,7 +23,7 @@ public class StringLengthValidatorTest
         {
             foreach (var error in result.Errors)
             {
-                TestContext.WriteLine(error.ErrorMessage);
+                TestContext?.WriteLine(error.ErrorMessage);
             }
         }
         Assert.AreEqual(expected, result.IsValid);

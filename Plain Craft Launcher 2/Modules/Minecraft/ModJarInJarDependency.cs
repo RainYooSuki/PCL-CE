@@ -32,24 +32,31 @@ public class ModJarInJarIndex
 {
     public sealed class DepRow
     {
-        public string DepId;
-        public string Raw; // 原始版本约束，null=无版本要求
+        public string DepId = "";
+        public string? Raw; // 原始版本约束，null=无版本要求
         public bool Optional;
-        public string Loader; // 声明方的加载器（决定版本方言），null=未知
+        public string? Loader; // 声明方的加载器（决定版本方言），null=未知
     }
 
     private sealed class Provider
     {
         public CompFile Host;
         public CompFile Source;
-        public string Version;
+        public string? Version;
+
+        public Provider(CompFile host, CompFile source, string? version)
+        {
+            Host = host;
+            Source = source;
+            Version = version;
+        }
     }
 
     private readonly List<CompFile> _allMods;
     private readonly Dictionary<string, List<Provider>> _providers =
         new(StringComparer.OrdinalIgnoreCase);
     // 每个 Mod 内嵌提供的 (id, 版本) 列表（同一 id 的多版本 wrapper 保留全部副本版本）
-    private readonly Dictionary<CompFile, List<(string Id, string Version)>> _selfBundled = new();
+    private readonly Dictionary<CompFile, List<(string Id, string? Version)>> _selfBundled = new();
     // 用于缺失警告与级联反查（宿主是启用/禁用单位，故内嵌依赖归到宿主承担）
     private readonly Dictionary<CompFile, List<DepRow>> _deps = new();
     // 每个宿主的可加载内嵌节点（关系页把有依赖的内嵌 mod 单独成卡时遍历）
@@ -77,23 +84,25 @@ public class ModJarInJarIndex
                 : _CollectLoadableNodes(m.EmbeddedMods, mc);
             _loadableNodes[m] = nodes;
             foreach (var node in nodes) _nodeHosts[node] = m;
-            var bundled = new List<(string Id, string Version)>();
-            if (!string.IsNullOrWhiteSpace(m.ModId)) bundled.Add((m.ModId, m.Version));
+            var bundled = new List<(string Id, string? Version)>();
+            var modId = m.ModId;
+            if (!string.IsNullOrWhiteSpace(modId)) bundled.Add((modId, m.Version));
             foreach (var id in m.ProvidedIds.Where(id => !string.IsNullOrWhiteSpace(id)))
                 bundled.Add((id, m.ProvidedVersions.TryGetValue(id, out var version) ? version : m.Version));
             foreach (var node in nodes)
             {
-                if (!string.IsNullOrWhiteSpace(node.ModId)) bundled.Add((node.ModId, node.Version));
+                var nodeModId = node.ModId;
+                if (!string.IsNullOrWhiteSpace(nodeModId)) bundled.Add((nodeModId, node.Version));
                 foreach (var id in node.ProvidedIds.Where(id => !string.IsNullOrWhiteSpace(id)))
                     bundled.Add((id,
                         node.ProvidedVersions.TryGetValue(id, out var version) ? version : node.Version));
             }
             _selfBundled[m] = bundled;
 
-            if (!string.IsNullOrEmpty(m.ModId))
+            if (!string.IsNullOrEmpty(modId))
             {
-                _RegisterSource(m, m.ModId, m);
-                _AddProvider(m.ModId, m, m, m.Version);
+                _RegisterSource(m, modId, m);
+                _AddProvider(modId, m, m, m.Version);
             }
             foreach (var pid in m.ProvidedIds)
             {
@@ -102,10 +111,12 @@ public class ModJarInJarIndex
                 _RegisterSource(m, pid, source);
                 _AddProvider(pid, m, source, hasOwnVersion ? providedVersion : m.Version);
             }
-            foreach (var n in nodes.Where(n => !string.IsNullOrEmpty(n.ModId)))
+            foreach (var n in nodes)
             {
-                _RegisterSource(n, n.ModId, n);
-                _AddProvider(n.ModId, m, n, n.Version);
+                var nodeModId = n.ModId;
+                if (string.IsNullOrEmpty(nodeModId)) continue;
+                _RegisterSource(n, nodeModId, n);
+                _AddProvider(nodeModId, m, n, n.Version);
             }
             // 内嵌节点自身的别名(multi-mod 兄弟/provides)也由宿主提供
             foreach (var n in nodes)
@@ -151,13 +162,14 @@ public class ModJarInJarIndex
         if (!_providers.TryGetValue(_Norm(depId), out var providers)) return Array.Empty<string>();
         return providers.Where(provider => provider.Source != dependent)
             .Select(provider => provider.Version)
+            .OfType<string>()
             .Where(version => !string.IsNullOrWhiteSpace(version))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
     /// <summary>构造某 mod 自身声明的依赖行（不含内嵌上浮），供关系页按 mod 分卡展示。</summary>
-    public static List<DepRow> BuildOwnDependencies(CompFile mod, string loader) =>
+    public static List<DepRow> BuildOwnDependencies(CompFile mod, string? loader) =>
         mod.DependencyDeclarations.Select(declaration => new DepRow
         {
             DepId = declaration.Id, Raw = declaration.Raw,
@@ -165,9 +177,9 @@ public class ModJarInJarIndex
         }).ToList();
 
     // ModId 比较只忽略大小写；连字符与下划线在 Fabric/Forge 元数据中均可能是不同合法 ID。
-    private static string _Norm(string id) => id?.ToLowerInvariant();
+    private static string _Norm(string? id) => (id ?? "").ToLowerInvariant();
 
-    private static bool _VersionSatisfies(DepRow dep, string providerVersion)
+    private static bool _VersionSatisfies(DepRow dep, string? providerVersion)
     {
         if (dep.Raw is null) return true;
         // provider 版本缺失或含未替换占位符时无法可靠判断，保守视为满足。
@@ -233,7 +245,7 @@ public class ModJarInJarIndex
     }
 
     private void _CollectConflicts(CompFile declarerSource,
-        IEnumerable<EmbeddedConflict> conflicts, string loader,
+        IEnumerable<EmbeddedConflict> conflicts, string? loader,
         Dictionary<CompFile, int> order, Dictionary<(CompFile, CompFile), bool> pairs)
     {
         foreach (var conflict in conflicts)
@@ -297,7 +309,7 @@ public class ModJarInJarIndex
         return removal.Where(m => !targetSet.Contains(m)).ToList();
     }
 
-    private void _AddProvider(string id, CompFile host, CompFile source, string version)
+    private void _AddProvider(string id, CompFile host, CompFile source, string? version)
     {
         id = _Norm(id);
         if (!_providers.TryGetValue(id, out var list))
@@ -308,7 +320,7 @@ public class ModJarInJarIndex
 
         // 去重键含版本：多版本 wrapper 的每份副本版本都保留，供依赖版本区间校验逐一尝试
         if (!list.Any(p => p.Host == host && p.Source == source && p.Version == version))
-            list.Add(new Provider { Host = host, Source = source, Version = version });
+            list.Add(new Provider(host, source, version));
     }
 
     private void _RegisterSource(CompFile owner, string id, CompFile source)
@@ -322,7 +334,7 @@ public class ModJarInJarIndex
             ? source
             : owner;
 
-    private static CompFile _CreateSiblingSource(CompFile owner, string id, string version)
+    private static CompFile _CreateSiblingSource(CompFile owner, string id, string? version)
     {
         var source = new CompFile(owner.path + "!/@" + id);
         source.SetJijMetadata(id, id, version);
@@ -333,8 +345,8 @@ public class ModJarInJarIndex
     #region MC 版本匹配
 
     private static List<CompFile> _CollectLoadableNodes(List<CompFile> embedded, string mc,
-        IReadOnlyDictionary<string, string>? forgeSelections = null,
-        IReadOnlyDictionary<string, string>? fabricSelections = null)
+        IReadOnlyDictionary<string, string?>? forgeSelections = null,
+        IReadOnlyDictionary<string, string?>? fabricSelections = null)
     {
         var into = new List<CompFile>();
         _Collect(embedded, mc, into, forgeSelections, fabricSelections);
@@ -342,8 +354,8 @@ public class ModJarInJarIndex
     }
 
     private static void _Collect(List<CompFile> embedded, string mc, List<CompFile> into,
-        IReadOnlyDictionary<string, string>? forgeSelections,
-        IReadOnlyDictionary<string, string>? fabricSelections)
+        IReadOnlyDictionary<string, string?>? forgeSelections,
+        IReadOnlyDictionary<string, string?>? fabricSelections)
     {
         if (embedded is null) return;
         foreach (var e in embedded)
@@ -356,19 +368,21 @@ public class ModJarInJarIndex
         }
     }
 
-    private static bool _FabricNodeSelected(CompFile node, IReadOnlyDictionary<string, string>? selections)
+    private static bool _FabricNodeSelected(CompFile node, IReadOnlyDictionary<string, string?>? selections)
     {
-        if (selections is null || string.IsNullOrWhiteSpace(node.ModId) ||
+        var nodeModId = node.ModId;
+        if (selections is null || string.IsNullOrWhiteSpace(nodeModId) ||
             !string.Equals(node.JijLoader, "Fabric", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(node.JijLoader, "Quilt", StringComparison.OrdinalIgnoreCase))
             return true;
-        if (!selections.TryGetValue(node.ModId, out var selected) || selected is null) return false;
-        return McConstraintMatcher.CompareFabricVersions(node.Version, selected) == 0;
+        if (node.Version is not { } nodeVersion || !selections.TryGetValue(nodeModId, out var selected) ||
+            selected is null) return false;
+        return McConstraintMatcher.CompareFabricVersions(nodeVersion, selected) == 0;
     }
 
-    private Dictionary<string, string> _SelectFabricVersions(
+    private Dictionary<string, string?> _SelectFabricVersions(
         IReadOnlyDictionary<CompFile, List<CompFile>> nodesByHost, string mc,
-        IReadOnlyDictionary<string, string> forgeSelections)
+        IReadOnlyDictionary<string, string?> forgeSelections)
     {
         var candidates = nodesByHost.Values.SelectMany(nodes => nodes).ToList();
         var baseRequirements = new List<DepRow>();
@@ -406,62 +420,66 @@ public class ModJarInJarIndex
         return result;
     }
 
-    private static Dictionary<string, string> _ChooseFabricVersions(
+    private static Dictionary<string, string?> _ChooseFabricVersions(
         List<CompFile> candidates, List<DepRow> requirements)
     {
-        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var result = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         foreach (var group in candidates.Where(n => !string.IsNullOrWhiteSpace(n.ModId) &&
                                                     (string.Equals(n.JijLoader, "Fabric", StringComparison.OrdinalIgnoreCase) ||
                                                      string.Equals(n.JijLoader, "Quilt", StringComparison.OrdinalIgnoreCase)))
-                     .GroupBy(n => n.ModId, StringComparer.OrdinalIgnoreCase))
+                     .GroupBy(n => n.ModId ?? "", StringComparer.OrdinalIgnoreCase))
         {
-            var versions = group.Select(n => n.Version).Where(v => !string.IsNullOrWhiteSpace(v))
+            var versions = group.Select(n => n.Version).OfType<string>().Where(v => !string.IsNullOrWhiteSpace(v))
                 .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             versions.Sort((a, b) => McConstraintMatcher.CompareFabricVersions(b, a));
             var needed = requirements.Where(r => string.Equals(r.DepId, group.Key,
                 StringComparison.OrdinalIgnoreCase)).ToList();
-            result[group.Key] = versions.FirstOrDefault(candidate => needed.All(r =>
-                _VersionSatisfies(r, candidate)));
+            if (versions.FirstOrDefault(candidate => needed.All(r => _VersionSatisfies(r, candidate))) is { } selectedVersion)
+                result[group.Key] = selectedVersion;
         }
         return result;
     }
 
-    private static bool _SameFabricSelections(IReadOnlyDictionary<string, string> left,
-        IReadOnlyDictionary<string, string> right) =>
+    private static bool _SameFabricSelections(IReadOnlyDictionary<string, string?> left,
+        IReadOnlyDictionary<string, string?> right) =>
         left.Count == right.Count && left.All(pair => right.TryGetValue(pair.Key, out var value) &&
             string.Equals(pair.Value, value, StringComparison.OrdinalIgnoreCase));
 
-    private static string _FabricSelectionKey(IReadOnlyDictionary<string, string> selections) =>
+    private static string _FabricSelectionKey(IReadOnlyDictionary<string, string?> selections) =>
         string.Join("\n", selections.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-            .Select(pair => pair.Key + "\0" + pair.Value));
+            .Select(pair => pair.Key + "\0" + (pair.Value ?? "")));
 
-    private static bool _ForgeNodeSelected(CompFile node, IReadOnlyDictionary<string, string>? selections)
+    private static bool _ForgeNodeSelected(CompFile node, IReadOnlyDictionary<string, string?>? selections)
     {
-        if (selections is null || string.IsNullOrWhiteSpace(node.JijIdentifier)) return true;
-        if (!selections.TryGetValue(node.JijIdentifier, out var selected) || selected is null) return false;
+        var identifier = node.JijIdentifier;
+        if (selections is null || string.IsNullOrWhiteSpace(identifier)) return true;
+        if (!selections.TryGetValue(identifier, out var selected) || selected is null) return false;
         var version = node.JijArtifactVersion ?? node.Version;
-        return !string.IsNullOrWhiteSpace(version) &&
+        return version is not null && !string.IsNullOrWhiteSpace(version) &&
                McConstraintMatcher.CompareMavenVersions(version, selected) == 0;
     }
 
-    private static Dictionary<string, string> _SelectForgeJarJarVersions(IEnumerable<CompFile> nodes)
+    private static Dictionary<string, string?> _SelectForgeJarJarVersions(IEnumerable<CompFile> nodes)
     {
-        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var result = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         foreach (var group in nodes.Where(n => !string.IsNullOrWhiteSpace(n.JijIdentifier))
-                     .GroupBy(n => n.JijIdentifier, StringComparer.OrdinalIgnoreCase))
+                     .GroupBy(n => n.JijIdentifier ?? "", StringComparer.OrdinalIgnoreCase))
         {
-            var candidates = group.Select(n => n.JijArtifactVersion ?? n.Version)
+            var candidates = group.Select(n => n.JijArtifactVersion ?? n.Version).OfType<string>()
                 .Where(v => !string.IsNullOrWhiteSpace(v)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             candidates.Sort((a, b) => McConstraintMatcher.CompareMavenVersions(b, a));
-            result[group.Key] = candidates.FirstOrDefault(candidate => group.All(n =>
-                string.IsNullOrWhiteSpace(n.JijVersionRange) ||
-                _JarJarRangeContains(n.JijVersionRange, candidate)));
+            if (candidates.FirstOrDefault(candidate => group.All(n =>
+                    string.IsNullOrWhiteSpace(n.JijVersionRange) ||
+                    _JarJarRangeContains(n.JijVersionRange, candidate))) is { } selectedVersion)
+                result[group.Key] = selectedVersion;
         }
         return result;
     }
 
-    private static bool _JarJarRangeContains(string range, string candidate)
+    private static bool _JarJarRangeContains(string? range, string? candidate)
     {
+        if (string.IsNullOrWhiteSpace(range) || string.IsNullOrWhiteSpace(candidate))
+            return false;
         var value = range.Trim();
         if (value.Length > 0 && value[0] is not '[' and not '(')
             return McConstraintMatcher.CompareMavenVersions(candidate, value) == 0;

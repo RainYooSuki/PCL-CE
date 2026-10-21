@@ -93,7 +93,7 @@ public partial class PageLaunchRight : IRefreshable
     private void RefreshReal()
     {
         var content = "";
-        string url = null;
+        string? url = null;
 
         var uiCustomType = (int)Config.Preference.Homepage.Type;
 
@@ -251,7 +251,7 @@ public partial class PageLaunchRight : IRefreshable
     /// <summary>
     ///     根据 URL 加载网络内容，优先使用缓存
     /// </summary>
-    private string LoadFromNetwork(string url)
+    private string LoadFromNetwork(string? url)
     {
         if (string.IsNullOrWhiteSpace(url)) return "";
 
@@ -424,14 +424,14 @@ public partial class PageLaunchRight : IRefreshable
         ModBase.Log("[Page] 要求强制刷新主页");
         ClearCache();
         // 实际的刷新
-        if (ModMain.frmMain.pageCurrent.page == FormMain.PageType.Launch)
+        if (ModMain.FrmMainRequired.pageCurrent.page == FormMain.PageType.Launch)
         {
             PanBack.ScrollToHome();
             Refresh();
         }
         else
         {
-            ModMain.frmMain.PageChange(FormMain.PageType.Launch);
+            ModMain.FrmMainRequired.PageChange(FormMain.PageType.Launch);
         }
     }
 
@@ -707,10 +707,14 @@ public partial class PageLaunchRight : IRefreshable
             var file = Path.Combine(_GetHomepageLiveDirectory(), homepageLiveSupportFileName);
             if (!File.Exists(file)) return;
 
-            var marker = (JsonObject)JsonNode.Parse(_ReadHomepageLivePatchFile(file),
-                new JsonNodeOptions { PropertyNameCaseInsensitive = true },
-                new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true })!;
+            if (JsonNode.Parse(_ReadHomepageLivePatchFile(file),
+                    new JsonNodeOptions { PropertyNameCaseInsensitive = true },
+                    new JsonDocumentOptions
+                    {
+                        CommentHandling = JsonCommentHandling.Skip,
+                        AllowTrailingCommas = true
+                    }) is not JsonObject marker)
+                return;
             if (marker["processId"]?.GetValue<int>() == Environment.ProcessId)
                 File.Delete(file);
         }
@@ -740,10 +744,15 @@ public partial class PageLaunchRight : IRefreshable
             foreach (var property in obj)
             {
                 if (property.Value is not JsonObject patch) continue;
-                patch = (JsonObject)JsonNode.Parse(patch.ToJsonString(),
-                    new JsonNodeOptions { PropertyNameCaseInsensitive = true },
-                    new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip,
-                        AllowTrailingCommas = true })!;
+                if (JsonNode.Parse(patch.ToJsonString(),
+                        new JsonNodeOptions { PropertyNameCaseInsensitive = true },
+                        new JsonDocumentOptions
+                        {
+                            CommentHandling = JsonCommentHandling.Skip,
+                            AllowTrailingCommas = true
+                        }) is not JsonObject reparsedPatch)
+                    continue;
+                patch = reparsedPatch;
                 patch["target"] ??= property.Key;
                 yield return patch;
             }

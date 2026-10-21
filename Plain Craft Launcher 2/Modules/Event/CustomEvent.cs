@@ -149,7 +149,7 @@ namespace PCL
             {
                 if (ModInstanceList.McMcInstanceSelected is null)
                     throw new InvalidOperationException(Lang.Text("Event.LaunchGame.SelectVersion"));
-                args[0] = ModInstanceList.McMcInstanceSelected.Name;
+                args[0] = ModInstanceList.McMcInstanceSelectedRequired.Name;
             }
             ModBase.RunInUi(() =>
             {
@@ -342,7 +342,7 @@ namespace PCL
                     ModBase.RunInUiWait(() =>
                     {
                         var page = new PageHelpDetail(content);
-                        ModMain.frmMain.PageChange(new FormMain.PageStackData
+                        ModMain.FrmMainRequired.PageChange(new FormMain.PageStackData
                         {
                             page = FormMain.PageType.HelpDetail,
                             helpPage = page

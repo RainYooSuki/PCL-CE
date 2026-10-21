@@ -9,7 +9,9 @@ namespace PCL;
 
 public partial class PageLogLeft
 {
-    public ModWatcher.Watcher currentLog;
+    public ModWatcher.Watcher? currentLog;
+    public ModWatcher.Watcher CurrentLogRequired =>
+        currentLog ?? throw new InvalidOperationException("当前日志尚未初始化。");
     public int currentUuid;
     public Dictionary<int, FlowDocument> flowDocuments = new();
     public int isLoading;
@@ -25,12 +27,12 @@ public partial class PageLogLeft
     private void PageLogLeft_Loaded(object sender, RoutedEventArgs e)
     {
         Reload();
-        ModMain.frmMain.BtnExtraLog.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraLog.ShowRefresh();
     }
 
     private void PageLogLeft_Unloaded(object sender, RoutedEventArgs e)
     {
-        ModMain.frmMain.BtnExtraLog.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraLog.ShowRefresh();
     }
 
     private void Reload()
@@ -39,17 +41,17 @@ public partial class PageLogLeft
         {
             if (shownLogs.Count == 0)
             {
-                ModMain.frmMain.PageChange((FormMain.PageType)ModMain.frmMain.PageCurrentSub);
+                ModMain.FrmMainRequired.PageChange((FormMain.PageType)ModMain.FrmMainRequired.PageCurrentSub);
                 return;
             }
 
             isLoading += 1;
 
             // 创建 UI
-            ModMain.frmLogLeft.PanList.Children.Clear();
+            ModMain.FrmLogLeftRequired.PanList.Children.Clear();
 
             // 测试实例列表
-            ModMain.frmLogLeft.PanList.Children.Add(new TextBlock
+            ModMain.FrmLogLeftRequired.PanList.Children.Add(new TextBlock
                 { Text = Lang.Text("LogPage.Left.InstancesTitle"), Margin = new Thickness(13d, 18d, 5d, 4d), Opacity = 0.6d, FontSize = 12d });
             foreach (var item in shownLogs)
             {
@@ -62,15 +64,15 @@ public partial class PageLogLeft
                     IsScaleAnimationEnabled = false, Type = MyListItem.CheckType.RadioBox, MinPaddingRight = 30,
                     Title = version.Name, Info = $"{version.Info} - {Lang.Date(proc.StartTime, "T")}", Height = 40d, Tag = uuid
                 };
-                newItem.Changed += ModMain.frmLogLeft.Version_Change;
+                newItem.Changed += ModMain.FrmLogLeftRequired.Version_Change;
                 // Dim KillButton As New MyIconButton With {.Logo = Logo.IconButtonCross, .LogoScale = 0.85}
                 var removeButton = new MyIconButton { SvgIcon = "lucide/trash-2", LogoScale = 1.1d };
                 // AddHandler KillButton.Click, AddressOf FrmLogLeft.Kill_Click
-                removeButton.Click += (a, b) => ModMain.frmLogLeft.Remove_Click(a, (RoutedEventArgs)b);
+                removeButton.Click += (a, b) => ModMain.FrmLogLeftRequired.Remove_Click(a, (RoutedEventArgs)b);
                 newItem.Buttons = new[] { removeButton };
                 if (uuid == currentUuid)
                     newItem.Checked = true;
-                ModMain.frmLogLeft.PanList.Children.Add(newItem);
+                ModMain.FrmLogLeftRequired.PanList.Children.Add(newItem);
             }
 
             // 通知日志保留设置
@@ -146,7 +148,7 @@ public partial class PageLogLeft
         watcher.LogOutput += OnLogOutput;
         ModBase.RunInUi(() => flowDocuments.Add(uuid, new FlowDocument())); // TODO：在 UI 线程创建
         SelectionChange(uuid);
-        ModMain.frmMain.BtnExtraLog.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraLog.ShowRefresh();
     }
 
     public void SelectionChange(int uuid)
@@ -172,7 +174,7 @@ public partial class PageLogLeft
 
         ModBase.RunInUi(() =>
         {
-            ModMain.frmLogRight.Reload();
+            ModMain.FrmLogRightRequired.Reload();
             Reload();
         });
     }
@@ -197,7 +199,7 @@ public partial class PageLogLeft
             {
                 ModBase.RunInUi(() =>
                 {
-                    ModMain.frmLogRight.Reload();
+                    ModMain.FrmLogRightRequired.Reload();
                     Reload();
                 });
             }
@@ -205,7 +207,7 @@ public partial class PageLogLeft
             break;
         }
 
-        ModMain.frmMain.BtnExtraLog.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraLog.ShowRefresh();
     }
 
     public void Remove_Click(object sender, RoutedEventArgs e)

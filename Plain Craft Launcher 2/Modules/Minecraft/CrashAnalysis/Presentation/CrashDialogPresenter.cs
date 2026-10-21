@@ -16,7 +16,7 @@ internal sealed class CrashDialogPresenter(CrashAnalysisContext context)
         bool isHandAnalyze,
         List<string>? extraFiles)
     {
-        ModMain.frmMain.ShowWindowToTop();
+        ModMain.FrmMainRequired.ShowWindowToTop();
 
         var crashContent = _formatter.Format(context, isHandAnalyze);
         var resultText = crashContent.Text;
@@ -97,7 +97,7 @@ internal sealed class CrashDialogPresenter(CrashAnalysisContext context)
     {
         PageInstanceLeft.McInstance = context.Instance;
 
-        ModBase.RunInUi(() => ModMain.frmMain.PageChange(
+        ModBase.RunInUi(() => ModMain.FrmMainRequired.PageChange(
             FormMain.PageType.InstanceSetup,
             FormMain.PageSubType.VersionInstall));
     }

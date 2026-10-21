@@ -16,7 +16,8 @@ public sealed partial class ApplicationService
     private static void _Start()
     {
         Context.Debug("正在初始化 WPF 应用程序容器");
-        var app = Loading!.Invoke();
+        var app = Loading?.Invoke()
+            ?? throw new InvalidOperationException("The WPF application loader is not configured.");
         app.DispatcherUnhandledException += (_, e) => Lifecycle.OnException(e.Exception);
         app.Startup += (_, _) => Lifecycle.OnLoading();
         Lifecycle.CurrentApplication = app;

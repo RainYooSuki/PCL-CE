@@ -16,11 +16,10 @@ namespace PCL.Core.Test.Minecraft;
 [TestClass]
 public class SaveManagerTest
 {
-    private string _tempRoot = null!;
-    private SaveManager _saveManager = null!;
+    private readonly string _tempRoot;
+    private readonly SaveManager _saveManager;
 
-    [TestInitialize]
-    public void Initialize()
+    public SaveManagerTest()
     {
         _tempRoot = Path.Combine(Path.GetTempPath(), "PCLTest", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempRoot);
@@ -125,9 +124,10 @@ public class SaveManagerTest
         Assert.IsNull(info.Difficulty);
         Assert.IsFalse(info.AllowCommands);
         Assert.IsNotNull(info.Spawn);
-        Assert.AreEqual(100f, info.Spawn!.Value.X);
-        Assert.AreEqual(64f, info.Spawn!.Value.Y);
-        Assert.AreEqual(200f, info.Spawn!.Value.Z);
+        var spawn = info.Spawn.GetValueOrDefault();
+        Assert.AreEqual(100f, spawn.X);
+        Assert.AreEqual(64f, spawn.Y);
+        Assert.AreEqual(200f, spawn.Z);
     }
 
     [TestMethod]
@@ -227,9 +227,10 @@ public class SaveManagerTest
         var info = await _saveManager.LoadSaveAsync(folder);
 
         Assert.IsNotNull(info.Spawn);
-        Assert.AreEqual(256f, info.Spawn!.Value.X);
-        Assert.AreEqual(70f, info.Spawn!.Value.Y);
-        Assert.AreEqual(-128f, info.Spawn!.Value.Z);
+        var spawn = info.Spawn.GetValueOrDefault();
+        Assert.AreEqual(256f, spawn.X);
+        Assert.AreEqual(70f, spawn.Y);
+        Assert.AreEqual(-128f, spawn.Z);
     }
 
     [TestMethod]

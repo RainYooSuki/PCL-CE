@@ -10,7 +10,16 @@ public partial class PageInstanceLeft : IRefreshable
     /// <summary>
     ///     当前显示设置的 MC 实例。
     /// </summary>
-    public static McInstance McInstance = null;
+    private static McInstance? _mcInstance;
+
+    public static McInstance? McInstance
+    {
+        get => _mcInstance;
+        set => _mcInstance = value;
+    }
+
+    public static McInstance McInstanceRequired => _mcInstance ??
+                                                  throw new InvalidOperationException("当前未选择 Minecraft 实例。");
 
     public PageInstanceLeft()
     {
@@ -20,7 +29,7 @@ public partial class PageInstanceLeft : IRefreshable
 
     public void Refresh()
     {
-        Refresh(ModMain.frmMain.PageCurrentSub);
+        Refresh(ModMain.FrmMainRequired.PageCurrentSub);
     }
 
     public void RefreshModDisabled()
@@ -147,20 +156,20 @@ public partial class PageInstanceLeft : IRefreshable
                 ModDownload.dlOptiFabricLoader.Start(isForceRestart: true);
                 ModDownload.dlLabyModListLoader.Start(isForceRestart: true);
                 ItemInstall.Checked = true;
-                ModMain.frmInstanceInstall.GetCurrentInfo();
+                ModMain.FrmInstanceInstallRequired.GetCurrentInfo();
                 break;
             }
             case FormMain.PageSubType.VersionExport:
             {
                 if (ModMain.frmInstanceExport is not null)
-                    ModMain.frmInstanceExport.RefreshAll();
+                    ModMain.FrmInstanceExportRequired.RefreshAll();
                 ItemExport.Checked = true;
                 break;
             }
             case FormMain.PageSubType.VersionServer:
             {
                 if (ModMain.frmInstanceServer is not null)
-                    ModMain.frmInstanceServer.RefreshServers();
+                    ModMain.FrmInstanceServerRequired.RefreshServers();
                 ItemServer.Checked = true;
                 break;
             }
@@ -177,7 +186,7 @@ public partial class PageInstanceLeft : IRefreshable
         {
             if (ModMain.frmInstanceSetup is null)
                 ModMain.frmInstanceSetup = new PageInstanceSetup();
-            ModMain.frmInstanceSetup.Reset();
+            ModMain.FrmInstanceSetupRequired.Reset();
             ItemSetup.Checked = true;
         }
     }
@@ -322,21 +331,21 @@ public partial class PageInstanceLeft : IRefreshable
         ModAnimation.AniStop("FrmMain PageChangeRight"); // 停止主页面的右页面切换动画，防止它与本动画一起触发多次 PageOnEnter
         if (target.Parent is not null)
             target.SetValue(ContentPresenter.ContentProperty, null);
-        ModMain.frmMain.pageRight = target;
-        ((MyPageRight)ModMain.frmMain.PanMainRight.Child).PageOnExit();
+        ModMain.FrmMainRequired.pageRight = target;
+        ((MyPageRight)ModMain.FrmMainRequired.PanMainRight.Child).PageOnExit();
         ModAnimation.AniStart(new[]
         {
             ModAnimation.AaCode(() =>
             {
-                ((MyPageRight)ModMain.frmMain.PanMainRight.Child).PageOnForceExit();
-                ModMain.frmMain.PanMainRight.Child = ModMain.frmMain.pageRight;
-                ModMain.frmMain.pageRight.Opacity = 0d;
+                ((MyPageRight)ModMain.FrmMainRequired.PanMainRight.Child).PageOnForceExit();
+                ModMain.FrmMainRequired.PanMainRight.Child = ModMain.FrmMainRequired.pageRight;
+                ModMain.FrmMainRequired.pageRight.Opacity = 0d;
             }, 130),
             ModAnimation.AaCode(() =>
             {
                 // 延迟触发页面通用动画，以使得在 Loaded 事件中加载的控件得以处理
-                ModMain.frmMain.pageRight.Opacity = 1d;
-                ModMain.frmMain.pageRight.PageOnEnter();
+                ModMain.FrmMainRequired.pageRight.Opacity = 1d;
+                ModMain.FrmMainRequired.pageRight.PageOnEnter();
             }, 30, true)
         }, "PageLeft PageChange");
     }

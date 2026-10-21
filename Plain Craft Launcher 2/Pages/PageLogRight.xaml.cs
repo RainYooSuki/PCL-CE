@@ -11,11 +11,11 @@ namespace PCL;
 
 public partial class PageLogRight
 {
-    public Run labDebug;
-    public Run labError;
-    public Run labFatal;
-    public Run labInfo;
-    public Run labWarn;
+    public Run labDebug = new();
+    public Run labError = new();
+    public Run labFatal = new();
+    public Run labInfo = new();
+    public Run labWarn = new();
 
     public PageLogRight()
     {
@@ -64,18 +64,18 @@ public partial class PageLogRight
     public void Reload()
     {
         // 初始化
-        if (ModMain.frmLogLeft.currentLog is null || ModMain.frmLogLeft.currentUuid <= 0 ||
-            ModMain.frmLogLeft.shownLogs.Count == 0)
+        if (ModMain.FrmLogLeftRequired.currentLog is null || ModMain.FrmLogLeftRequired.currentUuid <= 0 ||
+            ModMain.FrmLogLeftRequired.shownLogs.Count == 0)
         {
-            ModMain.frmMain.PageChange(ModMain.frmMain.pageCurrent);
+            ModMain.FrmMainRequired.PageChange(ModMain.FrmMainRequired.pageCurrent);
             return;
         }
 
         PanAllBack.Visibility = Visibility.Visible;
         CardOperation.Visibility = Visibility.Visible;
-        BtnOperationKill.IsEnabled = !ModMain.frmLogLeft.currentLog.gameProcess.HasExited;
-        BtnOperationExportStackDump.IsEnabled = !ModMain.frmLogLeft.currentLog.gameProcess.HasExited &&
-                                                !string.IsNullOrWhiteSpace(ModMain.frmLogLeft.currentLog.jStackPath);
+        BtnOperationKill.IsEnabled = !ModMain.FrmLogLeftRequired.CurrentLogRequired.gameProcess.HasExited;
+        BtnOperationExportStackDump.IsEnabled = !ModMain.FrmLogLeftRequired.CurrentLogRequired.gameProcess.HasExited &&
+                                                !string.IsNullOrWhiteSpace(ModMain.FrmLogLeftRequired.CurrentLogRequired.jStackPath);
         SliderMaxLog.Value = Config.System.MaxGameLog;
         // y = 10x + 50 (0 <= x <= 5, 50 <= y <= 100)
         // y = 50x - 150 (5 < x <= 13, 100 < y <= 500)
@@ -91,10 +91,10 @@ public partial class PageLogRight
             };
         });
         // 绑定日志输出
-        PanLog.Document = ModMain.frmLogLeft.flowDocuments[ModMain.frmLogLeft.currentUuid];
+        PanLog.Document = ModMain.FrmLogLeftRequired.flowDocuments[ModMain.FrmLogLeftRequired.currentUuid];
         // 绑定事件
-        ModMain.frmLogLeft.currentLog.LogOutput += OnLogOutput;
-        ModMain.frmLogLeft.currentLog.GameExit += OnGameExit;
+        ModMain.FrmLogLeftRequired.CurrentLogRequired.LogOutput += OnLogOutput;
+        ModMain.FrmLogLeftRequired.CurrentLogRequired.GameExit += OnGameExit;
         RefreshLabText();
     }
 
@@ -102,18 +102,18 @@ public partial class PageLogRight
     {
         // 刷新计数器
 
-        labFatal.Text = $"{ModMain.frmLogLeft.currentLog.countFatal} {Lang.Text("LogPage.Level.Fatal")}";
-        labError.Text = $"{ModMain.frmLogLeft.currentLog.countError} {Lang.Text("LogPage.Level.Error")}";
-        labWarn.Text = $"{ModMain.frmLogLeft.currentLog.countWarn} {Lang.Text("LogPage.Level.Warn")}";
-        labInfo.Text = $"{ModMain.frmLogLeft.currentLog.countInfo} {Lang.Text("LogPage.Level.Info")}";
-        labDebug.Text = $"{ModMain.frmLogLeft.currentLog.countDebug} {Lang.Text("LogPage.Level.Debug")}";
+        labFatal.Text = $"{ModMain.FrmLogLeftRequired.CurrentLogRequired.countFatal} {Lang.Text("LogPage.Level.Fatal")}";
+        labError.Text = $"{ModMain.FrmLogLeftRequired.CurrentLogRequired.countError} {Lang.Text("LogPage.Level.Error")}";
+        labWarn.Text = $"{ModMain.FrmLogLeftRequired.CurrentLogRequired.countWarn} {Lang.Text("LogPage.Level.Warn")}";
+        labInfo.Text = $"{ModMain.FrmLogLeftRequired.CurrentLogRequired.countInfo} {Lang.Text("LogPage.Level.Info")}";
+        labDebug.Text = $"{ModMain.FrmLogLeftRequired.CurrentLogRequired.countDebug} {Lang.Text("LogPage.Level.Debug")}";
     }
 
     private void OnLogOutput(ModWatcher.Watcher sender, ModWatcher.LogOutputEventArgs e)
     {
         ModBase.RunInUi(() =>
         {
-            if (ModMain.frmLogLeft.currentLog is not null)
+            if (ModMain.FrmLogLeftRequired.currentLog is not null)
             {
                 if (CheckAutoScroll.Checked == true) PanBack.ScrollToBottom();
                 RefreshLabText();
@@ -129,7 +129,7 @@ public partial class PageLogRight
         Config.System.MaxGameLog = sender.Value;
         if (ModMain.frmSetupLauncherMisc is null)
             return;
-        ModMain.frmSetupLauncherMisc.SliderMaxLog.Value = sender.Value;
+        ModMain.FrmSetupLauncherMiscRequired.SliderMaxLog.Value = sender.Value;
     }
 
     #endregion
@@ -138,27 +138,27 @@ public partial class PageLogRight
 
     private void BtnOperationClear_Click(object sender, ModBase.RouteEventArgs e)
     {
-        ModMain.frmLogLeft.flowDocuments[ModMain.frmLogLeft.currentUuid].Blocks.Clear();
+        ModMain.FrmLogLeftRequired.flowDocuments[ModMain.FrmLogLeftRequired.currentUuid].Blocks.Clear();
     }
 
     private void BtnOperationExport_Click(object sender, ModBase.RouteEventArgs e)
     {
         var savePath = SystemDialogs.SelectSaveFile(Lang.Text("LogPage.Export.SelectLocation"),
-            Lang.Text("LogPage.Export.GameLog.FileName", ModMain.frmLogLeft.currentLog.version.Name),
+            Lang.Text("LogPage.Export.GameLog.FileName", ModMain.FrmLogLeftRequired.CurrentLogRequired.version.Name),
             Lang.Text("LogPage.Export.GameLog.Filter"));
         if (savePath.Length < 3)
             return;
-        File.WriteAllLines(savePath, ModMain.frmLogLeft.currentLog.fullLog);
+        File.WriteAllLines(savePath, ModMain.FrmLogLeftRequired.CurrentLogRequired.fullLog);
         HintService.Hint(Lang.Text("LogPage.Export.Success"), HintType.Success);
         ModBase.OpenExplorer(savePath);
     }
 
     private void BtnOperationKill_Click(object sender, ModBase.RouteEventArgs e)
     {
-        if (ModMain.frmLogLeft.currentLog.State <= ModWatcher.Watcher.MinecraftState.Running)
+        if (ModMain.FrmLogLeftRequired.CurrentLogRequired.State <= ModWatcher.Watcher.MinecraftState.Running)
         {
-            ModMain.frmLogLeft.currentLog.Kill();
-            HintService.Hint(Lang.Text("LogPage.Action.GameClosed", ModMain.frmLogLeft.currentLog.version.Name),
+            ModMain.FrmLogLeftRequired.CurrentLogRequired.Kill();
+            HintService.Hint(Lang.Text("LogPage.Action.GameClosed", ModMain.FrmLogLeftRequired.CurrentLogRequired.version.Name),
                 HintType.Success);
         }
     }
@@ -178,7 +178,7 @@ public partial class PageLogRight
         BtnOperationExportStackDump.IsEnabled = false;
         ModBase.RunInNewThread(() =>
         {
-            var dump = ModMain.frmLogLeft.currentLog.ExportStackDump(savePath);
+            var dump = ModMain.FrmLogLeftRequired.CurrentLogRequired.ExportStackDump(savePath);
             File.WriteAllLines(savePath, dump);
             ModBase.RunInUi(() =>
             {

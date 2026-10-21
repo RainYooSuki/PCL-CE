@@ -25,8 +25,10 @@ public class LogService : ILifecycleLogService
         _context = Lifecycle.GetContext(this);
     }
 
-    private static LifecycleContext Context => _context!;
-    public static Logger Logger => _logger!;
+    private static LifecycleContext Context =>
+        _context ?? throw new InvalidOperationException("Log service context is not initialized.");
+    public static Logger Logger =>
+        _logger ?? throw new InvalidOperationException("Log service is not initialized.");
     public string Identifier => "log";
     public string Name => "日志服务";
     public bool SupportAsync => false;

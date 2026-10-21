@@ -22,11 +22,11 @@ public class DohConnection
         {
             Version = HttpVersion.Version30
         };
-        using var response = await client.SendAsync(request, TestContext.CancellationTokenSource.Token);
+        using var response = await client.SendAsync(request, TestContext?.CancellationTokenSource?.Token ?? default);
         Assert.IsTrue(response.IsSuccessStatusCode);
         Assert.IsTrue(response.Content.Headers.ContentLength > 0);
-        Console.WriteLine(await response.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token));
+        Console.WriteLine(await response.Content.ReadAsStringAsync(TestContext?.CancellationTokenSource?.Token ?? default));
     }
 
-    public TestContext TestContext { get; set; }
+    public TestContext? TestContext { get; set; }
 }

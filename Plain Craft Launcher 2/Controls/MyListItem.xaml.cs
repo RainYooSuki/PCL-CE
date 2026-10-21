@@ -20,9 +20,9 @@ public partial class MyListItem : IMyRadio
 
     public bool isMouseOverAnimationEnabled = true;
 
-    private string stateLast;
+    private string stateLast = "";
 
-    public object tag { get; set; }
+    public object? tag { get; set; }
     public event IMyRadio.CheckEventHandler? Check;
     public event IMyRadio.ChangedEventHandler? Changed;
 
@@ -57,7 +57,7 @@ public partial class MyListItem : IMyRadio
             time = 180;
         }
 
-        if ((stateLast ?? "") == (stateNew ?? ""))
+        if (stateLast == stateNew)
             return;
         stateLast = stateNew;
         // 触发颜色动画
@@ -182,7 +182,7 @@ public partial class MyListItem : IMyRadio
     #region 后加载控件
 
     // 指向背景
-    private Border _RectBack;
+    private Border? _RectBack;
 
     public Border RectBack
     {
@@ -217,13 +217,13 @@ public partial class MyListItem : IMyRadio
     }
 
     // 按钮
-    public FrameworkElement buttonStack;
+    public FrameworkElement? buttonStack;
 
     // 图标
-    public FrameworkElement pathLogo;
+    public FrameworkElement? pathLogo;
 
     // 勾选条
-    public Border rectCheck;
+    public Border? rectCheck;
 
 
     /// <summary>
@@ -492,7 +492,7 @@ public partial class MyListItem : IMyRadio
     // 图片
     public string Logo
     {
-        get => (string)GetValue(LogoProperty);
+        get => GetValue(LogoProperty) as string ?? "";
         set
         {
             if (Logo == value)
@@ -527,7 +527,7 @@ public partial class MyListItem : IMyRadio
     private static void OnLogoChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var control = (MyListItem)d;
-        control.UpdateLogo(e.NewValue as string);
+        control.UpdateLogo(e.NewValue as string ?? "");
     }
 
     private static void OnSvgIconChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -982,7 +982,7 @@ public partial class MyListItem : IMyRadio
         typeof(Brush), typeof(MyListItem), new PropertyMetadata(ThemeManager.AppResources["ColorBrush1"]));
 
     // 菜单与按钮绑定
-    public Action<MyListItem, EventArgs> ContentHandler { get; set; }
+    public Action<MyListItem, EventArgs>? ContentHandler { get; set; }
     
     /// <summary>
     /// 图标可选的圆角。仅当 Logo 为位图（MyImage 或 Canvas）时生效。

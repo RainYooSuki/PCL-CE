@@ -191,9 +191,9 @@ public partial class PageSetupLaunch
     // 切换到实例独立设置
     private void BtnSwitch_Click(object sender, MouseButtonEventArgs e)
     {
-        ModInstanceList.McMcInstanceSelected.Load();
+        ModInstanceList.McMcInstanceSelectedRequired.Load();
         PageInstanceLeft.McInstance = ModInstanceList.McMcInstanceSelected;
-        ModMain.frmMain.PageChange(FormMain.PageType.InstanceSetup, FormMain.PageSubType.VersionSetup);
+        ModMain.FrmMainRequired.PageChange(FormMain.PageType.InstanceSetup, FormMain.PageSubType.VersionSetup);
     }
 
     private void ComboAdvanceRenderer_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -224,8 +224,8 @@ public partial class PageSetupLaunch
     /// </summary>
     public void RefreshRam(bool showAnim)
     {
-        if (LabRamGame is null || LabRamUsed is null || ModMain.frmMain.pageCurrent != FormMain.PageType.Setup ||
-            ModMain.frmSetupLeft.pageID != FormMain.PageSubType.SetupLaunch)
+        if (LabRamGame is null || LabRamUsed is null || ModMain.FrmMainRequired.pageCurrent != FormMain.PageType.Setup ||
+            ModMain.FrmSetupLeftRequired.pageID != FormMain.PageSubType.SetupLaunch)
             return;
         // 获取内存情况
         var ramGame = Math.Round(GetRam(ModInstanceList.McMcInstanceSelected, false), 5);

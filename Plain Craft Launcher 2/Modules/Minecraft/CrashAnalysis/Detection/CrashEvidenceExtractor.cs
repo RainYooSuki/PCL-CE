@@ -690,8 +690,9 @@ internal sealed class CrashEvidenceExtractor
             cause,
             CrashConfidence.High,
             values
+                .OfType<string>()
                 .Where(value => !string.IsNullOrWhiteSpace(value))
-                .Select(value => _Evidence(value!, source, displayKind)))
+                .Select(value => _Evidence(value, source, displayKind)))
         {
             ShouldStop = shouldStop
         };

@@ -406,12 +406,12 @@ public static class ModJava
             switch (newState)
             {
                 case ModBase.LoadState.Failed or ModBase.LoadState.Aborted
-                    when lastJavaBaseDir is not null:
+                    when lastJavaBaseDir is { } javaBaseDir:
                     ModBase.Log(
-                        $"[Java] 由于下载未完成，清理未下载完成的 Java 文件：{lastJavaBaseDir}",
+                        $"[Java] 由于下载未完成，清理未下载完成的 Java 文件：{javaBaseDir}",
                         ModBase.LogLevel.Debug);
 
-                    ModBase.DeleteDirectory(lastJavaBaseDir);
+                    ModBase.DeleteDirectory(javaBaseDir);
                     break;
                 case ModBase.LoadState.Finished:
                     Javas.ScanJavaAsync().GetAwaiter().GetResult();
@@ -424,7 +424,7 @@ public static class ModJava
         return loader;
     }
 
-    private static string lastJavaBaseDir; // 用于在下载中断或失败时删除未完成下载的 Java 文件夹，防止残留只下了一半但 -version 能跑的 Java
+    private static string? lastJavaBaseDir; // 用于在下载中断或失败时删除未完成下载的 Java 文件夹，防止残留只下了一半但 -version 能跑的 Java
 
     private static readonly HashSet<string> ignoreHash = new[]
     {
@@ -474,8 +474,9 @@ public static class ModJava
         var listFileStr = (JsonObject)Requester.FetchJson(
             ModDownload.DlSourceOrder(new[] { address },
                 new[] { address.Replace("piston-meta.mojang.com", "bmclapi2.bangbang93.com") }).First(), RequestParam.WithRetry);
-        lastJavaBaseDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        var javaBaseDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             ".minecraft", "runtime", targetName);
+        lastJavaBaseDir = javaBaseDir;
         var results = new List<DownloadFile>(listFileStr["files"].AsObject().Count);
         foreach (var File in listFileStr["files"].AsObject())
         {
@@ -488,9 +489,9 @@ public static class ModJava
                 continue; // 跳过 3 个无意义大量重复文件（#3827）
 
             var checker = new ModBase.FileChecker(actualSize: (long)info["size"], hash: (string)info["sha1"]);
-            var filePath = Path.GetFullPath(Path.Combine(lastJavaBaseDir, File.Key));
-            if (!Files.IsPathWithinDirectory(filePath, lastJavaBaseDir))
-                throw new Exception($"{filePath} 不在 {lastJavaBaseDir} 中");
+            var filePath = Path.GetFullPath(Path.Combine(javaBaseDir, File.Key));
+            if (!Files.IsPathWithinDirectory(filePath, javaBaseDir))
+                throw new Exception($"{filePath} 不在 {javaBaseDir} 中");
 
             if (checker.Check(filePath) is null)
                 continue; // 跳过已存在的文件
@@ -501,7 +502,7 @@ public static class ModJava
         }
 
         loader.output = results;
-        ModBase.Log($"[Java] 需要下载 {results.Count} 个文件，目标文件夹：{lastJavaBaseDir}");
+        ModBase.Log($"[Java] 需要下载 {results.Count} 个文件，目标文件夹：{javaBaseDir}");
     }
 
     #endregion

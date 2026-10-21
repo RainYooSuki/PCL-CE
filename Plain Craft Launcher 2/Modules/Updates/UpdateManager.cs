@@ -24,8 +24,7 @@ public static class UpdateManager
             return remoteServer.IsLatest(
                 UpdateChannel.stable,
                 SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64,
-                SemVer.Parse(ModBase.versionBaseName),
-                ModBase.versionCode)
+                SemVer.Parse(ModBase.versionBaseName))
                 ? UpdateEnums.VersionStatus.Latest
                 : UpdateEnums.VersionStatus.NotLatest;
         }
@@ -40,7 +39,7 @@ public static class UpdateManager
         }
     }
     
-    public static ModLoader.LoaderCombo<JsonObject> updateLoader;
+    public static ModLoader.LoaderCombo<JsonObject>? updateLoader;
 
     public static void UpdateStart(UpdateEnums.UpdateType type, string? receivedKey = null, bool forceValidated = false)
     {
@@ -88,19 +87,20 @@ public static class UpdateManager
                     if (ModMain.frmSetupUpdate is not null)
                         ModBase.RunInUi(() =>
                         {
-                            ModMain.frmSetupUpdate.BtnUpdate.Text = Lang.Text("Update.Task.RestartInstall");
-                            ModMain.frmSetupUpdate.BtnUpdate.IsEnabled = true;
+                            ModMain.FrmSetupUpdateRequired.BtnUpdate.Text = Lang.Text("Update.Task.RestartInstall");
+                            ModMain.FrmSetupUpdateRequired.BtnUpdate.IsEnabled = true;
                         });
                 })
                 {
                     show = false
                 });
                 // 启动
-                updateLoader = new ModLoader.LoaderCombo<JsonObject>(Lang.Text("Update.Title"), loaders);
-                updateLoader.Start();
-                ModLoader.LoaderTaskbarAdd(updateLoader);
-                ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-                ModMain.frmMain.BtnExtraDownload.Ribble();
+                var loader = new ModLoader.LoaderCombo<JsonObject>(Lang.Text("Update.Title"), loaders);
+                updateLoader = loader;
+                loader.Start();
+                ModLoader.LoaderTaskbarAdd(loader);
+                ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+                ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
             }
             catch (Exception ex)
             {
@@ -129,7 +129,7 @@ public static class UpdateManager
                 { WindowStyle = ProcessWindowStyle.Hidden, CreateNoWindow = true, Arguments = text });
             if (triggerRestartAndByEnd)
             {
-                ModMain.frmMain.EndProgram(false, true);
+                ModMain.FrmMainRequired.EndProgram(false, true);
                 ModBase.Log("[System] 已由于更新强制结束程序");
             }
         }

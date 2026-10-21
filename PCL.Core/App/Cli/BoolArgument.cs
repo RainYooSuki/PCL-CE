@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 namespace PCL.Core.App.Cli;
 
@@ -13,7 +12,7 @@ public class BoolArgument : CommandArgument<bool>
         return text is not ("0" or "false");
     }
 
-    public override bool TryCastValue<T>([NotNullWhen(true)] out T value)
+    public override bool TryCastValue<T>([NotNullWhen(true)] out T? value)
     {
         if (base.TryCastValue(out value)) return true;
         var type = typeof(T);
@@ -27,11 +26,17 @@ public class BoolArgument : CommandArgument<bool>
             type != typeof(ulong) &&
             type != typeof(nint) &&
             type != typeof(nuint)) return false;
-        // magic code
-        var v = Value;
-        Unsafe.As<T, byte>(ref value) = Unsafe.As<bool, byte>(ref v);
-#pragma warning disable CS8762 // The analyzer sucks.
+        var numericValue = Value ? 1L : 0L;
+        if (type == typeof(sbyte)) value = (T)(object)(sbyte)numericValue;
+        else if (type == typeof(byte)) value = (T)(object)(byte)numericValue;
+        else if (type == typeof(short)) value = (T)(object)(short)numericValue;
+        else if (type == typeof(ushort)) value = (T)(object)(ushort)numericValue;
+        else if (type == typeof(int)) value = (T)(object)(int)numericValue;
+        else if (type == typeof(uint)) value = (T)(object)(uint)numericValue;
+        else if (type == typeof(long)) value = (T)(object)numericValue;
+        else if (type == typeof(ulong)) value = (T)(object)(ulong)numericValue;
+        else if (type == typeof(nint)) value = (T)(object)(nint)numericValue;
+        else value = (T)(object)(nuint)numericValue;
         return true;
-#pragma warning restore CS8762
     }
 }

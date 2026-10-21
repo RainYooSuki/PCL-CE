@@ -18,7 +18,7 @@ public class Modrinth
         var ret = await c.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
         Assert.IsNotNull(ret);
         ret.EnsureSuccessStatusCode();
-        var s = await ret!.Content.ReadAsStreamAsync();
+        var s = await ret.Content.ReadAsStreamAsync();
         Assert.IsNotNull(s);
         // var instance = (ModrinthProject)(await JsonSerializer.DeserializeAsync(
         //     s,

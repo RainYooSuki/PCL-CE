@@ -22,7 +22,7 @@ public class MyMenuItem : MenuItem
         new PropertyMetadata(string.Empty, OnSvgIconChanged));
 
     private SvgIcon? _svgIconControl;
-    private string _colorName;
+    private string _colorName = "";
 
     // 基础
 
@@ -38,7 +38,7 @@ public class MyMenuItem : MenuItem
 
     public string SvgIcon
     {
-        get => (string)GetValue(SvgIconProperty);
+        get => GetValue(SvgIconProperty) as string ?? "";
         set => SetValue(SvgIconProperty, value);
     }
 
@@ -60,7 +60,8 @@ public class MyMenuItem : MenuItem
     private void MyMenuItem_Loaded(object sender, RoutedEventArgs e)
     {
         UpdateTemplateIcon();
-        ((ContextMenu)Parent).Opacity = Config.Preference.Theme.WindowOpacity / 1000.0 + 0.4;
+        if (Parent is ContextMenu contextMenu)
+            contextMenu.Opacity = Config.Preference.Theme.WindowOpacity / 1000.0 + 0.4;
     }
 
     private void UpdateTemplateIcon()
@@ -72,9 +73,9 @@ public class MyMenuItem : MenuItem
         if (SvgIconControlHelper.HasSvgIcon(SvgIcon))
         {
             iconControl.Visibility = Visibility.Collapsed;
-            EnsureSvgIconControl(iconControl);
-            _svgIconControl!.Icon = SvgIcon;
-            _svgIconControl.Visibility = Visibility.Visible;
+            var svgIcon = EnsureSvgIconControl(iconControl);
+            svgIcon.Icon = SvgIcon;
+            svgIcon.Visibility = Visibility.Visible;
             return;
         }
 
@@ -85,12 +86,12 @@ public class MyMenuItem : MenuItem
         iconControl.Data = (Geometry)new GeometryConverter().ConvertFromString(Icon.ToString());
     }
 
-    private void EnsureSvgIconControl(Path iconControl)
+    private SvgIcon EnsureSvgIconControl(Path iconControl)
     {
         if (_svgIconControl is not null)
-            return;
+            return _svgIconControl;
 
-        _svgIconControl = new SvgIcon
+        var svgIcon = new SvgIcon
         {
             VerticalAlignment = VerticalAlignment.Center,
             Stretch = Stretch.Uniform,
@@ -100,14 +101,16 @@ public class MyMenuItem : MenuItem
             IsHitTestVisible = false,
             Visibility = Visibility.Collapsed
         };
-        _svgIconControl.SetBinding(Core.UI.Controls.SvgIcon.SvgIcon.IconBrushProperty,
+        svgIcon.SetBinding(Core.UI.Controls.SvgIcon.SvgIcon.IconBrushProperty,
             new Binding(nameof(Foreground)) { Source = this });
+        _svgIconControl = svgIcon;
 
-        if (VisualTreeHelper.GetParent(iconControl) is not Grid grid) return;
+        if (VisualTreeHelper.GetParent(iconControl) is not Grid grid) return svgIcon;
 
-        Grid.SetColumn(_svgIconControl, Grid.GetColumn(iconControl));
-        Grid.SetRow(_svgIconControl, Grid.GetRow(iconControl));
-        grid.Children.Add(_svgIconControl);
+        Grid.SetColumn(svgIcon, Grid.GetColumn(iconControl));
+        Grid.SetRow(svgIcon, Grid.GetRow(iconControl));
+        grid.Children.Add(svgIcon);
+        return svgIcon;
     }
 
     private void RefreshColor()
@@ -115,7 +118,7 @@ public class MyMenuItem : MenuItem
         var (backName, foreName, time) = GetVisualState();
 
         // 重复性验证
-        if ((_colorName ?? "") == (backName ?? ""))
+        if (_colorName == backName)
             return;
         _colorName = backName;
         // 触发颜色动画

@@ -9,8 +9,11 @@ namespace PCL.Core.Utils.Secret;
 
 public class Identify
 {
-    public static byte[] RawId { get => field ??= _GetRawId(); } = null!;
-    public static string LauncherId { get => field ??= _getLauncherId(); } = null!;
+    private static byte[]? _rawId;
+    private static string? _launcherId;
+
+    public static byte[] RawId => _rawId ??= _GetRawId();
+    public static string LauncherId => _launcherId ??= _getLauncherId();
 
     private static byte[] _GetRawId()
     {

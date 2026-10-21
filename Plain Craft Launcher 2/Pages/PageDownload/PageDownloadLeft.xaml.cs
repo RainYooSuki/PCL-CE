@@ -8,7 +8,7 @@ public partial class PageDownloadLeft : IRefreshable
 {
     public void Refresh()
     {
-        Refresh(ModMain.frmMain.PageCurrentSub);
+        Refresh(ModMain.FrmMainRequired.PageCurrentSub);
     }
 
     // 强制刷新
@@ -44,9 +44,9 @@ public partial class PageDownloadLeft : IRefreshable
                 ModComp.compFilesCache.Clear();
                 if (ModMain.frmDownloadMod is not null)
                 {
-                    ModMain.frmDownloadMod.Content.storage = new ModComp.CompProjectStorage();
-                    ModMain.frmDownloadMod.Content.page = 0;
-                    ModMain.frmDownloadMod.PageLoaderRestart();
+                    ModMain.FrmDownloadModRequired.Content.storage = new ModComp.CompProjectStorage();
+                    ModMain.FrmDownloadModRequired.Content.page = 0;
+                    ModMain.FrmDownloadModRequired.PageLoaderRestart();
                 }
 
                 ItemMod.Checked = true;
@@ -58,9 +58,9 @@ public partial class PageDownloadLeft : IRefreshable
                 ModComp.compFilesCache.Clear();
                 if (ModMain.frmDownloadPack is not null)
                 {
-                    ModMain.frmDownloadPack.Content.storage = new ModComp.CompProjectStorage();
-                    ModMain.frmDownloadPack.Content.page = 0;
-                    ModMain.frmDownloadPack.PageLoaderRestart();
+                    ModMain.FrmDownloadPackRequired.Content.storage = new ModComp.CompProjectStorage();
+                    ModMain.FrmDownloadPackRequired.Content.page = 0;
+                    ModMain.FrmDownloadPackRequired.PageLoaderRestart();
                 }
 
                 ItemPack.Checked = true;
@@ -72,9 +72,9 @@ public partial class PageDownloadLeft : IRefreshable
                 ModComp.compFilesCache.Clear();
                 if (ModMain.frmDownloadDataPack is not null)
                 {
-                    ModMain.frmDownloadDataPack.Content.storage = new ModComp.CompProjectStorage();
-                    ModMain.frmDownloadDataPack.Content.page = 0;
-                    ModMain.frmDownloadDataPack.PageLoaderRestart();
+                    ModMain.FrmDownloadDataPackRequired.Content.storage = new ModComp.CompProjectStorage();
+                    ModMain.FrmDownloadDataPackRequired.Content.page = 0;
+                    ModMain.FrmDownloadDataPackRequired.PageLoaderRestart();
                 }
 
                 ItemDataPack.Checked = true;
@@ -86,9 +86,9 @@ public partial class PageDownloadLeft : IRefreshable
                 ModComp.compFilesCache.Clear();
                 if (ModMain.frmDownloadResourcePack is not null)
                 {
-                    ModMain.frmDownloadResourcePack.Content.storage = new ModComp.CompProjectStorage();
-                    ModMain.frmDownloadResourcePack.Content.page = 0;
-                    ModMain.frmDownloadResourcePack.PageLoaderRestart();
+                    ModMain.FrmDownloadResourcePackRequired.Content.storage = new ModComp.CompProjectStorage();
+                    ModMain.FrmDownloadResourcePackRequired.Content.page = 0;
+                    ModMain.FrmDownloadResourcePackRequired.PageLoaderRestart();
                 }
 
                 ItemResourcePack.Checked = true;
@@ -100,9 +100,9 @@ public partial class PageDownloadLeft : IRefreshable
                 ModComp.compFilesCache.Clear();
                 if (ModMain.frmDownloadShader is not null)
                 {
-                    ModMain.frmDownloadShader.Content.storage = new ModComp.CompProjectStorage();
-                    ModMain.frmDownloadShader.Content.page = 0;
-                    ModMain.frmDownloadShader.PageLoaderRestart();
+                    ModMain.FrmDownloadShaderRequired.Content.storage = new ModComp.CompProjectStorage();
+                    ModMain.FrmDownloadShaderRequired.Content.page = 0;
+                    ModMain.FrmDownloadShaderRequired.PageLoaderRestart();
                 }
 
                 ItemShader.Checked = true;
@@ -114,9 +114,9 @@ public partial class PageDownloadLeft : IRefreshable
                 ModComp.compFilesCache.Clear();
                 if (ModMain.frmDownloadWorld is not null)
                 {
-                    ModMain.frmDownloadWorld.Content.storage = new ModComp.CompProjectStorage();
-                    ModMain.frmDownloadWorld.Content.page = 0;
-                    ModMain.frmDownloadWorld.PageLoaderRestart();
+                    ModMain.FrmDownloadWorldRequired.Content.storage = new ModComp.CompProjectStorage();
+                    ModMain.FrmDownloadWorldRequired.Content.page = 0;
+                    ModMain.FrmDownloadWorldRequired.PageLoaderRestart();
                 }
 
                 ItemWorld.Checked = true;
@@ -179,7 +179,7 @@ public partial class PageDownloadLeft : IRefreshable
             case FormMain.PageSubType.DownloadCompFavorites:
             {
                 if (ModMain.frmDownloadCompFavorites is not null)
-                    ModMain.frmDownloadCompFavorites.PageLoaderRestart();
+                    ModMain.FrmDownloadCompFavoritesRequired.PageLoaderRestart();
                 ItemFavorites.Checked = true;
                 break;
             }
@@ -193,7 +193,7 @@ public partial class PageDownloadLeft : IRefreshable
     {
         if (!ItemInstall.Checked)
             return;
-        ModMain.frmDownloadInstall.ExitSelectPage();
+        ModMain.FrmDownloadInstallRequired.ExitSelectPage();
     }
 
     #region 页面切换
@@ -245,7 +245,7 @@ public partial class PageDownloadLeft : IRefreshable
             {
                 if (ModMain.frmDownloadInstall is null)
                     ModMain.frmDownloadInstall = new PageDownloadInstall();
-                return ModMain.frmDownloadInstall;
+                return ModMain.FrmDownloadInstallRequired;
             }
             case FormMain.PageSubType.DownloadMod:
             {
@@ -383,21 +383,21 @@ public partial class PageDownloadLeft : IRefreshable
         ModAnimation.AniStop("FrmMain PageChangeRight"); // 停止主页面的右页面切换动画，防止它与本动画一起触发多次 PageOnEnter
         if (target.Parent is not null)
             target.SetValue(ContentPresenter.ContentProperty, null);
-        ModMain.frmMain.pageRight = target;
-        ((MyPageRight)ModMain.frmMain.PanMainRight.Child).PageOnExit();
+        ModMain.FrmMainRequired.pageRight = target;
+        ((MyPageRight)ModMain.FrmMainRequired.PanMainRight.Child).PageOnExit();
         ModAnimation.AniStart(new[]
         {
             ModAnimation.AaCode(() =>
             {
-                ((MyPageRight)ModMain.frmMain.PanMainRight.Child).PageOnForceExit();
-                ModMain.frmMain.PanMainRight.Child = ModMain.frmMain.pageRight;
-                ModMain.frmMain.pageRight.Opacity = 0d;
+                ((MyPageRight)ModMain.FrmMainRequired.PanMainRight.Child).PageOnForceExit();
+                ModMain.FrmMainRequired.PanMainRight.Child = ModMain.FrmMainRequired.pageRight;
+                ModMain.FrmMainRequired.pageRight.Opacity = 0d;
             }, 130),
             ModAnimation.AaCode(() =>
             {
                 // 延迟触发页面通用动画，以使得在 Loaded 事件中加载的控件得以处理
-                ModMain.frmMain.pageRight.Opacity = 1d;
-                ModMain.frmMain.pageRight.PageOnEnter();
+                ModMain.FrmMainRequired.pageRight.Opacity = 1d;
+                ModMain.FrmMainRequired.pageRight.PageOnEnter();
             }, 30, true)
         }, "PageLeft PageChange");
     }

@@ -119,8 +119,8 @@ public partial class PageLoginProfileSkin
         ProfileService.Select(null);
         ModBase.RunInUi(() =>
         {
-            ModMain.frmLaunchLeft.RefreshPage(true);
-            ModMain.frmLaunchLeft.BtnLaunch.IsEnabled = false;
+            ModMain.FrmLaunchLeftRequired.RefreshPage(true);
+            ModMain.FrmLaunchLeftRequired.BtnLaunch.IsEnabled = false;
         });
     }
 

@@ -20,17 +20,15 @@ namespace PCL
         public static JsonNode McAssetsGetIndex(McInstance mcInstance, bool returnLegacyOnError = false,
             bool checkURLEmpty = false)
         {
-            string assetsName;
             try
             {
                 while (true)
                 {
-                    var index = mcInstance.JsonObject["assetIndex"];
+                    var index = mcInstance.JsonObjectRequired["assetIndex"];
                     if (index is not null && index["id"] is not null)
                         return index;
-                    if (mcInstance.JsonObject["assets"] is not null)
-                        assetsName = mcInstance.JsonObject["assets"].ToString();
-                    if (checkURLEmpty && index["url"] is not null)
+
+                    if (checkURLEmpty && index is not null && index["url"] is not null)
                         return index;
                     // 下一个实例
                     if (string.IsNullOrEmpty(mcInstance.InheritInstanceName))
@@ -73,10 +71,12 @@ namespace PCL
             {
                 while (true)
                 {
-                    if (mcInstance.JsonObject["assetIndex"] is not null &&
-                        mcInstance.JsonObject["assetIndex"]["id"] is not null)
-                        return mcInstance.JsonObject["assetIndex"]["id"].ToString();
-                    if (mcInstance.JsonObject["assets"] is not null) return mcInstance.JsonObject["assets"].ToString();
+                    var assetIndex = mcInstance.JsonObjectRequired["assetIndex"];
+                    var assetId = assetIndex?["id"];
+                    if (assetId is not null)
+                        return assetId.ToString() ?? "legacy";
+                    var assets = mcInstance.JsonObjectRequired["assets"];
+                    if (assets is not null) return assets.ToString() ?? "legacy";
                     if (string.IsNullOrEmpty(mcInstance.InheritInstanceName))
                         break;
                     mcInstance = new McInstance(Path.Combine(ModFolder.mcFolderSelected, "versions", mcInstance.InheritInstanceName));

@@ -133,7 +133,8 @@ public sealed partial class RpcService
                 var app = Lifecycle.CurrentApplication;
                 app.Dispatcher.BeginInvoke(() =>
                 {
-                    var window = app.MainWindow!;
+                    var window = app.MainWindow
+                        ?? throw new InvalidOperationException("The WPF application main window has not been created.");
                     if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
                     if (!window.Topmost)
                     {
@@ -195,14 +196,14 @@ public sealed partial class RpcService
             {
                 case "GET": case "SET": {
                     target = target.ToLowerInvariant();
-                    var result = _PropertyMap.TryGetValue(target, out var prop);
-                    if (!result) throw new RpcException($"不存在属性 {target}");
+                    if (!_PropertyMap.TryGetValue(target, out var prop))
+                        throw new RpcException($"不存在属性 {target}");
                     RpcResponse response;
                     if (type == "GET")
                     {
                         try
                         {
-                            var value = prop!.Value;
+                            var value = prop.Value;
                             response = new RpcResponse(RpcResponseStatus.Success, RpcResponseType.Text, value, target);
                             Context.Trace($"返回值: {value}");
                         }
@@ -212,7 +213,7 @@ public sealed partial class RpcService
                             Context.Debug("设置失败: 只写属性或请求被拒绝");
                         }
                     }
-                    else if (prop!.Settable)
+                    else if (prop.Settable)
                     {
                         try
                         {
@@ -244,13 +245,13 @@ public sealed partial class RpcService
                         indent = true;
                         name = name[..^1];
                     }
-                    var result = _FunctionMap.TryGetValue(name, out var func);
-                    if (!result) throw new RpcException($"不存在函数 {name}");
+                    if (!_FunctionMap.TryGetValue(name, out var func))
+                        throw new RpcException($"不存在函数 {name}");
                     string? argument = null;
                     if (targetArgs.Length > 1)
                         argument = targetArgs[1];
                     Context.Trace($"正在调用函数 {name} {argument}");
-                    var response = func!(argument, content, indent);
+                    var response = func(argument, content, indent);
                     response.Response(writer);
                     Context.Trace($"函数已退出，返回状态 {response.Status}");
                     break;

@@ -35,7 +35,7 @@ public class McInstance
         /// <summary>
         ///     显示的实例图标。
         /// </summary>
-        public string Logo;
+        public string? Logo;
 
         /// <summary>
         ///     实例的发布时间。
@@ -430,7 +430,7 @@ public class McInstance
         ///     该实例的 JSON 对象。
         ///     若 JSON 存在问题，在获取该属性时即会抛出异常。
         /// </summary>
-        public JsonObject JsonObject
+        public JsonObject? JsonObject
         {
             get
             {
@@ -446,7 +446,7 @@ public class McInstance
                             IsHmclFormatJson = true;
                             // 合并 JSON
                             // Dim HasOptiFine As Boolean = False, HasForge As Boolean = False
-                            JsonObject currentObject = null;
+                            JsonObject? currentObject = null;
                             var subjsonList = new List<JsonObject>();
                             foreach (var SubjsonNode in field["patches"].AsArray()) { var subjson = SubjsonNode.AsObject();
                                 subjsonList.Add(subjson); }
@@ -474,6 +474,8 @@ public class McInstance
                                 }
                             }
 
+                            if (currentObject is null)
+                                throw new InvalidDataException("HMCL 整合包未提供任何有效的分支项。");
                             field = currentObject;
                             // 修改附加项
                             field["id"] = Name;
@@ -482,7 +484,7 @@ public class McInstance
                         }
 
                         // 与继承实例合并
-                        object inheritInstanceName = null;
+                        object? inheritInstanceName = null;
                         do
                         {
                             try
@@ -509,7 +511,7 @@ public class McInstance
                                             inheritInstanceName));
                                     inheritInstanceName = inheritInstance.InheritInstanceName;
                                     // 合并
-                                    inheritInstance.JsonObject.Merge(field);
+                                    inheritInstance.JsonObjectRequired.Merge(field);
                                     field = inheritInstance.JsonObject;
                                     goto Recheck;
                                 }
@@ -540,6 +542,9 @@ public class McInstance
         /// <summary>
         ///     JSON 是否为 HMCL 格式。
         /// </summary>
+        public JsonObject JsonObjectRequired =>
+            JsonObject ?? throw new InvalidOperationException("实例 JSON 尚未加载。");
+
         public bool IsHmclFormatJson { get; set; }
 
         /// <summary>
@@ -918,7 +923,7 @@ public class McInstance
                 {
                     States.Instance.State[PathInstance] = (int)state;
                     States.Instance.Info[PathInstance] = Desc;
-                    States.Instance.LogoPath[PathInstance] = Logo;
+                    States.Instance.LogoPath[PathInstance] = Logo ?? "";
                 }
 
                 if (state != McInstanceState.Error)

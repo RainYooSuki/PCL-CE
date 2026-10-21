@@ -152,7 +152,7 @@ public partial class ServerCard
                 instance = PageInstanceLeft.McInstance
             };
             ModLaunch.McLaunchStart(launchOptions);
-            ModMain.frmMain.PageChange(new FormMain.PageStackData { page = FormMain.PageType.Launch });
+            ModMain.FrmMainRequired.PageChange(new FormMain.PageStackData { page = FormMain.PageType.Launch });
             HintService.Hint(Lang.Text("Instance.Server.Card.ConnectingTo", server.Name));
         }
         catch (Exception ex)

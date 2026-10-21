@@ -7,7 +7,8 @@ partial class Lifecycle
 {
     private static void _RunCurrentExecutable(string? arguments)
     {
-        var fileName = Environment.ProcessPath!;
+        var fileName = Environment.ProcessPath
+            ?? throw new InvalidOperationException("Unable to determine the current executable path.");
         if (arguments is null) Process.Start(fileName);
         else Process.Start(fileName, arguments);
     }

@@ -25,7 +25,7 @@ namespace PCL;
 public partial class FormMain
 {
     // 愚人节鼠标位置
-    public MouseEventArgs lastMouseArg;
+    public MouseEventArgs? lastMouseArg;
 
     private void FormMain_MouseMove(object sender, MouseEventArgs e)
     {
@@ -67,25 +67,22 @@ public partial class FormMain
         ModMain.frmMain = this;
         ModMain.frmLaunchLeft = new PageLaunchLeft();
         ModMain.frmLaunchRight = new PageLaunchRight();
-        // 版本号改变
-        var lastVersion = States.System.LastVersion;
-        if (lastVersion < ModBase.versionCode)
+        // 发行版本改变
+        var lastReleaseVersion = States.System.LastReleaseVersion;
+        if (lastReleaseVersion != ModBase.releaseVersion)
         {
-            // 重新询问是否启用遥测数据收集
-            if (lastVersion <= 511)
-            {
-                if (!Config.System.TelemetryConfig.IsDefault() && Config.System.Telemetry)
-                {
-                    Config.System.TelemetryConfig.Reset();
-                    ModBase.Log("[Start] 遥测策略变更：由旧版本升级到含新版遥测的版本，已重置遥测设置");
-                }
-            }
-            // 触发升级
-            UpgradeSub(lastVersion);
+            // 旧整数状态没有发行版本记录时，将已有安装视为一次升级。
+            var isFirstLaunch = string.IsNullOrEmpty(lastReleaseVersion) && States.System.StartupCount == 0;
+            var comparison = string.IsNullOrEmpty(lastReleaseVersion)
+                ? -1
+                : McVersionComparer.CompareVersion(lastReleaseVersion, ModBase.releaseVersion);
+            if (comparison < 0)
+                UpgradeSub(lastReleaseVersion, isFirstLaunch);
+            else if (comparison > 0)
+                DowngradeSub(lastReleaseVersion);
+            else
+                States.System.LastReleaseVersion = ModBase.releaseVersion;
         }
-        else if (lastVersion > ModBase.versionCode)
-            // 触发降级
-            DowngradeSub(lastVersion);
 
         _ = Config.Preference.Theme.ThemeSelected;
         // 注册拖拽事件（不能直接加 Handles，否则没用；#6340）
@@ -128,15 +125,15 @@ public partial class FormMain
             _helper.DragDrop += (_, _) => FileDrag(_helper.DropFilePaths);
         }
 
-        if (ModMain.frmLaunchLeft.Parent is not null)
-            ModMain.frmLaunchLeft.SetValue(ContentPresenter.ContentProperty, null);
-        if (ModMain.frmLaunchRight.Parent is not null)
-            ModMain.frmLaunchRight.SetValue(ContentPresenter.ContentProperty, null);
-        PanMainLeft.Child = ModMain.frmLaunchLeft;
-        pageLeft = ModMain.frmLaunchLeft;
-        PanMainRight.Child = ModMain.frmLaunchRight;
-        pageRight = ModMain.frmLaunchRight;
-        ModMain.frmLaunchRight.PageState = MyPageRight.PageStates.ContentStay;
+        if (ModMain.FrmLaunchLeftRequired.Parent is not null)
+            ModMain.FrmLaunchLeftRequired.SetValue(ContentPresenter.ContentProperty, null);
+        if (ModMain.FrmLaunchRightRequired.Parent is not null)
+            ModMain.FrmLaunchRightRequired.SetValue(ContentPresenter.ContentProperty, null);
+        PanMainLeft.Child = ModMain.FrmLaunchLeftRequired;
+        pageLeft = ModMain.FrmLaunchLeftRequired;
+        PanMainRight.Child = ModMain.FrmLaunchRightRequired;
+        pageRight = ModMain.FrmLaunchRightRequired;
+        ModMain.FrmLaunchRightRequired.PageState = MyPageRight.PageStates.ContentStay;
         // 调试模式提醒
         if (ModBase.modeDebug)
             HintService.Hint(Lang.Text("Main.DebugMode.Hint"));
@@ -191,7 +188,7 @@ public partial class FormMain
         // #End If
         Topmost = false;
         if (ModMain.frmStart is not null)
-            ModMain.frmStart.Close(new TimeSpan(0, 0, 0, 0, (int)Math.Round(400d / ModAnimation.aniSpeed)));
+            ModMain.FrmStartRequired.Close(new TimeSpan(0, 0, 0, 0, (int)Math.Round(400d / ModAnimation.aniSpeed)));
         // 更改窗口
         // Top = (GetWPFSize(My.Computer.Screen.WorkingArea.Height) - Height) / 2
         // Left = (GetWPFSize(My.Computer.Screen.WorkingArea.Width) - Width) / 2
@@ -315,52 +312,27 @@ public partial class FormMain
     }
 
     // 升级与降级事件
-    private void UpgradeSub(int lastVersionCode)
+    private void UpgradeSub(string lastReleaseVersion, bool isFirstLaunch)
     {
-        ModBase.Log("[Start] 版本号从 " + lastVersionCode + " 升高到 " + ModBase.versionCode);
-        States.System.LastVersion = ModBase.versionCode;
-        // 检查有记录的最高版本号
-        int lowerVersionCode;
-#if BETA
-        lowerVersionCode = States.System.LastBetaVersion;
-        if (lowerVersionCode < ModBase.versionCode)
-        {
-            States.System.LastBetaVersion = ModBase.versionCode;
-            ModBase.Log($"[Start] 最高版本号从 {lowerVersionCode} 升高到 {ModBase.versionCode}");
-        }
-#else
-        lowerVersionCode = States.System.LastAlphaVersion;
-        if (lowerVersionCode < ModBase.versionCode)
-        {
-            States.System.LastAlphaVersion = ModBase.versionCode;
-            ModBase.Log($"[Start] 最高版本号从 {lowerVersionCode} 升高到 {ModBase.versionCode}");
-        }
-#endif
+        var previousReleaseVersion = string.IsNullOrEmpty(lastReleaseVersion) ? "（无记录）" : lastReleaseVersion;
+        ModBase.Log($"[Start] 发行版本从 {previousReleaseVersion} 升高到 {ModBase.releaseVersion}");
+        States.System.LastReleaseVersion = ModBase.releaseVersion;
         // 被移除的窗口设置选项 (Commit 3161488 2026/1/23)
         if ((int)Config.Launch.GameWindowMode == 5)
             Config.Launch.GameWindowMode = GameWindowSizeMode.Default;
 
         // 更新后展示社区版提示
         UpdateManager.ShowCEAnnounce();
-        // 输出更新日志
-        if (lastVersionCode <= 0)
-            return;
-        if (lowerVersionCode >= ModBase.versionCode)
+        // 全新安装不展示更新日志；已有安装升级或从旧整数状态迁移时展示一次
+        if (isFirstLaunch)
             return;
         ShowUpdateLog();
-        
-        // 重置自定义主页配置
-        if (lastVersionCode < 521 && Config.Preference.Homepage.SelectedPreset >= 3)
-        {
-            Config.Preference.Homepage.SelectedPreset = 0;
-            ModMain.MyMsgBox(Lang.Text("Main.HomepageReset.Content"), Lang.Text("Main.HomepageReset.Title"));
-        }
     }
 
-    private void DowngradeSub(int lastVersionCode)
+    private void DowngradeSub(string lastReleaseVersion)
     {
-        ModBase.Log("[Start] 版本号从 " + lastVersionCode + " 降低到 " + ModBase.versionCode);
-        States.System.LastVersion = ModBase.versionCode;
+        ModBase.Log($"[Start] 发行版本从 {lastReleaseVersion} 降低到 {ModBase.releaseVersion}");
+        States.System.LastReleaseVersion = ModBase.releaseVersion;
     }
 
     #endregion
@@ -744,7 +716,7 @@ public partial class FormMain
         // 更改隐藏实例可见性
         if (e.Key == Key.F11 && pageCurrent == PageType.InstanceSelect)
         {
-            ModMain.frmSelectRight.showHidden = !ModMain.frmSelectRight.showHidden;
+            ModMain.FrmSelectRightRequired.showHidden = !ModMain.FrmSelectRightRequired.showHidden;
             ModLoader.LoaderFolderRun(ModInstanceList.mcInstanceListLoader, ModFolder.mcFolderSelected,
                 ModLoader.LoaderFolderRunType.ForceRun, 1, @"versions\");
             return;
@@ -778,7 +750,7 @@ public partial class FormMain
             if (ModMain.isAprilEnabled && !ModMain.isAprilGiveup)
                 HintService.Hint(Lang.Text("Main.April.Nope"));
             else
-                ModMain.frmLaunchLeft.LaunchButtonClick();
+                ModMain.FrmLaunchLeftRequired.LaunchButtonClick();
         }
 
         // 修复按下 Alt 后误认为弹出系统菜单导致的冻结
@@ -789,7 +761,7 @@ public partial class FormMain
     private void FormMain_MouseDown(object sender, MouseButtonEventArgs e)
     {
         // 鼠标侧键返回上一级
-        if (ModMain.frmMain!.PanMsg.Children.Count > 0 || ModMain.WaitingMyMsgBox.Any())
+        if (PanMsg.Children.Count > 0 || ModMain.WaitingMyMsgBox.Any())
             return; // 弹窗中（#5513）
         if (e.ChangedButton == MouseButton.XButton1 || e.ChangedButton == MouseButton.XButton2)
             TriggerPageBack();
@@ -798,11 +770,11 @@ public partial class FormMain
     private void TriggerPageBack()
     {
         if (pageCurrent == PageType.Download && PageCurrentSub == PageSubType.DownloadInstall &&
-            ModMain.frmDownloadInstall.isInSelectPage)
-            ModMain.frmDownloadInstall.ExitSelectPage();
+            ModMain.FrmDownloadInstallRequired.isInSelectPage)
+            ModMain.FrmDownloadInstallRequired.ExitSelectPage();
         else if (pageCurrent == PageType.InstanceSetup && PageCurrentSub == PageSubType.VersionInstall &&
-                 ModMain.frmInstanceInstall.isInSelectPage)
-            ModMain.frmInstanceInstall.ExitSelectPage();
+                 ModMain.FrmInstanceInstallRequired.isInSelectPage)
+            ModMain.FrmInstanceInstallRequired.ExitSelectPage();
         else
             PageBack();
     }
@@ -817,25 +789,25 @@ public partial class FormMain
             if (pageCurrent == PageType.InstanceSetup && PageCurrentSub == PageSubType.VersionMod)
             {
                 // Mod 管理自动刷新
-                ModMain.frmInstanceMod.ReloadCompFileList();
+                ModMain.FrmInstanceModRequired.ReloadCompFileList();
             }
             else if (pageCurrent == PageType.InstanceSetup && PageCurrentSub == PageSubType.VersionResourcePack)
             {
                 // 资源包管理自动刷新
                 if (ModMain.frmInstanceResourcePack is not null)
-                    ModMain.frmInstanceResourcePack.ReloadCompFileList();
+                    ModMain.FrmInstanceResourcePackRequired.ReloadCompFileList();
             }
             else if (pageCurrent == PageType.InstanceSetup && PageCurrentSub == PageSubType.VersionShader)
             {
                 // 光影包管理自动刷新
                 if (ModMain.frmInstanceShader is not null)
-                    ModMain.frmInstanceShader.ReloadCompFileList();
+                    ModMain.FrmInstanceShaderRequired.ReloadCompFileList();
             }
             else if (pageCurrent == PageType.InstanceSetup && PageCurrentSub == PageSubType.VersionSchematic)
             {
                 // 投影原理图管理自动刷新
                 if (ModMain.frmInstanceSchematic is not null)
-                    ModMain.frmInstanceSchematic.ReloadCompFileList();
+                    ModMain.FrmInstanceSchematicRequired.ReloadCompFileList();
             }
             else if (pageCurrent == PageType.InstanceSelect)
             {
@@ -843,11 +815,11 @@ public partial class FormMain
                 ModLoader.LoaderFolderRun(ModInstanceList.mcInstanceListLoader, ModFolder.mcFolderSelected,
                     ModLoader.LoaderFolderRunType.RunOnUpdated, 1, @"versions\");
             }
-            else if (ModMain.frmMain.pageRight is PageInstanceSavesDatapack &&
+            else if (ModMain.FrmMainRequired.pageRight is PageInstanceSavesDatapack &&
                      ModMain.frmInstanceSavesDatapack is not null)
             {
                 // 数据包管理自动刷新
-                ModMain.frmInstanceSavesDatapack.ReloadDatapackFileList();
+                ModMain.FrmInstanceSavesDatapackRequired.ReloadDatapackFileList();
             }
         }
         catch (Exception ex)
@@ -860,7 +832,7 @@ public partial class FormMain
         }
     }
 
-    private IDataObject _HandleDrag_PrevData;
+    private IDataObject? _HandleDrag_PrevData;
     private DragDropEffects _HandleDrag_PrevEffects;
 
     // 文件拖放
@@ -882,14 +854,14 @@ public partial class FormMain
             e.Effects = DragDropEffects.None;
             if (e.Data.GetDataPresent(DataFormats.Text))
             {
-                var str = (string)e.Data.GetData(DataFormats.Text);
-                if (str.StartsWithF("authlib-injector:yggdrasil-server:"))
+                var str = e.Data.GetData(DataFormats.Text) as string;
+                if (str?.StartsWithF("authlib-injector:yggdrasil-server:") == true)
                     e.Effects = DragDropEffects.Copy;
-                else if (str.StartsWithF("file:///")) e.Effects = DragDropEffects.Copy;
+                else if (str?.StartsWithF("file:///") == true) e.Effects = DragDropEffects.Copy;
             }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                var files = e.Data.GetData(DataFormats.FileDrop) as string[];
                 if (files is not null && files.Length > 0) e.Effects = DragDropEffects.Link;
             }
 
@@ -916,9 +888,9 @@ public partial class FormMain
                 // 获取文本
                 try
                 {
-                    var str = (string)e.Data.GetData(DataFormats.Text);
+                    var str = e.Data.GetData(DataFormats.Text) as string;
                     ModBase.Log("[System] 接受文本拖拽：" + str);
-                    if (str.StartsWithF("authlib-injector:yggdrasil-server:"))
+                    if (str is not null && str.StartsWithF("authlib-injector:yggdrasil-server:"))
                     {
                         // Authlib 拖拽
                         e.Handled = true;
@@ -938,13 +910,13 @@ public partial class FormMain
                         ModBase.RunInUi(() =>
                         {
                             PageLoginAuth.draggedAuthServer = authlibServer;
-                            ModMain.frmLaunchLeft.RefreshPage(true, ModLaunch.McLoginType.Auth);
+                            ModMain.FrmLaunchLeftRequired.RefreshPage(true, ModLaunch.McLoginType.Auth);
                         });
                         if (pageCurrent == PageType.InstanceSetup && PageCurrentSub == PageSubType.VersionSetup)
                             // 正在服务器选项页，需要刷新设置项显示
-                            ModMain.frmInstanceSetup.Reload();
+                            ModMain.FrmInstanceSetupRequired.Reload();
                     }
-                    else if (str.StartsWithF("file:///"))
+                    else if (str is not null && str.StartsWithF("file:///"))
                     {
                         // 文件拖拽（例如从浏览器下载窗口拖入）
                         var filePath = WebUtility.UrlDecode(str).Substring("file:///".Length).Replace("/", @"\");
@@ -1036,7 +1008,7 @@ public partial class FormMain
                 ModBase.RunInUi(() =>
                 {
                     Config.Preference.Homepage.Type = 1;
-                    ModMain.frmLaunchRight.ForceRefresh();
+                    ModMain.FrmLaunchRightRequired.ForceRefresh();
                     HintService.Hint(Lang.Text("Main.FileDrag.HomepageLoaded"), HintType.Success);
                 });
                 return;
@@ -1050,11 +1022,11 @@ public partial class FormMain
             {
                 ModBase.Log($"[System] 文件为 {extension} 格式，尝试作为原理图安装");
                 // 获取当前文件夹路径（如果在资源管理页面）
-                string targetFolderPath = null;
+                string targetFolderPath = "";
                 if (pageCurrent == PageType.InstanceSetup && PageCurrentSub == PageSubType.VersionSchematic &&
                     ModMain.frmInstanceSchematic is not null &&
                     ModMain.frmInstanceSchematic is PageInstanceCompResource)
-                    targetFolderPath = ModMain.frmInstanceSchematic.CurrentFolderPath;
+                    targetFolderPath = ModMain.FrmInstanceSchematicRequired.CurrentFolderPath;
                 PageInstanceCompResource.InstallCompFiles(filePathList, ModComp.CompType.Schematic, targetFolderPath);
                 return;
             }
@@ -1065,7 +1037,7 @@ public partial class FormMain
                 {
                     case PageSubType.VersionWorld:
                     {
-                        var destFolder = PageInstanceLeft.McInstance.PathIndie + @"saves\" +
+                        var destFolder = PageInstanceLeft.McInstanceRequired.PathIndie + @"saves\" +
                                          ModBase.GetFileNameWithoutExtentionFromPath(filePath);
                         var destLevelDat = Path.Combine(destFolder, "level.dat");
                         if (Directory.Exists(destFolder))
@@ -1114,12 +1086,12 @@ public partial class FormMain
                         HintService.Hint(Lang.Text("Main.FileDrag.Imported", ModBase.GetFileNameWithoutExtentionFromPath(filePath)),
                             HintType.Success);
                         if (ModMain.frmInstanceSaves is not null)
-                            ModBase.RunInUi(() => ModMain.frmInstanceSaves.Reload());
+                            ModBase.RunInUi(() => ModMain.FrmInstanceSavesRequired.Reload());
                         return;
                     }
                     case PageSubType.VersionResourcePack:
                     {
-                        var destFile = PageInstanceLeft.McInstance.PathIndie + @"resourcepacks\" +
+                        var destFile = PageInstanceLeft.McInstanceRequired.PathIndie + @"resourcepacks\" +
                                        ModBase.GetFileNameFromPath(filePath);
                         if (File.Exists(destFile))
                         {
@@ -1130,12 +1102,12 @@ public partial class FormMain
                         ModBase.CopyFile(filePath, destFile);
                         HintService.Hint(Lang.Text("Main.FileDrag.Imported", ModBase.GetFileNameFromPath(filePath)), HintType.Success);
                         if (ModMain.frmInstanceResourcePack is not null)
-                            ModBase.RunInUi(() => ModMain.frmInstanceResourcePack.ReloadCompFileList());
+                            ModBase.RunInUi(() => ModMain.FrmInstanceResourcePackRequired.ReloadCompFileList());
                         return;
                     }
                     case PageSubType.VersionShader:
                     {
-                        var destFile = PageInstanceLeft.McInstance.PathIndie + @"shaderpacks\" +
+                        var destFile = PageInstanceLeft.McInstanceRequired.PathIndie + @"shaderpacks\" +
                                        ModBase.GetFileNameFromPath(filePath);
                         if (File.Exists(destFile))
                         {
@@ -1146,7 +1118,7 @@ public partial class FormMain
                         ModBase.CopyFile(filePath, destFile);
                         HintService.Hint(Lang.Text("Main.FileDrag.Imported", ModBase.GetFileNameFromPath(filePath)), HintType.Success);
                         if (ModMain.frmInstanceShader is not null)
-                            ModBase.RunInUi(() => ModMain.frmInstanceShader.ReloadCompFileList());
+                            ModBase.RunInUi(() => ModMain.FrmInstanceShaderRequired.ReloadCompFileList());
                         return;
                     }
                 }
@@ -1156,7 +1128,7 @@ public partial class FormMain
                 new[] { "litematic", "nbt", "schematic", "schem" }.Contains(extension) &&
                 PageCurrentSub == PageSubType.VersionSchematic)
             {
-                var destFile = PageInstanceLeft.McInstance.PathIndie + @"schematics\" +
+                var destFile = PageInstanceLeft.McInstanceRequired.PathIndie + @"schematics\" +
                                ModBase.GetFileNameFromPath(filePath);
                 if (File.Exists(destFile))
                 {
@@ -1164,11 +1136,11 @@ public partial class FormMain
                     return;
                 }
 
-                Directory.CreateDirectory(PageInstanceLeft.McInstance.PathIndie + @"schematics\");
+                Directory.CreateDirectory(PageInstanceLeft.McInstanceRequired.PathIndie + @"schematics\");
                 ModBase.CopyFile(filePath, destFile);
                 HintService.Hint(Lang.Text("Main.FileDrag.Imported", ModBase.GetFileNameFromPath(filePath)), HintType.Success);
                 if (ModMain.frmInstanceSchematic is not null)
-                    ModBase.RunInUi(() => ModMain.frmInstanceSchematic.ReloadCompFileList());
+                    ModBase.RunInUi(() => ModMain.FrmInstanceSchematicRequired.ReloadCompFileList());
                 return;
             }
 
@@ -1489,11 +1461,11 @@ public partial class FormMain
             }
             case PageType.InstanceSetup:
             {
-                return Lang.Text("Main.Title.InstanceSetup", PageInstanceLeft.McInstance is null ? Lang.Text("Common.State.Unknown") : PageInstanceLeft.McInstance.Name);
+                return Lang.Text("Main.Title.InstanceSetup", PageInstanceLeft.McInstance is null ? Lang.Text("Common.State.Unknown") : PageInstanceLeft.McInstanceRequired.Name);
             }
             case PageType.CompDetail:
             {
-                return Lang.Text("Main.Title.ResourceDownload", stack.additional.Value.CompProject.TranslatedName);
+                return Lang.Text("Main.Title.ResourceDownload", stack.additional.Value.CompProject?.TranslatedName ?? "");
             }
             case PageType.HelpDetail:
             {
@@ -1501,7 +1473,7 @@ public partial class FormMain
             }
             case PageType.VersionSaves:
             {
-                return Lang.Text("Main.Title.SaveManagement", ModBase.GetFolderNameFromPath(stack.additional.Value.SavePath));
+                return Lang.Text("Main.Title.SaveManagement", ModBase.GetFolderNameFromPath(stack.additional.Value.SavePath ?? ""));
             }
 
             default:
@@ -1551,21 +1523,21 @@ public partial class FormMain
                 {
                     if (ModMain.frmDownloadLeft is null)
                         ModMain.frmDownloadLeft = new PageDownloadLeft();
-                    return ModMain.frmDownloadLeft.pageID;
+                    return ModMain.FrmDownloadLeftRequired.pageID;
                 }
 
                 case PageType.Setup:
                 {
                     if (ModMain.frmSetupLeft is null)
                         ModMain.frmSetupLeft = new PageSetupLeft();
-                    return ModMain.frmSetupLeft.pageID;
+                    return ModMain.FrmSetupLeftRequired.pageID;
                 }
 
                 case PageType.InstanceSetup:
                 {
                     if (ModMain.frmInstanceLeft is null)
                         ModMain.frmInstanceLeft = new PageInstanceLeft();
-                    return ModMain.frmInstanceLeft.pageID;
+                    return ModMain.FrmInstanceLeftRequired.pageID;
                 }
 
                 default:
@@ -1590,12 +1562,12 @@ public partial class FormMain
         /// </list>
         /// </summary>
         public (
-            ModComp.CompProject CompProject,
-            List<string> ExpandedTitles,
-            string TargetVersion,
+            ModComp.CompProject? CompProject,
+            List<string>? ExpandedTitles,
+            string? TargetVersion,
             ModComp.CompLoaderType TargetLoader,
             ModComp.CompType ResourceType,
-            string SavePath
+            string? SavePath
         )? additional;
 
         /// <summary>
@@ -1682,7 +1654,7 @@ public partial class FormMain
                 {
                     if (ModMain.frmDownloadLeft is null)
                         ModMain.frmDownloadLeft = new PageDownloadLeft();
-                    foreach (var item in ModMain.frmDownloadLeft.PanItem.Children)
+                    foreach (var item in ModMain.FrmDownloadLeftRequired.PanItem.Children)
                         if (item is MyListItem listItem &&
                             ModBase.Val(listItem.Tag) == (double)subType)
                         {
@@ -1696,7 +1668,7 @@ public partial class FormMain
                 {
                     if (ModMain.frmSetupLeft is null)
                         ModMain.frmSetupLeft = new PageSetupLeft();
-                    foreach (var item in ModMain.frmSetupLeft.PanItem.Children)
+                    foreach (var item in ModMain.FrmSetupLeftRequired.PanItem.Children)
                         if (item is MyListItem listItem &&
                             ModBase.Val(listItem.Tag) == (double)subType)
                         {
@@ -1719,7 +1691,7 @@ public partial class FormMain
                 {
                     if (ModMain.frmInstanceLeft is null)
                         ModMain.frmInstanceLeft = new PageInstanceLeft();
-                    foreach (var item in ModMain.frmInstanceLeft.PanItem.Children)
+                    foreach (var item in ModMain.FrmInstanceLeftRequired.PanItem.Children)
                         if (item is MyListItem listItem &&
                             ModBase.Val(listItem.Tag) == (double)subType)
                         {
@@ -1733,7 +1705,7 @@ public partial class FormMain
                 {
                     if (ModMain.frmInstanceSavesLeft is null)
                         ModMain.frmInstanceSavesLeft = new PageInstanceSavesLeft();
-                    foreach (var item in ModMain.frmInstanceSavesLeft.PanItem.Children)
+                    foreach (var item in ModMain.FrmInstanceSavesLeftRequired.PanItem.Children)
                         if (item is MyListItem listItem &&
                             ModBase.Val(listItem.Tag) == (double)subType)
                         {
@@ -1845,32 +1817,32 @@ public partial class FormMain
             {
                 case PageType.Launch: // 启动
                     {
-                        PageChangeAnim(ModMain.frmLaunchLeft, ModMain.frmLaunchRight);
+                        PageChangeAnim(ModMain.FrmLaunchLeftRequired, ModMain.FrmLaunchRightRequired);
                         break;
                     }
                 case PageType.Download: // 下载
                     {
                         ModMain.frmDownloadLeft ??= new PageDownloadLeft();
                         if (subType != PageSubType.Default)
-                            ModMain.frmDownloadLeft.pageID = subType;
+                            ModMain.FrmDownloadLeftRequired.pageID = subType;
                         else
-                            subType = ModMain.frmDownloadLeft.pageID;
+                            subType = ModMain.FrmDownloadLeftRequired.pageID;
                         // PageGet 方法会在未设置 SubType 时指定默认值，并建立相关页面的实例
-                        PageChangeAnim(ModMain.frmDownloadLeft, (FrameworkElement)ModMain.frmDownloadLeft.PageGet(subType));
+                        PageChangeAnim(ModMain.frmDownloadLeft, (FrameworkElement)ModMain.FrmDownloadLeftRequired.PageGet(subType));
                         break;
                     }
                 case PageType.Tools: // 工具
                     {
                         ModMain.frmToolsLeft ??= new PageToolsLeft();
-                        subType = ModMain.frmToolsLeft.pageID;
-                        PageChangeAnim(ModMain.frmToolsLeft, (FrameworkElement)ModMain.frmToolsLeft.PageGet(subType));
+                        subType = ModMain.FrmToolsLeftRequired.pageID;
+                        PageChangeAnim(ModMain.frmToolsLeft, (FrameworkElement)ModMain.FrmToolsLeftRequired.PageGet(subType));
                         break;
                     }
                 case PageType.Setup: // 设置
                     {
                         ModMain.frmSetupLeft ??= new PageSetupLeft();
-                        subType = ModMain.frmSetupLeft.pageID;
-                        PageChangeAnim(ModMain.frmSetupLeft, (FrameworkElement)ModMain.frmSetupLeft.PageGet(subType));
+                        subType = ModMain.FrmSetupLeftRequired.pageID;
+                        PageChangeAnim(ModMain.frmSetupLeft, (FrameworkElement)ModMain.FrmSetupLeftRequired.PageGet(subType));
                         break;
                     }
                 case PageType.GameLog: // 实时日志
@@ -1903,8 +1875,8 @@ public partial class FormMain
                 case PageType.InstanceSetup: // 实例设置
                     {
                         ModMain.frmInstanceLeft ??= new PageInstanceLeft();
-                        subType = ModMain.frmInstanceLeft.pageID;
-                        PageChangeAnim(ModMain.frmInstanceLeft, (FrameworkElement)ModMain.frmInstanceLeft.PageGet(subType));
+                        subType = ModMain.FrmInstanceLeftRequired.pageID;
+                        PageChangeAnim(ModMain.frmInstanceLeft, (FrameworkElement)ModMain.FrmInstanceLeftRequired.PageGet(subType));
                         break;
                     }
                 case PageType.CompDetail: // Mod 信息
@@ -1925,10 +1897,10 @@ public partial class FormMain
                     {
                         if (ModMain.frmInstanceSavesLeft is null)
                             ModMain.frmInstanceSavesLeft = new PageInstanceSavesLeft();
-                        PageInstanceSavesLeft.currentSave = stack.additional.Value.SavePath;
-                        subType = ModMain.frmInstanceSavesLeft.pageID;
+                        PageInstanceSavesLeft.currentSave = stack.additional.Value.SavePath ?? "";
+                        subType = ModMain.FrmInstanceSavesLeftRequired.pageID;
                         PageChangeAnim(ModMain.frmInstanceSavesLeft,
-                            (FrameworkElement)ModMain.frmInstanceSavesLeft.PageGet(subType));
+                            (FrameworkElement)ModMain.FrmInstanceSavesLeftRequired.PageGet(subType));
                         break;
                     }
             }
@@ -1958,21 +1930,25 @@ public partial class FormMain
         }
     }
 
-    private void PageChangeAnim(FrameworkElement targetLeft, FrameworkElement targetRight)
+    private void PageChangeAnim(FrameworkElement? targetLeft, FrameworkElement? targetRight)
     {
+        if (targetLeft is not MyPageLeft left || targetRight is not MyPageRight right)
+            throw new InvalidOperationException("页面切换目标类型无效。");
         ModAnimation.AniStop("FrmMain LeftChange");
         ModAnimation.AniStop("PageLeft PageChange"); // 停止左边栏变更导致的右页面切换动画，防止它与本动画一起触发多次 PageOnEnter
         ModAnimation.AniControlEnabled += 1;
         // 清除新页面关联性
-        if (targetLeft.Parent is not null)
-            targetLeft.SetValue(ContentPresenter.ContentProperty, null);
-        if (targetRight is not null && targetRight.Parent is not null)
-            targetRight.SetValue(ContentPresenter.ContentProperty, null);
-        pageLeft = (MyPageLeft)targetLeft;
-        pageRight = (MyPageRight)targetRight;
+        if (left.Parent is not null)
+            left.SetValue(ContentPresenter.ContentProperty, null);
+        if (right.Parent is not null)
+            right.SetValue(ContentPresenter.ContentProperty, null);
+        pageLeft = left;
+        pageRight = right;
         // 触发页面通用动画
-        ((MyPageLeft)PanMainLeft.Child).TriggerHideAnimation();
-        ((MyPageRight)PanMainRight.Child).PageOnExit();
+        if (PanMainLeft.Child is MyPageLeft currentLeft)
+            currentLeft.TriggerHideAnimation();
+        if (PanMainRight.Child is MyPageRight currentRight)
+            currentRight.PageOnExit();
         ModAnimation.AniControlEnabled -= 1;
         // 执行动画
         ModAnimation.AniStart(new[]
@@ -1999,7 +1975,8 @@ public partial class FormMain
             ModAnimation.AaCode(() =>
             {
                 ModAnimation.AniControlEnabled += 1;
-                ((MyPageRight)PanMainRight.Child).PageOnForceExit();
+                if (PanMainRight.Child is MyPageRight currentRight)
+                    currentRight.PageOnForceExit();
                 // 把新页面添加进容器
                 PanMainRight.Child = pageRight;
                 pageRight.Opacity = 0d;
@@ -2174,8 +2151,8 @@ public partial class FormMain
         {
             HintService.Hint("=D", HintType.Success);
             ModMain.isAprilGiveup = true;
-            ModMain.frmLaunchLeft.AprilScaleTrans.ScaleX = 1d;
-            ModMain.frmLaunchLeft.AprilScaleTrans.ScaleY = 1d;
+            ModMain.FrmLaunchLeftRequired.AprilScaleTrans.ScaleX = 1d;
+            ModMain.FrmLaunchLeftRequired.AprilScaleTrans.ScaleY = 1d;
             BtnExtraApril.ShowRefresh();
         }
     }
@@ -2226,7 +2203,7 @@ public partial class FormMain
     {
         if (ModMain.frmLogLeft is null || ModMain.frmLogRight is null || pageCurrent == PageType.GameLog)
             return false;
-        return ModMain.frmLogLeft.shownLogs.Count > 0;
+        return ModMain.FrmLogLeftRequired.shownLogs.Count > 0;
     }
 
     /// <summary>

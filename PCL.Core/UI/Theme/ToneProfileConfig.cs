@@ -10,7 +10,18 @@ public record ToneProfileConfig
         LBackground: 0.3, LForeground: 1, LWhite: 0.275
     );
 
-    public ToneProfile Light { get => field ?? DefaultLight; init; } = null!;
+    private ToneProfile? _light;
+    private ToneProfile? _dark;
 
-    public ToneProfile Dark { get => field ?? DefaultDark; init; } = null!;
+    public ToneProfile Light
+    {
+        get => _light ?? DefaultLight;
+        init => _light = value;
+    }
+
+    public ToneProfile Dark
+    {
+        get => _dark ?? DefaultDark;
+        init => _dark = value;
+    }
 }

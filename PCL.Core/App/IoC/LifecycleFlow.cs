@@ -14,6 +14,7 @@ partial class Lifecycle
     private static bool _isWindowCreated = false;
 
     private static bool _hasRequestedStopLoading = false;
+    private static Application? _currentApplication;
 
     /// <summary>
     /// [请勿调用] 处理未捕获异常流程
@@ -71,7 +72,10 @@ partial class Lifecycle
         // 运行加载阶段服务
         _StartStateFlow(LifecycleState.Loading, LifecycleState.WindowCreating);
         // 运行窗体
-        CurrentApplication.MainWindow!.Show();
+        var mainWindow = CurrentApplication.MainWindow;
+        if (mainWindow is null)
+            throw new InvalidOperationException("The WPF application main window has not been created.");
+        mainWindow.Show();
     }
 
     /// <summary>
@@ -95,9 +99,13 @@ partial class Lifecycle
     private static readonly object _ExitLock = new();
 
     /// <summary>
-    /// WPF 应用程序容器，在 <see cref="LifecycleState.BeforeLoading"/> 阶段为空值
+    /// WPF 应用程序容器。在 <see cref="LifecycleState.BeforeLoading"/> 阶段不可访问。
     /// </summary>
-    public static Application CurrentApplication { get; set; } = null!;
+    public static Application CurrentApplication
+    {
+        get => _currentApplication ?? throw new InvalidOperationException("The WPF application has not been initialized.");
+        set => _currentApplication = value;
+    }
 
     /// <summary>
     /// 是否正在关闭程序

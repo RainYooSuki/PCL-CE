@@ -1,3 +1,4 @@
+using System;
 using PCL.Core.Minecraft.Java.Parser;
 using PCL.Core.Minecraft.Java.Scanner;
 using System.Threading.Tasks;
@@ -11,7 +12,8 @@ public sealed partial class JavaService
 {
 
     private static JavaManager? _javaManager;
-    public static JavaManager JavaManager => _javaManager!;
+    public static JavaManager JavaManager =>
+        _javaManager ?? throw new InvalidOperationException("Java service is not initialized.");
 
     [LifecycleStart]
     private static async Task _StartAsync()

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+﻿﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -94,7 +94,7 @@ public partial class MyLocalCompItem
             {
                 // 文件夹项的特殊显示
                 Title = Entry.Name;
-                newDescription = Entry.Description;
+                newDescription = Entry.Description ?? "";
             }
             else if (Config.Download.Comp.UiCompNameSolution == 1)
             {
@@ -318,25 +318,25 @@ public partial class MyLocalCompItem
                     case ModComp.CompType.Mod:
                     {
                         ModMain.frmInstanceMod ??= new PageInstanceCompResource(ModComp.CompType.Mod);
-                        ModMain.frmInstanceMod.UpdateResource(new[] { Entry });
+                        ModMain.FrmInstanceModRequired.UpdateResource(new[] { Entry });
                         break;
                     }
                     case ModComp.CompType.ResourcePack:
                     {
                         ModMain.frmInstanceResourcePack ??= new PageInstanceCompResource(ModComp.CompType.ResourcePack);
-                        ModMain.frmInstanceResourcePack.UpdateResource(new[] { Entry });
+                        ModMain.FrmInstanceResourcePackRequired.UpdateResource(new[] { Entry });
                         break;
                     }
                     case ModComp.CompType.Shader:
                     {
                         ModMain.frmInstanceShader ??= new PageInstanceCompResource(ModComp.CompType.Shader);
-                        ModMain.frmInstanceShader.UpdateResource(new[] { Entry });
+                        ModMain.FrmInstanceShaderRequired.UpdateResource(new[] { Entry });
                         break;
                     }
                     case ModComp.CompType.DataPack:
                     {
                         ModMain.frmInstanceSavesDatapack ??= new PageInstanceSavesDatapack();
-                        ModMain.frmInstanceSavesDatapack.UpdateResource(new[] { Entry });
+                        ModMain.FrmInstanceSavesDatapackRequired.UpdateResource(new[] { Entry });
                         break;
                     }
                 }
@@ -622,10 +622,10 @@ public partial class MyLocalCompItem
         }
 
         public bool SwipeToState { get; set; }
-        public object TargetFrm { get; set; }
+        public object? TargetFrm { get; set; }
     }
 
-    public SwipeSelect CurrentSwipe { get; set; }
+    public SwipeSelect CurrentSwipe { get; set; } = new();
 
     private void Button_MouseSwipeStart(object sender, object e)
     {
@@ -709,7 +709,7 @@ public partial class MyLocalCompItem
                 }
 
                 // 更改动画
-                if (this.IsVisibleInWindow(ModMain.frmMain))
+                if (ModMain.frmMain is { } main && this.IsVisibleInWindow(main))
                 {
                     var anim = new List<ModAnimation.AniData>();
                     if (Checked)
@@ -780,7 +780,7 @@ public partial class MyLocalCompItem
     #region 后加载内容
 
     // 右下角状态指示图标
-    private Image imgState;
+    private Image? imgState;
 
     // 指向背景
     public Border RectBack
@@ -816,8 +816,8 @@ public partial class MyLocalCompItem
     }
 
     // 按钮
-    public Action<MyLocalCompItem, EventArgs> buttonHandler;
-    public FrameworkElement buttonStack;
+    public Action<MyLocalCompItem, EventArgs>? buttonHandler;
+    public FrameworkElement? buttonStack;
     public IEnumerable<MyIconButton> Buttons
     {
         get => field;

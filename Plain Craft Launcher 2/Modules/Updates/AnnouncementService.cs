@@ -30,13 +30,13 @@ public static class AnnouncementService
                     Lang.Text("Common.Action.Close"),
                     button1Action: () =>
                     {
-                        if (EventTypeMapper.TryParse(
+                        if (item.Btn1 is not null && EventTypeMapper.TryParse(
                                 item.Btn1.Command, out var eventType))
                             CustomEvent.Raise(eventType, item.Btn1.CommandParameter);
                     },
                     button2Action: () =>
                     {
-                        if (EventTypeMapper.TryParse(
+                        if (item.Btn2 is not null && EventTypeMapper.TryParse(
                                 item.Btn2.Command, out var eventType))
                             CustomEvent.Raise(eventType, item.Btn2.CommandParameter);
                     });

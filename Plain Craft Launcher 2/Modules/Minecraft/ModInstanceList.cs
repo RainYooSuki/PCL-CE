@@ -23,7 +23,7 @@ public static class ModInstanceList
     /// <summary>
     ///     当前的 Minecraft 版本。
     /// </summary>
-    public static McInstance McMcInstanceSelected
+    public static McInstance? McMcInstanceSelected
     {
         get => field;
         set
@@ -38,6 +38,9 @@ public static class ModInstanceList
             PageDownloadCompDetail.cachedFolder.Clear();
         }
     }
+
+    public static McInstance McMcInstanceSelectedRequired =>
+        McMcInstanceSelected ?? throw new InvalidOperationException("当前未选择 Minecraft 实例。");
 
     /// <summary>
     ///     当前按卡片分类的所有版本列表。
@@ -137,8 +140,8 @@ public static class ModInstanceList
                     if ((instance.Name ?? "") == savedSelection && instance.state != McInstanceState.Error)
                     {
                         McMcInstanceSelected = instance;
-                        States.Game.SelectedInstance = McMcInstanceSelected.Name;
-                        ModBase.Log("[Minecraft] 选择该文件夹储存的 Minecraft 实例：" + McMcInstanceSelected.PathInstance);
+                        States.Game.SelectedInstance = McMcInstanceSelectedRequired.Name;
+                        ModBase.Log("[Minecraft] 选择该文件夹储存的 Minecraft 实例：" + McMcInstanceSelectedRequired.PathInstance);
                         return;
                     }
 
@@ -150,8 +153,8 @@ public static class ModInstanceList
             if (firstInstance is not null)
             {
                 McMcInstanceSelected = firstInstance;
-                States.Game.SelectedInstance = McMcInstanceSelected.Name;
-                ModBase.Log("[Launch] 自动选择 Minecraft 实例：" + McMcInstanceSelected.PathInstance);
+                States.Game.SelectedInstance = McMcInstanceSelectedRequired.Name;
+                ModBase.Log("[Launch] 自动选择 Minecraft 实例：" + McMcInstanceSelectedRequired.PathInstance);
             }
             else
             {

@@ -14,7 +14,7 @@ public static class ModLibrary
 {
     public class McLibToken
     {
-        private string _Url;
+        private string? _Url;
 
         /// <summary>
         ///     是否为纯本地文件，若是则不尝试联网下载。
@@ -29,17 +29,17 @@ public static class ModLibrary
         /// <summary>
         ///     文件的完整本地路径。
         /// </summary>
-        public string LocalPath;
+        public string LocalPath = "";
 
         /// <summary>
         ///     原 JSON 中的 Name 项。
         /// </summary>
-        public string OriginalName;
+        public string OriginalName = "";
 
         /// <summary>
         ///     文件的 SHA1。
         /// </summary>
-        public string Sha1;
+        public string? Sha1;
 
         /// <summary>
         ///     文件大小。若无有效数据即为 0。
@@ -49,7 +49,7 @@ public static class ModLibrary
         /// <summary>
         ///     由 JSON 提供的 URL，若没有则为 Nothing。
         /// </summary>
-        public string Url
+        public string? Url
         {
             get => _Url;
             set =>
@@ -64,8 +64,6 @@ public static class ModLibrary
         {
             get
             {
-                if (OriginalName is null)
-                    return null;
                 var splited = new List<string>(OriginalName.Split(":"));
                 splited.RemoveAt(2); // Java 的此格式下版本号固定为第三段，第四段可能包含架构、分包等其他信息
                 return splited.Join(":");
@@ -82,14 +80,14 @@ public static class ModLibrary
     ///     检查是否符合 JSON 中的 Rules。
     /// </summary>
     /// <param name="ruleToken">JSON 中的 "rules" 项目。</param>
-    public static bool McJsonRuleCheck(JsonNode ruleToken)
+    public static bool McJsonRuleCheck(JsonNode? ruleToken)
     {
         if (ruleToken is null)
             return true;
 
         // 初始化
         var required = false;
-        foreach (var Rule in ruleToken.AsArray())
+        foreach (var Rule in ruleToken.AsArray().OfType<JsonNode>())
         {
             // 单条条件验证
             var isRightRule = true; // 是否为正确的规则
@@ -150,13 +148,13 @@ public static class ModLibrary
     {
         // 获取当前支持库列表
         ModBase.Log("[Minecraft] 获取支持库列表：" + mcInstance.Name);
-        var result = McLibListGetWithJson(mcInstance.JsonObject, targetMcInstance: mcInstance);
+        var result = McLibListGetWithJson(mcInstance.JsonObjectRequired, targetMcInstance: mcInstance);
 
         // 需要添加原版 Jar
         if (includeInstanceJar)
         {
             McInstance realMcInstance;
-            var requiredJar = mcInstance.JsonObject["jar"]?.ToString();
+            var requiredJar = mcInstance.JsonObjectRequired["jar"]?.ToString();
             if (mcInstance.IsHmclFormatJson || requiredJar is null)
             {
                 // HMCL 项直接使用自身的 Jar
@@ -181,8 +179,8 @@ public static class ModLibrary
                 realMcInstance = new McInstance(requiredJar);
             }
 
-            string clientUrl;
-            string clientSHA1;
+            string? clientUrl;
+            string? clientSHA1;
             // 判断需求的实例是否存在
             // 不能调用 RealVersion.Check()，可能会莫名其妙地触发 CheckPermission 正被另一进程使用，导致误判前置不存在
             if (!File.Exists(realMcInstance.PathInstance + realMcInstance.Name + ".json"))
@@ -192,11 +190,11 @@ public static class ModLibrary
             }
 
             // 获取详细下载信息
-            if (realMcInstance.JsonObject["downloads"] is not null &&
-                realMcInstance.JsonObject["downloads"]["client"] is not null)
+            var downloads = realMcInstance.JsonObjectRequired["downloads"];
+            if (downloads?["client"] is { } client)
             {
-                clientUrl = (string)realMcInstance.JsonObject["downloads"]["client"]["url"];
-                clientSHA1 = (string)realMcInstance.JsonObject["downloads"]["client"]["sha1"];
+                clientUrl = client["url"]?.ToString();
+                clientSHA1 = client["sha1"]?.ToString();
             }
             else
             {
@@ -425,7 +423,7 @@ public static class ModLibrary
 
         // Authlib-Injector 文件
         var authlibTargetFile = Path.Combine(ModBase.pathPure, "authlib-injector.jar");
-        JsonObject authlibDownloadInfo = null;
+        JsonObject? authlibDownloadInfo = null;
         try
         {
             ModBase.Log("[Minecraft] 开始获取 Authlib-Injector 下载信息");
@@ -492,7 +490,10 @@ public static class ModLibrary
 
             try
             {
-                var channelType = mcInstance.JsonObject["labymod_data"]["channelType"].ToString();
+                var labyModData = mcInstance.JsonObjectRequired["labymod_data"];
+                var channelTypeNode = labyModData?["channelType"]
+                    ?? throw new InvalidDataException("LabyMod 数据缺少 channelType。");
+                var channelType = channelTypeNode.ToString() ?? "";
                 Directory.CreateDirectory($@"{ModFolder.mcFolderSelected}labymod-neo\libraries");
                 ModBase.Log("[Minecraft] 开始获取 LabyMod 信息");
                 var labyManifest = (JsonObject)ModNet.NetGetCodeByRequestRetry(
@@ -563,17 +564,17 @@ public static class ModLibrary
                 // 特判修复 Forge 部分 universal 文件缺失 URL（#5455）
                 token.Url = "https://maven.minecraftforge.net" +
                             token.LocalPath.Replace(customMcFolder + "libraries", "").Replace(@"\", "/");
-            if (token.Url is not null)
+            if (token.Url is { } tokenUrl)
             {
                 // 获取 URL 的真实地址
-                urls.Add(token.Url);
-                if (token.Url.Contains("launcher.mojang.com/v1/objects") || token.Url.Contains("client.txt") ||
-                    token.Url.Contains(".tsrg"))
-                    urls.AddRange(ModDownload.DlSourceLauncherOrMetaGet(token.Url)); // Mappings（#4425）
-                if (token.Url.Contains("maven"))
+                urls.Add(tokenUrl);
+                if (tokenUrl.Contains("launcher.mojang.com/v1/objects") || tokenUrl.Contains("client.txt") ||
+                    tokenUrl.Contains(".tsrg"))
+                    urls.AddRange(ModDownload.DlSourceLauncherOrMetaGet(tokenUrl)); // Mappings（#4425）
+                if (tokenUrl.Contains("maven"))
                 {
-                    var bmclapiUrl = token.Url
-                        .Replace(token.Url.Substring(0, token.Url.IndexOfF("maven")),
+                    var bmclapiUrl = tokenUrl
+                        .Replace(tokenUrl.Substring(0, tokenUrl.IndexOfF("maven")),
                             "https://bmclapi2.bangbang93.com/").Replace("maven.fabricmc.net", "maven")
                         .Replace("maven.minecraftforge.net", "maven").Replace("maven.neoforged.net/releases", "maven");
                     if (ModDownload.DlSourcePreferMojang)
@@ -606,7 +607,8 @@ public static class ModLibrary
             else if (token.Name.Contains("LabyMod"))
             {
                 // LabyMod 只有一个下载源
-                urls.Add(token.Url);
+                if (token.Url is { } labyModUrl)
+                    urls.Add(labyModUrl);
                 ModBase.Log(
                     $"[Download] 获取到 LabyMod 主要库文件的 Size = {token.size},SHA1 = {token.Sha1}，由于 LabyMod 乱写 Size，已忽略 Size");
                 checker = new ModBase.FileChecker(hash: token.Sha1); // 只校验 SHA1

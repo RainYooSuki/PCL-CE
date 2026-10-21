@@ -84,9 +84,7 @@ public partial class PageComp
         {
             case ModBase.LoadState.Failed:
             {
-                var errorMessage = "";
-                if (loader.Error is not null)
-                    errorMessage = loader.Error.Message;
+                var errorMessage = loader.Error?.Message ?? "";
                 if (errorMessage.Contains(Lang.Text("Common.Error.InvalidJson")))
                 {
                     ModBase.Log($"[Download] 下载的{TypeNameSpaced}列表 json 文件损坏，已自动重试", ModBase.LogLevel.Debug);
@@ -118,7 +116,7 @@ public partial class PageComp
     {
         CardPages.IsEnabled = false;
         page = newPage;
-        ModMain.frmMain.BackToTop();
+        ModMain.FrmMainRequired.BackToTop();
         ModBase.Log($"[Download] {TypeName}：切换到第 {page + 1} 页");
         ModBase.RunInThread(() =>
         {
@@ -212,7 +210,7 @@ public partial class PageComp
     /// <summary>
     ///     在切换到页面时，应自动将筛选项设置为与该目标 MC 版本和加载器相同。
     /// </summary>
-    public static McInstance targetVersion;
+    public static McInstance? targetVersion;
 
     // 在点击 MyCompItem 时会获取 Loader 的输入，以使资源详情页面可以应用相同的筛选项
     public ModLoader.LoaderTask<ModComp.CompProjectRequest, int> loader;

@@ -8,16 +8,18 @@ public class SubcommandDefinition
 
     public required IEnumerable<SubcommandDefinition> Subcommands { private get; init; }
 
+    private IReadOnlyDictionary<string, SubcommandDefinition>? _subcommandMap;
+
     public IReadOnlyDictionary<string, SubcommandDefinition> SubcommandMap
     {
         get
         {
-            if (field is not null) return field;
+            if (_subcommandMap is not null) return _subcommandMap;
             var map = new Dictionary<string, SubcommandDefinition>();
             foreach (var c in Subcommands) map[c.CommandText] = c;
-            return field = map.AsReadOnly();
+            return _subcommandMap = map.AsReadOnly();
         }
-    } = null!;
+    }
 
     public bool Contains(string subcommandText)
     {

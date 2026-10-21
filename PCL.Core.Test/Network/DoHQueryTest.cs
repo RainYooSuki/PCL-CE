@@ -17,7 +17,7 @@ public class DoHQueryTest
     public async Task TestIpQuery()
     {
         var query = DnsQuery.Instance;
-        var addr = await query.QueryForIpAsync("cloudflare.com", TestContext.CancellationTokenSource.Token);
+        var addr = await query.QueryForIpAsync("cloudflare.com", TestContext?.CancellationTokenSource?.Token ?? default);
         Assert.IsNotNull(addr);
         Assert.IsGreaterThan(0, addr.Length);
         Console.WriteLine(string.Join(", ", addr.Select(x => x.ToString())));
@@ -27,12 +27,12 @@ public class DoHQueryTest
     public async Task TestSrvQuery()
     {
         var query = DnsQuery.Instance;
-        var addr = await query.QueryAsync("_minecraft._tcp.mc.hdeda6e85.nyat.app", DnsQueryType.SRV, TestContext.CancellationTokenSource.Token);
+        var addr = await query.QueryAsync("_minecraft._tcp.mc.hdeda6e85.nyat.app", DnsQueryType.SRV, TestContext?.CancellationTokenSource?.Token ?? default);
         Assert.IsNotNull(addr);
         Assert.IsGreaterThan(0, addr.Answers.Count);
         Assert.AreEqual(DnsQueryClass.IN, addr.Header.QueryClass);
-        var record = addr.Answers.FirstOrDefault()?.Resource as DnsUnknownResource;
-        Assert.IsNotNull(record);
+        var record = addr.Answers.FirstOrDefault()?.Resource as DnsUnknownResource
+            ?? throw new AssertFailedException("Expected an unknown resource record.");
         var srvRecord = new DnsSrvResource();
         var offset = 0;
         srvRecord.ReadBytes(record.Raw, ref offset, record.Raw.Length);
@@ -40,5 +40,5 @@ public class DoHQueryTest
         Console.WriteLine(srvRecord.Port);
     }
 
-    public TestContext TestContext { get; set; }
+    public TestContext? TestContext { get; set; }
 }

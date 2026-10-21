@@ -20,10 +20,10 @@ public class MyDropShadow : Decorator
         new FrameworkPropertyMetadata(new CornerRadius(), FrameworkPropertyMetadataOptions.AffectsRender, ClearBrushes),
         IsCornerRadiusValid);
 
-    private static Brush[] _commonBrushes;
+    private static Brush[]? _commonBrushes;
     private static CornerRadius _commonCornerRadius;
     private static readonly object _resourceAccess = new();
-    private Brush[] _brushes;
+    private Brush[]? _brushes;
 
     /// <summary>
     ///     阴影颜色。
@@ -335,25 +335,30 @@ public class MyDropShadow : Decorator
 
     private Brush[] GetBrushes(Color c, CornerRadius cornerRadius)
     {
-        if (_commonBrushes is null)
+        var commonBrushes = _commonBrushes;
+        if (commonBrushes is null)
             lock (_resourceAccess)
             {
-                if (_commonBrushes is null)
+                commonBrushes = _commonBrushes;
+                if (commonBrushes is null)
                 {
-                    _commonBrushes = CreateBrushes(c, cornerRadius);
+                    commonBrushes = CreateBrushes(c, cornerRadius);
+                    _commonBrushes = commonBrushes;
                     _commonCornerRadius = cornerRadius;
                 }
             }
 
-        if (c == ((SolidColorBrush)_commonBrushes[(int)Placement.Center]).Color && cornerRadius == _commonCornerRadius)
+        if (commonBrushes is null)
+            throw new InvalidOperationException("阴影画刷初始化失败。");
+
+        if (c == ((SolidColorBrush)commonBrushes[(int)Placement.Center]).Color &&
+            cornerRadius == _commonCornerRadius)
         {
             _brushes = null;
-            return _commonBrushes;
+            return commonBrushes;
         }
 
-        if (_brushes is null) _brushes = CreateBrushes(c, cornerRadius);
-
-        return _brushes;
+        return _brushes ??= CreateBrushes(c, cornerRadius);
     }
 
     private enum Placement

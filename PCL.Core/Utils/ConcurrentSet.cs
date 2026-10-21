@@ -24,14 +24,14 @@ public sealed class ConcurrentSet<T> : IProducerConsumerCollection<T>, ICollecti
         return true;
     }
 
-    public bool TryTake([UnscopedRef] out T item)
+    public bool TryTake([MaybeNullWhen(false)] [UnscopedRef] out T item)
     {
         while (true)
         {
             var keys = _dictionary.Keys;
             if (keys.Count == 0)
             {
-                item = default!;
+                item = default;
                 return false;
             }
             foreach (var key in keys)

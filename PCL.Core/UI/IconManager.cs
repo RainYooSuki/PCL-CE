@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Markup;
 
@@ -45,17 +46,20 @@ public class IconManager : INotifyPropertyChanged {
     }
     
     // 从 XAML 字符串加载图标
-    public static bool TryLoadIconFromXaml(string xamlString, out UIElement? icon) {
+    public static bool TryLoadIconFromXaml(string xamlString, [NotNullWhen(true)] out UIElement? icon) {
         icon = null;
         if (string.IsNullOrWhiteSpace(xamlString)) return false;
         
         // 确保在UI线程执行
-        if (!Application.Current.Dispatcher.CheckAccess()) {
+        var application = Application.Current;
+        if (application is null || !application.Dispatcher.CheckAccess()) {
             return false;
         }
-        
+
         try {
-            icon = (UIElement)XamlReader.Parse(xamlString);
+            if (XamlReader.Parse(xamlString) is not UIElement parsedIcon)
+                return false;
+            icon = parsedIcon;
             return true;
         }
         catch (Exception) {
@@ -64,18 +68,21 @@ public class IconManager : INotifyPropertyChanged {
     }
     
     // 从 XAML 字符串加载图标
-    public static bool LoadIconFromXaml(string xamlString, out UIElement? icon) {
+    public static bool LoadIconFromXaml(string xamlString, [NotNullWhen(true)] out UIElement? icon) {
         icon = null;
         if (string.IsNullOrWhiteSpace(xamlString)) {
             throw new ArgumentNullException(nameof(xamlString), "XAML 字符串不能为空或空白。");
         }
         
         // 确保在UI线程执行
-        if (!Application.Current.Dispatcher.CheckAccess()) {
+        var application = Application.Current;
+        if (application is null || !application.Dispatcher.CheckAccess()) {
             throw new InvalidOperationException("XAML 解析需要在 UI 线程执行。");
         }
-        
-        icon = (UIElement)XamlReader.Parse(xamlString);
+
+        if (XamlReader.Parse(xamlString) is not UIElement parsedIcon)
+            throw new InvalidOperationException("XAML 内容未生成可用的 UI 元素。");
+        icon = parsedIcon;
         return true;
     }
 

@@ -7,7 +7,7 @@ namespace PCL.Core.Test.Validate;
 public class NullOrEmptyValidatorTest
 {
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public TestContext TestContext { get; set; }
+    public TestContext? TestContext { get; set; }
     
     [TestMethod]
     [DataRow("", false)]
@@ -21,7 +21,7 @@ public class NullOrEmptyValidatorTest
         {
             foreach (var error in result.Errors)
             {
-                TestContext.WriteLine(error.ErrorMessage);
+                TestContext?.WriteLine(error.ErrorMessage);
             }
         }
         Assert.AreEqual(expected, result.IsValid);

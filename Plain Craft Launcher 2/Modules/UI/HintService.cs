@@ -41,18 +41,19 @@ public static class HintService
     {
         try
         {
-            ModMain.frmMain!.PanHint.HorizontalAlignment = HorizontalAlignment.Right;
-            ModMain.frmMain.PanHint.VerticalAlignment = VerticalAlignment.Bottom;
+            if (ModMain.frmMain is not { } main) return;
+            main.PanHint.HorizontalAlignment = HorizontalAlignment.Right;
+            main.PanHint.VerticalAlignment = VerticalAlignment.Bottom;
 
-            var extraHeight = ModMain.frmMain.PanExtraButtons.ActualHeight;
-            ModMain.frmMain.PanHint.Margin = new Thickness(0, 0, 0, extraHeight > 0 ? extraHeight + 20 : 20);
+            var extraHeight = main.PanExtraButtons.ActualHeight;
+            main.PanHint.Margin = new Thickness(0, 0, 0, extraHeight > 0 ? extraHeight + 20 : 20);
 
             if (!HintWaiting.Any())
                 return;
 
             var currentHint = HintWaiting[0];
 
-            var duplicate = ModMain.frmMain.PanHint.Children.OfType<MyToast>()
+            var duplicate = main.PanHint.Children.OfType<MyToast>()
                 .FirstOrDefault(t => !t.IsDismissing && t.Context == currentHint.Text && t.ToastType == currentHint.Type);
             if (duplicate != null)
             {
@@ -61,10 +62,10 @@ public static class HintService
                 return;
             }
 
-            var activeCount = ModMain.frmMain.PanHint.Children.OfType<MyToast>().Count(t => !t.IsDismissing);
+            var activeCount = main.PanHint.Children.OfType<MyToast>().Count(t => !t.IsDismissing);
             if (activeCount >= 5)
             {
-                var oldest = ModMain.frmMain.PanHint.Children.OfType<MyToast>().FirstOrDefault(t => !t.IsDismissing);
+                var oldest = main.PanHint.Children.OfType<MyToast>().FirstOrDefault(t => !t.IsDismissing);
                 oldest?.Dismiss();
                 return;
             }
@@ -83,7 +84,7 @@ public static class HintService
                 DisplayDuration = (800d + ModBase.MathClamp(currentHint.Text.Length, 5d, 23d) * 180d) * ModAnimation.aniSpeed
             };
 
-            ModMain.frmMain.PanHint.Children.Add(toast);
+            main.PanHint.Children.Add(toast);
             toast.Show();
 
             if (currentHint.Log)
@@ -98,7 +99,8 @@ public static class HintService
 
     public static void HideAll()
     {
-        foreach (MyToast toast in ModMain.frmMain!.PanHint.Children.OfType<MyToast>().ToList())
+        if (ModMain.frmMain is not { } main) return;
+        foreach (MyToast toast in main.PanHint.Children.OfType<MyToast>().ToList())
             toast.Dismiss();
     }
 }

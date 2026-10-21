@@ -53,7 +53,7 @@ public partial class PageInstanceSavesInfo : IRefreshable
 
             var save = await SaveManager.LoadSaveAsync(PageInstanceSavesLeft.currentSave, ct);
 
-            ModMain.frmInstanceSavesLeft.ItemDatapack.Visibility =
+            ModMain.FrmInstanceSavesLeftRequired.ItemDatapack.Visibility =
                 save.VersionId is null or < DataVersionBoundaries._17w47a ? Visibility.Collapsed : Visibility.Visible;
 
             if (save.VersionName is null)

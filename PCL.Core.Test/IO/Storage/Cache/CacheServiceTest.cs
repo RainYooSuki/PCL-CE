@@ -18,12 +18,10 @@ namespace PCL.Core.Test.IO.Storage.Cache;
 [TestClass]
 public class CacheServiceTest
 {
-    private CacheService _cache = null!;
-    private CacheOptions _options = null!;
-    private string _testCacheDir = null!;
+    private readonly CacheService _cache;
+    private readonly string _testCacheDir;
 
-    [TestInitialize]
-    public async Task Setup()
+    public CacheServiceTest()
     {
         try
         {
@@ -39,7 +37,7 @@ public class CacheServiceTest
         _testCacheDir = Path.Combine(Path.GetTempPath(), "pcl_cache_test_" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(_testCacheDir);
 
-        _options = new CacheOptions
+        var options = new CacheOptions
         {
             DatabasePath = Path.Combine(_testCacheDir, "test_cache.db"),
             FileCacheRoot = Path.Combine(_testCacheDir, "files"),
@@ -48,17 +46,19 @@ public class CacheServiceTest
             EnableCompression = false // Disable compression for simpler testing
         };
 
-        _cache = new CacheService(_options);
+        _cache = new CacheService(options);
+    }
+
+    [TestInitialize]
+    public async Task Setup()
+    {
         await _cache.InitializeAsync().ConfigureAwait(false);
     }
 
     [TestCleanup]
     public async Task Cleanup()
     {
-        if (_cache != null)
-        {
-            await _cache.DisposeAsync().ConfigureAwait(false);
-        }
+        await _cache.DisposeAsync().ConfigureAwait(false);
 
         // Clean up the test directory
         if (Directory.Exists(_testCacheDir))
@@ -114,9 +114,11 @@ public class CacheServiceTest
 
         // Assert
         Assert.IsTrue(result.Found);
-        Assert.AreEqual(value.Id, result.Value!.Id);
-        Assert.AreEqual(value.Name, result.Value!.Name);
-        Assert.AreEqual(value.Value, result.Value!.Value);
+        var cachedValue = result.Value;
+        Assert.IsNotNull(cachedValue);
+        Assert.AreEqual(value.Id, cachedValue.Id);
+        Assert.AreEqual(value.Name, cachedValue.Name);
+        Assert.AreEqual(value.Value, cachedValue.Value);
     }
 
     [TestMethod]

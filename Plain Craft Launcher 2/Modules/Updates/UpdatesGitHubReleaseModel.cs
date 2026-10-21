@@ -55,13 +55,15 @@ public class UpdatesGitHubReleaseModel : IUpdateSource
     {
         if (_release is null) RefreshCache();
         if (_versionCache.TryGetValue(arch, out var cached)) return cached;
+        if (_release is not { } release)
+            throw new InvalidOperationException("无法获取 GitHub Release 信息");
 
-        var version = BuildVersionData(_release!, arch);
+        var version = BuildVersionData(release, arch);
         _versionCache[arch] = version;
         return version;
     }
 
-    public bool IsLatest(UpdateChannel channel, UpdateArch arch, SemVer currentVersion, int currentVersionCode)
+    public bool IsLatest(UpdateChannel channel, UpdateArch arch, SemVer currentVersion)
     {
         RefreshCache();
         var latest = GetLatestVersion(channel, arch);
@@ -123,7 +125,6 @@ public class UpdatesGitHubReleaseModel : IUpdateSource
         {
             Source = SourceName,
             VersionName = tag,
-            VersionCode = 0,
             Changelog = release["body"]?.ToString() ?? "",
             Sha256 = ResolveSha256(assets, exeAsset, exeName),
             CommitSha = ExtractCommitSha(tag),

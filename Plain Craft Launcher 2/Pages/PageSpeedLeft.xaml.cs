@@ -51,7 +51,7 @@ public partial class PageSpeedLeft
 
     private void Watcher()
     {
-        if (ModMain.frmMain.pageCurrent != FormMain.PageType.TaskManager)
+        if (ModMain.FrmMainRequired.pageCurrent != FormMain.PageType.TaskManager)
             return;
         try
         {
@@ -94,7 +94,7 @@ public partial class PageSpeedLeft
                 userSummary: Lang.Text("Speed.Error.OperationFailed"));
         }
 
-        if (ModMain.frmSpeedRight is null || ModMain.frmSpeedRight.PanMain is null)
+        if (ModMain.frmSpeedRight is null || ModMain.FrmSpeedRightRequired.PanMain is null)
             return;
         try
         {
@@ -148,7 +148,7 @@ public partial class PageSpeedLeft
                                 "<Path xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" Stretch=\"Uniform\" Tag=\"Failed\" Data=\"F1 M2.5,0 L0,2.5 7.5,10 0,17.5 2.5,20 10,12.5 17.5,20 20,17.5 12.5,10 20,2.5 17.5,0 10,7.5 2.5,0Z\" Height=\"15\" Width=\"15\" HorizontalAlignment=\"Center\" Grid.Column=\"0\" Grid.Row=\"0\" Fill=\"{DynamicResource ColorBrush3}\" Margin=\"0,1,0,0\" VerticalAlignment=\"Top\"/>"));
                             var tb = (TextBlock)ModBase.GetObjectFromXML(
                                 "<TextBlock xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" TextWrapping=\"Wrap\" HorizontalAlignment=\"Left\" ToolTip=\"" + Lang.Text("Speed.Error.ClickToCopy") + "\" Grid.Column=\"1\" Grid.Row=\"0\" Margin=\"0,0,0,5\" />");
-                            tb.Text = loader.Error.ToString();
+                            tb.Text = loader.Error?.ToString() ?? "";
                             tb.MouseLeftButtonDown += (sender, _) =>
                             {
                                 ModBase.ClipboardSet(((TextBlock)sender).Text, false);
@@ -332,7 +332,7 @@ public partial class PageSpeedLeft
                         throw;
                     }
 
-                    ModMain.frmSpeedRight.PanMain.Children.Insert(0, card);
+                    ModMain.FrmSpeedRightRequired.PanMain.Children.Insert(0, card);
                     rightCards.Add(loader.name, card);
                     ModBase.Log($"[Watcher] 新建任务管理卡片：{loader.name}");
                     // 添加取消按钮
@@ -349,9 +349,9 @@ public partial class PageSpeedLeft
                         ModAnimation.AniDispose((MyIconButton)sender, false);
                         ModAnimation.AniDispose(card, true, _ =>
                         {
-                            if (ModMain.frmSpeedRight.PanMain.Children.Count == 0 &&
-                                ModMain.frmMain.pageCurrent == FormMain.PageType.TaskManager)
-                                ModMain.frmMain.PageBack();
+                            if (ModMain.FrmSpeedRightRequired.PanMain.Children.Count == 0 &&
+                                ModMain.FrmMainRequired.pageCurrent == FormMain.PageType.TaskManager)
+                                ModMain.FrmMainRequired.PageBack();
                         });
                         rightCards.Remove(loader.name);
                         ModLoader.loaderTaskbar.Remove(loader);
@@ -395,7 +395,7 @@ public partial class PageSpeedLeft
             {
                 // 移除已有的卡片
                 Grid card = rightCards[loader.name];
-                ModMain.frmSpeedRight.PanMain.Children.Remove(card);
+                ModMain.FrmSpeedRightRequired.PanMain.Children.Remove(card);
                 rightCards.Remove(loader.name);
                 ModBase.Log($"[Watcher] 移除任务管理卡片：{loader.name}");
             });
@@ -406,7 +406,7 @@ public partial class PageSpeedLeft
     /// </summary>
     private void TryReturnToHome()
     {
-        if (ModMain.frmSpeedRight.PanMain.Children.Count == 0 &&
-            ModMain.frmMain.pageCurrent == FormMain.PageType.TaskManager) ModMain.frmMain.PageBack();
+        if (ModMain.FrmSpeedRightRequired.PanMain.Children.Count == 0 &&
+            ModMain.FrmMainRequired.pageCurrent == FormMain.PageType.TaskManager) ModMain.FrmMainRequired.PageBack();
     }
 }

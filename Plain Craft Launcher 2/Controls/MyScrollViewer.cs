@@ -9,7 +9,7 @@ public class MyScrollViewer : ScrollViewer
 {
     private double realOffset;
 
-    public MyScrollBar scrollBar;
+    public MyScrollBar? scrollBar;
 
     public MyScrollViewer()
     {
@@ -60,17 +60,17 @@ public class MyScrollViewer : ScrollViewer
         realOffset = VerticalOffset;
         if (ModMain.frmMain is not null &&
             (e.VerticalChange != 0 || e.ViewportHeightChange != 0))
-            ModMain.frmMain.BtnExtraBack.ShowRefresh();
+            ModMain.FrmMainRequired.BtnExtraBack.ShowRefresh();
     }
 
     private void MyScrollViewer_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        ModMain.frmMain.BtnExtraBack.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraBack.ShowRefresh();
     }
 
     private void Load()
     {
-        scrollBar = (MyScrollBar)GetTemplateChild("PART_VerticalScrollBar");
+        scrollBar = GetTemplateChild("PART_VerticalScrollBar") as MyScrollBar;
     }
 
     private void MyScrollViewer_PreviewGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)

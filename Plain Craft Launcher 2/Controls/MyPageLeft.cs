@@ -14,7 +14,7 @@ public class MyPageLeft : Grid
     private bool _animatedControlNullWarned;
 
     // 执行逐个进入动画的控件
-    public FrameworkElement AnimatedControl
+    public FrameworkElement? AnimatedControl
     {
         get
         {
@@ -25,7 +25,7 @@ public class MyPageLeft : Grid
                 ModBase.Log($"[MyPageLeft] 获取到 AnimatedControl(来自 {Name}) 的值为 null", ModBase.LogLevel.Debug);
             }
 
-            return (FrameworkElement)res;
+            return res as FrameworkElement;
         }
         set => SetValue(AnimatedControlProperty, value);
     }
@@ -135,7 +135,8 @@ public class MyPageLeft : Grid
     private List<FrameworkElement> GetAllAnimControls(bool ignoreInvisibility = false)
     {
         var allControls = new List<FrameworkElement>();
-        GetAllAnimControls(AnimatedControl, ref allControls, ignoreInvisibility);
+        if (AnimatedControl is { } animatedControl)
+            GetAllAnimControls(animatedControl, ref allControls, ignoreInvisibility);
         return allControls;
     }
 

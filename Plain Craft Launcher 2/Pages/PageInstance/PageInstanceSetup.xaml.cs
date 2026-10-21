@@ -95,49 +95,49 @@ public partial class PageInstanceSetup
         try
         {
             // 启动参数
-            TextArgumentTitle.Text = Config.Instance.Title[PageInstanceLeft.McInstance.PathInstance];
-            CheckArgumentTitleEmpty.Checked = Config.Instance.UseGlobalTitle[PageInstanceLeft.McInstance.PathInstance];
-            TextArgumentInfo.Text = Config.Instance.TypeInfo[PageInstanceLeft.McInstance.PathInstance];
-            var _unused = PageInstanceLeft.McInstance.PathIndie; // 触发自动判定
-            ComboArgumentIndieV2.SelectedIndex = Config.Instance.IndieV2[PageInstanceLeft.McInstance.PathInstance] ? 0 : 1;
+            TextArgumentTitle.Text = Config.Instance.Title[PageInstanceLeft.McInstanceRequired.PathInstance];
+            CheckArgumentTitleEmpty.Checked = Config.Instance.UseGlobalTitle[PageInstanceLeft.McInstanceRequired.PathInstance];
+            TextArgumentInfo.Text = Config.Instance.TypeInfo[PageInstanceLeft.McInstanceRequired.PathInstance];
+            var _unused = PageInstanceLeft.McInstanceRequired.PathIndie; // 触发自动判定
+            ComboArgumentIndieV2.SelectedIndex = Config.Instance.IndieV2[PageInstanceLeft.McInstanceRequired.PathInstance] ? 0 : 1;
             CheckArgumentTitleEmpty.Visibility = TextArgumentTitle.Text.Length > 0 ? Visibility.Collapsed : Visibility.Visible;
             TextArgumentTitle.HintText = CheckArgumentTitleEmpty.Checked == true ? Lang.Text("Common.Option.Default") : Lang.Text("Instance.Setup.FollowGlobal");
             RefreshJavaComboBox();
 
             // 游戏内存
-            var ramType = Config.Instance.MemorySolution[PageInstanceLeft.McInstance.PathInstance];
+            var ramType = Config.Instance.MemorySolution[PageInstanceLeft.McInstanceRequired.PathInstance];
             ((MyRadioBox)FindName("RadioRamType" + ramType)).Checked = true;
-            SliderRamCustom.Value = Config.Instance.CustomMemorySize[PageInstanceLeft.McInstance.PathInstance];
-            SliderRamInitialCustom.Value = Config.Instance.CustomInitialMemorySize[PageInstanceLeft.McInstance.PathInstance];
+            SliderRamCustom.Value = Config.Instance.CustomMemorySize[PageInstanceLeft.McInstanceRequired.PathInstance];
+            SliderRamInitialCustom.Value = Config.Instance.CustomInitialMemorySize[PageInstanceLeft.McInstanceRequired.PathInstance];
             RamType(ramType);
 
             // 服务器
-            TextServerEnter.Text = Config.Instance.ServerToEnter[PageInstanceLeft.McInstance.PathInstance];
-            ComboServerLoginRequire.SelectedIndex = Config.InstanceAuth.LoginRequirementSolution[PageInstanceLeft.McInstance.PathInstance];
+            TextServerEnter.Text = Config.Instance.ServerToEnter[PageInstanceLeft.McInstanceRequired.PathInstance];
+            ComboServerLoginRequire.SelectedIndex = Config.InstanceAuth.LoginRequirementSolution[PageInstanceLeft.McInstanceRequired.PathInstance];
             comboServerLoginLast = ComboServerLoginRequire.SelectedIndex;
-            TextServerAuthServer.Text = Config.InstanceAuth.AuthServerAddress[PageInstanceLeft.McInstance.PathInstance];
-            TextServerAuthName.Text = Config.InstanceAuth.AuthServerDisplayName[PageInstanceLeft.McInstance.PathInstance];
-            TextServerAuthRegister.Text = Config.InstanceAuth.AuthRegisterAddress[PageInstanceLeft.McInstance.PathInstance];
+            TextServerAuthServer.Text = Config.InstanceAuth.AuthServerAddress[PageInstanceLeft.McInstanceRequired.PathInstance];
+            TextServerAuthName.Text = Config.InstanceAuth.AuthServerDisplayName[PageInstanceLeft.McInstanceRequired.PathInstance];
+            TextServerAuthRegister.Text = Config.InstanceAuth.AuthRegisterAddress[PageInstanceLeft.McInstanceRequired.PathInstance];
             ServerLogin(ComboServerLoginRequire.SelectedIndex);
 
             // 高级设置
-            ComboAdvanceRenderer.SelectedIndex = Config.Instance.Renderer[PageInstanceLeft.McInstance.PathInstance];
-            TextAdvanceClasspathHead.Text = Config.Instance.ClasspathHead[PageInstanceLeft.McInstance.PathInstance];
-            TextAdvanceJvm.Text = Config.Instance.JvmArgs[PageInstanceLeft.McInstance.PathInstance];
-            TextAdvanceGame.Text = Config.Instance.GameArgs[PageInstanceLeft.McInstance.PathInstance];
-            TextAdvanceRun.Text = Config.Instance.PreLaunchCommand[PageInstanceLeft.McInstance.PathInstance];
-            CheckAdvanceRunWait.Checked = Config.Instance.PreLaunchCommandWait[PageInstanceLeft.McInstance.PathInstance];
-            CheckAdvanceDisableLwjglUnsafeAgent.Checked = Config.Instance.DisableLwjglUnsafeAgent[PageInstanceLeft.McInstance.PathInstance];
-            if (Config.Instance.AssetVerifySolutionV1[PageInstanceLeft.McInstance.PathInstance] == 2)
+            ComboAdvanceRenderer.SelectedIndex = Config.Instance.Renderer[PageInstanceLeft.McInstanceRequired.PathInstance];
+            TextAdvanceClasspathHead.Text = Config.Instance.ClasspathHead[PageInstanceLeft.McInstanceRequired.PathInstance];
+            TextAdvanceJvm.Text = Config.Instance.JvmArgs[PageInstanceLeft.McInstanceRequired.PathInstance];
+            TextAdvanceGame.Text = Config.Instance.GameArgs[PageInstanceLeft.McInstanceRequired.PathInstance];
+            TextAdvanceRun.Text = Config.Instance.PreLaunchCommand[PageInstanceLeft.McInstanceRequired.PathInstance];
+            CheckAdvanceRunWait.Checked = Config.Instance.PreLaunchCommandWait[PageInstanceLeft.McInstanceRequired.PathInstance];
+            CheckAdvanceDisableLwjglUnsafeAgent.Checked = Config.Instance.DisableLwjglUnsafeAgent[PageInstanceLeft.McInstanceRequired.PathInstance];
+            if (Config.Instance.AssetVerifySolutionV1[PageInstanceLeft.McInstanceRequired.PathInstance] == 2)
             {
                 ModBase.Log("[Setup] 已迁移老版本的关闭文件校验设置");
-                Config.Instance.AssetVerifySolutionV1Config.Reset(PageInstanceLeft.McInstance.PathInstance);
-                Config.Instance.DisableAssetVerifyV2[PageInstanceLeft.McInstance.PathInstance] = true;
+                Config.Instance.AssetVerifySolutionV1Config.Reset(PageInstanceLeft.McInstanceRequired.PathInstance);
+                Config.Instance.DisableAssetVerifyV2[PageInstanceLeft.McInstanceRequired.PathInstance] = true;
             }
 
-            CheckAdvanceAssetsV2.Checked = Config.Instance.DisableAssetVerifyV2[PageInstanceLeft.McInstance.PathInstance];
-            CheckAdvanceUseProxyV2.Checked = Config.Instance.UseProxy[PageInstanceLeft.McInstance.PathInstance];
-            CheckAdvanceJava.Checked = Config.Instance.IgnoreJavaCompatibility[PageInstanceLeft.McInstance.PathInstance];
+            CheckAdvanceAssetsV2.Checked = Config.Instance.DisableAssetVerifyV2[PageInstanceLeft.McInstanceRequired.PathInstance];
+            CheckAdvanceUseProxyV2.Checked = Config.Instance.UseProxy[PageInstanceLeft.McInstanceRequired.PathInstance];
+            CheckAdvanceJava.Checked = Config.Instance.IgnoreJavaCompatibility[PageInstanceLeft.McInstanceRequired.PathInstance];
             if (SystemInfo.IsArm64System)
             {
                 CheckAdvanceDisableJLW.Checked = true;
@@ -146,10 +146,10 @@ public partial class PageInstanceSetup
             }
             else
             {
-                CheckAdvanceDisableJLW.Checked = Config.Instance.DisableJlw[PageInstanceLeft.McInstance.PathInstance];
+                CheckAdvanceDisableJLW.Checked = Config.Instance.DisableJlw[PageInstanceLeft.McInstanceRequired.PathInstance];
             }
-            CheckUseDebugLog4j2Config.Checked = Config.Instance.UseDebugLof4j2Config[PageInstanceLeft.McInstance.PathInstance];
-            CheckAdvanceDisableLF.Checked = Config.Instance.DisableLF[PageInstanceLeft.McInstance.PathInstance];
+            CheckUseDebugLog4j2Config.Checked = Config.Instance.UseDebugLof4j2Config[PageInstanceLeft.McInstanceRequired.PathInstance];
+            CheckAdvanceDisableLF.Checked = Config.Instance.DisableLF[PageInstanceLeft.McInstanceRequired.PathInstance];
         }
 
         catch (Exception ex)
@@ -167,10 +167,10 @@ public partial class PageInstanceSetup
     {
         try
         {
-            if (!Config.InstanceAuth.AuthLocked[PageInstanceLeft.McInstance.PathInstance])
-                Config.InstanceAuth.Reset(PageInstanceLeft.McInstance.PathInstance);
+            if (!Config.InstanceAuth.AuthLocked[PageInstanceLeft.McInstanceRequired.PathInstance])
+                Config.InstanceAuth.Reset(PageInstanceLeft.McInstanceRequired.PathInstance);
 
-            Config.Instance.Reset(PageInstanceLeft.McInstance.PathInstance);
+            Config.Instance.Reset(PageInstanceLeft.McInstanceRequired.PathInstance);
 
             ModBase.Log("[Setup] 已初始化实例独立设置");
             HintService.Hint(Lang.Text("Instance.Setup.Initialize.Success"), HintType.Success, false);
@@ -189,7 +189,7 @@ public partial class PageInstanceSetup
 
     // 将控件改变路由到设置改变
     private static void SetByTag(string tag, object value)
-        => ConfigService.TrySetValue(tag, value, PageInstanceLeft.McInstance.PathInstance);
+        => ConfigService.TrySetValue(tag, value, PageInstanceLeft.McInstanceRequired.PathInstance);
 
     private void RadioBoxChange(object o, ModBase.RouteEventArgs routeEventArgs)
     {
@@ -221,7 +221,7 @@ public partial class PageInstanceSetup
         SetByTag(slider.Tag?.ToString(), slider.Value);
     }
 
-    private void ComboChange(MyComboBox sender, object e)
+    private void ComboChange(MyComboBox sender, object? e)
     {
         if (ModAnimation.AniControlEnabled != 0)
             return;
@@ -241,7 +241,7 @@ public partial class PageInstanceSetup
     // 切换到全局设置
     private void BtnSwitch_Click(object sender, MouseButtonEventArgs e)
     {
-        ModMain.frmMain.PageChange(FormMain.PageType.Setup);
+        ModMain.FrmMainRequired.PageChange(FormMain.PageType.Setup);
     }
 
     #region 游戏内存
@@ -260,11 +260,11 @@ public partial class PageInstanceSetup
     public void RefreshRam(bool showAnim)
     {
         if (LabRamGame is null || LabRamUsed is null ||
-            ModMain.frmMain.pageCurrent != FormMain.PageType.InstanceSetup ||
-            ModMain.frmInstanceLeft.pageID != FormMain.PageSubType.VersionSetup)
+            ModMain.FrmMainRequired.pageCurrent != FormMain.PageType.InstanceSetup ||
+            ModMain.FrmInstanceLeftRequired.pageID != FormMain.PageSubType.VersionSetup)
             return;
         // 获取内存情况
-        var ramGame = Math.Round(GetRam(PageInstanceLeft.McInstance), 5);
+        var ramGame = Math.Round(GetRam(PageInstanceLeft.McInstanceRequired), 5);
         var phyRam = KernelInterop.GetPhysicalMemoryBytes();
         var ramTotal = Math.Round((double)(phyRam.Total / 1024 / 1024 / 1024), 1);
         var ramAvailable = Math.Round((double)(phyRam.Available / 1024 / 1024 / 1024), 1);
@@ -281,7 +281,7 @@ public partial class PageInstanceSetup
         else
             SliderRamCustom.MaxValue = (int)Math.Round(Math.Floor((ramTotal - 16d) / 2d) + 33d);
         // 设置文本
-        var ramInitial = GetInitialRam(PageInstanceLeft.McInstance);
+        var ramInitial = GetInitialRam(PageInstanceLeft.McInstanceRequired);
         string suffixText;
         if (ramInitial.HasValue && ramGame != ramGameActual)
             suffixText = Lang.Text("Setup.Launch.Memory.SuffixBoth", Lang.Number(ramInitial.Value, "N1"), Lang.Number(ramGameActual, "N1"));
@@ -595,7 +595,7 @@ public partial class PageInstanceSetup
         if (comboServerLoginLast == ComboServerLoginRequire.SelectedIndex)
             return;
         comboServerLoginLast = ComboServerLoginRequire.SelectedIndex;
-        Config.InstanceAuth.LoginRequirementSolution[PageInstanceLeft.McInstance.PathInstance] = ComboServerLoginRequire.SelectedIndex;
+        Config.InstanceAuth.LoginRequirementSolution[PageInstanceLeft.McInstanceRequired.PathInstance] = ComboServerLoginRequire.SelectedIndex;
     }
 
     private void TextServerAuthServer_MouseLeave(object sender, RoutedEventArgs e)
@@ -641,7 +641,7 @@ public partial class PageInstanceSetup
             BtnServerAuthLock.Visibility = Visibility.Collapsed;
         else
             BtnServerAuthLock.Visibility = Visibility.Visible;
-        if (Config.InstanceAuth.AuthLocked[PageInstanceLeft.McInstance.PathInstance])
+        if (Config.InstanceAuth.AuthLocked[PageInstanceLeft.McInstanceRequired.PathInstance])
         {
             HintServerLoginLock.Visibility = Visibility.Visible;
             ComboServerLoginRequire.IsEnabled = false;
@@ -705,7 +705,7 @@ public partial class PageInstanceSetup
                 Lang.Text("Instance.Setup.Server.LockLoginMethod.Message"),
                 Lang.Text("Instance.Setup.Server.LockLoginMethod.Title"), Lang.Text("Common.Action.Confirm"), Lang.Text("Common.Action.Cancel"), isWarn: true) == 1)
         {
-            Config.InstanceAuth.AuthLocked[PageInstanceLeft.McInstance.PathInstance] = true;
+            Config.InstanceAuth.AuthLocked[PageInstanceLeft.McInstanceRequired.PathInstance] = true;
             Reload();
         }
     }
@@ -713,12 +713,12 @@ public partial class PageInstanceSetup
     // 跳转新建档案
     private void BtnServerNewProfile_Click(object sender, MouseButtonEventArgs e)
     {
-        ModMain.frmMain.PageChange(new FormMain.PageStackData { page = FormMain.PageType.Launch });
+        ModMain.FrmMainRequired.PageChange(new FormMain.PageStackData { page = FormMain.PageType.Launch });
         PageLoginAuth.draggedAuthServer = TextServerAuthServer.Text;
         ModBase.RunInNewThread(() =>
         {
             Thread.Sleep(150);
-            ModBase.RunInUi(() => ModMain.frmLaunchLeft.RefreshPage(true, ModLaunch.McLoginType.Auth));
+            ModBase.RunInUi(() => ModMain.FrmLaunchLeftRequired.RefreshPage(true, ModLaunch.McLoginType.Auth));
         });
     }
 
@@ -738,7 +738,7 @@ public partial class PageInstanceSetup
             return;
 
         // 获取实例的 Java 偏好（已兼容新旧格式）
-        var preference = ModJava.GetInstanceJavaPreference(PageInstanceLeft.McInstance);
+        var preference = ModJava.GetInstanceJavaPreference(PageInstanceLeft.McInstanceRequired);
 
         // === 1. 初始化固定选项（使用类型安全的 Tag） ===
         ComboArgumentJava.Items.Clear();
@@ -797,7 +797,7 @@ public partial class PageInstanceSetup
         ComboArgumentJava.Items.Add(relativePathItem);
 
         // === 2. 添加所有可用 Java 运行时 ===
-        MyComboBoxItem selectedItem = null;
+        MyComboBoxItem? selectedItem = null;
         try
         {
             foreach (var curJava in ModJava.Javas.GetSortedJavaList())
@@ -816,7 +816,7 @@ public partial class PageInstanceSetup
         }
         catch (Exception ex)
         {
-            Config.Instance.SelectedJava[PageInstanceLeft.McInstance.PathInstance] = "使用全局设置";
+            Config.Instance.SelectedJava[PageInstanceLeft.McInstanceRequired.PathInstance] = "使用全局设置";
             ModBase.Log(
                 ex,
                 "更新实例设置 Java 下拉框失败",
@@ -966,7 +966,7 @@ public partial class PageInstanceSetup
 
         // 保存配置
         var json = JsonSerializer.Serialize(preference, JsonCompat.SerializerOptions);
-        Config.Instance.SelectedJava[PageInstanceLeft.McInstance.PathInstance] = json;
+        Config.Instance.SelectedJava[PageInstanceLeft.McInstanceRequired.PathInstance] = json;
 
 
         ModBase.Log(logMessage);
@@ -997,7 +997,7 @@ public partial class PageInstanceSetup
         else
         {
             bool newValue = ComboArgumentIndieV2.SelectedIndex == 0;
-            Config.Instance.IndieV2[PageInstanceLeft.McInstance.PathInstance] = newValue;
+            Config.Instance.IndieV2[PageInstanceLeft.McInstanceRequired.PathInstance] = newValue;
         }
     }
 

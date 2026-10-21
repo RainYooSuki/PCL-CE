@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PCL.Core.App.Configuration.Storage;
@@ -25,7 +26,10 @@ public class FileConfigStorageTest
 
         public string FilePath => "test://config";
 
-        public T Get<T>(string key) => (T)_values[key]!;
+        public T Get<T>(string key) =>
+            _values[key] is T value
+                ? value
+                : throw new InvalidOperationException($"Value for '{key}' is null or not of type {typeof(T)}.");
 
         public void Set<T>(string key, T value) => _values[key] = value;
 

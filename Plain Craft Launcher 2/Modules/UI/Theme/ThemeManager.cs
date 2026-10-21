@@ -32,7 +32,7 @@ public static class ThemeManager
     {
         ModBase.RunInUi(() =>
         {
-            if (!ModMain.frmMain.IsLoaded) return;
+            if (!ModMain.FrmMainRequired.IsLoaded) return;
             RefreshBackground();
             RefreshAllContextMenuThemes();
         });
@@ -60,14 +60,14 @@ public static class ThemeManager
                 { Offset = 0.4d, Color = LabColor.FromLch(0.96d * darkLight, tone.C7, hue) });
             brush.GradientStops.Add(new GradientStop
                 { Offset = 1.1d, Color = LabColor.FromLch(0.84d * darkLight, tone.C5, hue2) });
-            ModMain.frmMain.PanForm.Background = brush;
+            ModMain.FrmMainRequired.PanForm.Background = brush;
         }
         else
         {
-            ModMain.frmMain.PanForm.Background = (Brush)System.Windows.Application.Current.Resources["ColorBrushBackground"];
+            ModMain.FrmMainRequired.PanForm.Background = (Brush)System.Windows.Application.Current.Resources["ColorBrushBackground"];
         }
 
-        ModMain.frmMain.PanForm.Background.Freeze();
+        ModMain.FrmMainRequired.PanForm.Background.Freeze();
     }
 
     // 通用ContextMenu主题刷新

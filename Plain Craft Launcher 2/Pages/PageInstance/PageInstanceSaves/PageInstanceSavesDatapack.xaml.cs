@@ -94,7 +94,7 @@ public partial class PageInstanceSavesDatapack : IRefreshable
     private ModLocalComp.CompLocalLoaderData GetRequireLoaderData()
     {
         var res = new ModLocalComp.CompLocalLoaderData();
-        res.gameVersion = PageInstanceLeft.McInstance;
+        res.gameVersion = PageInstanceLeft.McInstanceRequired;
         res.frm = null;
         res.loaders = new[] { ModComp.CompLoaderType.Minecraft }.ToList();
         res.compPath = Path.Combine(PageInstanceSavesLeft.currentSave, "datapacks");
@@ -106,7 +106,7 @@ public partial class PageInstanceSavesDatapack : IRefreshable
 
     public void PageOther_Loaded()
     {
-        if (ModMain.frmMain.pageLast.page != FormMain.PageType.CompDetail)
+        if (ModMain.FrmMainRequired.pageLast.page != FormMain.PageType.CompDetail)
             PanBack.ScrollToHome();
         ModAnimation.AniControlEnabled += 1;
         selectedDatapacks.Clear();
@@ -119,7 +119,7 @@ public partial class PageInstanceSavesDatapack : IRefreshable
             return;
         isLoad = true;
 
-        ModMain.frmMain.KeyDown += FrmMain_KeyDown;
+        ModMain.FrmMainRequired.KeyDown += FrmMain_KeyDown;
         // 调整按钮边距（这玩意儿没法从 XAML 改）
         foreach (MyRadioButton Btn in PanFilter.Children)
             Btn.LabText.Margin = new Thickness(-2, 0d, 8d, 0d);
@@ -159,7 +159,7 @@ public partial class PageInstanceSavesDatapack : IRefreshable
 
     public void Refresh()
     {
-        ModMain.frmInstanceSavesDatapack.ReloadDatapackFileList(true);
+        ModMain.FrmInstanceSavesDatapackRequired.ReloadDatapackFileList(true);
         ModBase.Log("[Datapack] 刷新数据包列表");
     }
 
@@ -612,8 +612,8 @@ public partial class PageInstanceSavesDatapack : IRefreshable
         ModBase.Log($"[System] 文件为 {extension} 格式，尝试作为数据包安装");
 
         // 确认安装
-        if (!(ModMain.frmMain.pageCurrent == FormMain.PageType.InstanceSetup &&
-              ModMain.frmMain.PageCurrentSub == FormMain.PageSubType.VersionSavesDatapack))
+        if (!(ModMain.FrmMainRequired.pageCurrent == FormMain.PageType.InstanceSetup &&
+              ModMain.FrmMainRequired.PageCurrentSub == FormMain.PageSubType.VersionSavesDatapack))
             if (ModMain.MyMsgBox(Lang.Text("Instance.Saves.Datapack.Install.Message"),
                     Lang.Text("Instance.Saves.Datapack.Install.Title"), Lang.Text("Common.Action.Confirm"),
                     Lang.Text("Common.Action.Cancel")) != 1)
@@ -643,10 +643,10 @@ public partial class PageInstanceSavesDatapack : IRefreshable
                 HintService.Hint(Lang.Text("Instance.Resource.Install.SuccessMultiple", filePathList.Count(), Lang.Text("Download.Comp.Type.DataPack")), HintType.Success);
 
             // 刷新列表
-            if (ModMain.frmMain.pageCurrent == FormMain.PageType.InstanceSetup &&
-                ModMain.frmMain.PageCurrentSub == FormMain.PageSubType.VersionSavesDatapack)
+            if (ModMain.FrmMainRequired.pageCurrent == FormMain.PageType.InstanceSetup &&
+                ModMain.FrmMainRequired.PageCurrentSub == FormMain.PageSubType.VersionSavesDatapack)
                 if (ModMain.frmInstanceSavesDatapack is not null)
-                    ModMain.frmInstanceSavesDatapack.ReloadDatapackFileList(true);
+                    ModMain.FrmInstanceSavesDatapackRequired.ReloadDatapackFileList(true);
         }
 
         catch (Exception ex)
@@ -667,7 +667,7 @@ public partial class PageInstanceSavesDatapack : IRefreshable
         var datapackPath = Path.Combine(PageInstanceSavesLeft.currentSave, "datapacks");
         Directory.CreateDirectory(datapackPath);
         PageDownloadCompDetail.cachedFolder[ModComp.CompType.DataPack] = datapackPath;
-        ModMain.frmMain.PageChange(FormMain.PageType.Download, FormMain.PageSubType.DownloadDataPack);
+        ModMain.FrmMainRequired.PageChange(FormMain.PageType.Download, FormMain.PageSubType.DownloadDataPack);
         PageComp.targetVersion = PageInstanceLeft.McInstance; // 将当前实例设置为筛选器
     }
 
@@ -778,7 +778,7 @@ public partial class PageInstanceSavesDatapack : IRefreshable
 
     private void FrmMain_KeyDown(object sender, KeyEventArgs e)
     {
-        if (!ReferenceEquals(ModMain.frmMain.pageRight, this))
+        if (!ReferenceEquals(ModMain.FrmMainRequired.pageRight, this))
             return;
         if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) && e.Key == Key.A)
             ChangeAllSelected(true);
@@ -1078,7 +1078,7 @@ public partial class PageInstanceSavesDatapack : IRefreshable
         foreach (var DatapackE in datapackList)
         {
             var datapackEntity = DatapackE;
-            string newPath = null;
+            string? newPath = null;
 
             if (datapackEntity.State == ModLocalComp.LocalCompFile.LocalFileStatus.Fine && !isEnable)
                 // 禁用 - 添加 .disabled 后缀
@@ -1087,6 +1087,8 @@ public partial class PageInstanceSavesDatapack : IRefreshable
                 // 启用 - 移除 .disabled 后缀
                 newPath = datapackEntity.RawPath;
             else
+                continue;
+            if (newPath is null)
                 continue;
 
             // 重命名
@@ -1188,7 +1190,7 @@ public partial class PageInstanceSavesDatapack : IRefreshable
 
     private static bool TryGetSafeDatapackUpdateFileName(ModComp.CompFile file, out string fileName)
     {
-        fileName = file.FileName?.Trim() ?? "";
+        fileName = file.FileName.Trim();
         if (string.IsNullOrEmpty(fileName))
             return false;
 
@@ -1348,7 +1350,7 @@ public partial class PageInstanceSavesDatapack : IRefreshable
                     }
                     case ModBase.LoadState.Failed:
                     {
-                        HintService.Hint(Lang.Text("Instance.Resource.Update.Failed", loader.Error.Message), HintType.Error);
+                        HintService.Hint(Lang.Text("Instance.Resource.Update.Failed", loader.Error?.Message ?? ""), HintType.Error);
                         break;
                     }
                     case ModBase.LoadState.Aborted:
@@ -1387,8 +1389,8 @@ public partial class PageInstanceSavesDatapack : IRefreshable
             updatingVersions.Add(pathDatapacks);
             loader.Start();
             ModLoader.LoaderTaskbarAdd(loader);
-            ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-            ModMain.frmMain.BtnExtraDownload.Ribble();
+            ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+            ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
             ReloadDatapackFileList(true);
         }
         catch (Exception ex)
@@ -1550,7 +1552,7 @@ public partial class PageInstanceSavesDatapack : IRefreshable
                 ModMain.MyMsgBox(
                     Lang.Text(
                         "Instance.Saves.Datapack.Info.ReadFailed.WithDetail",
-                        datapackEntry.FileUnavailableReason.ToString()),
+                        datapackEntry.FileUnavailableReason?.ToString() ?? "<unknown>"),
                     Lang.Text("Instance.Saves.Datapack.Info.ReadFailedTitle"));
                 return;
             }
@@ -1558,10 +1560,10 @@ public partial class PageInstanceSavesDatapack : IRefreshable
             if (datapackEntry.Comp is not null)
             {
                 // 跳转到数据包下载页面
-                ModMain.frmMain.PageChange(new FormMain.PageStackData
+                ModMain.FrmMainRequired.PageChange(new FormMain.PageStackData
                 {
                     page = FormMain.PageType.CompDetail,
-                    additional = (datapackEntry.Comp, new List<string>(), PageInstanceLeft.McInstance.Info.VanillaName,
+                    additional = (datapackEntry.Comp, new List<string>(), PageInstanceLeft.McInstanceRequired.Info.VanillaName,
                         ModComp.CompLoaderType.Minecraft, ModComp.CompType.DataPack, null)
                 });
             }

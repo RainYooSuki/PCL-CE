@@ -213,17 +213,22 @@ public sealed partial class ThemeService
         LabColor.FromLch(_AdjustLinear(tone.L7, args.lightAdj), _AdjustLinear(tone.C7, args.chromaAdj), args.hue, tone.ASemiWhite).ToCatColor("Bg1"),
     ];
 
-    private static CatColorResource[] LightGrayCache { get => field ??= _CalculateGrays(ToneProfiles.Light); set; } = null!;
+    private static CatColorResource[]? _lightGrayCache;
+    private static CatColorResource[]? _darkGrayCache;
 
-    private static CatColorResource[] DarkGrayCache { get => field ??= _CalculateGrays(ToneProfiles.Dark); set; } = null!;
+    private static CatColorResource[] LightGrayCache =>
+        _lightGrayCache ??= _CalculateGrays(ToneProfiles.Light);
+
+    private static CatColorResource[] DarkGrayCache =>
+        _darkGrayCache ??= _CalculateGrays(ToneProfiles.Dark);
 
     /// <summary>
     /// 清除灰度配色的计算缓存。
     /// </summary>
     public static void InvalidateGrayCache()
     {
-        LightGrayCache = null!;
-        DarkGrayCache = null!;
+        _lightGrayCache = null;
+        _darkGrayCache = null;
     }
 
     /// <summary>

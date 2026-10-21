@@ -49,9 +49,9 @@ public sealed class ConfigGenerator : IIncrementalGenerator
             if (configs.Length == 0) return;
 
             // 建立快速查找
-            var itemList = items.Cast<ItemModel>().ToImmutableArray();
-            var groupList = groups.Cast<GroupModel>().ToImmutableArray();
-            var configList = configs.Cast<ConfigModel>().ToImmutableArray();
+            var itemList = items.OfType<ItemModel>().ToImmutableArray();
+            var groupList = groups.OfType<GroupModel>().ToImmutableArray();
+            var configList = configs.OfType<ConfigModel>().ToImmutableArray();
 
             foreach (var config in configList)
             {
@@ -78,9 +78,9 @@ public sealed class ConfigGenerator : IIncrementalGenerator
             .Combine(eventCandidates.Collect());
         context.RegisterSourceOutput(serviceInputs, static (spc, tuple) =>
         {
-            var items = tuple.Left.Left.Cast<ItemModel>().OrderBy(i => i.DeclOrder).ToList();
-            var groups = tuple.Left.Right.Cast<GroupModel>().ToList();
-            var events = tuple.Right.Cast<EventRegisterModel>().OrderBy(e => e.DeclOrder).ToList();
+            var items = tuple.Left.Left.OfType<ItemModel>().OrderBy(i => i.DeclOrder).ToList();
+            var groups = tuple.Left.Right.OfType<GroupModel>().ToList();
+            var events = tuple.Right.OfType<EventRegisterModel>().OrderBy(e => e.DeclOrder).ToList();
 
             // 两者都为空则不生成
             if (items.Count == 0 && events.Count == 0) return;
@@ -96,7 +96,7 @@ public sealed class ConfigGenerator : IIncrementalGenerator
         });
     }
 
-    private static object? _GetItemCandidate(GeneratorSyntaxContext ctx)
+    private static ItemModel? _GetItemCandidate(GeneratorSyntaxContext ctx)
     {
         var propSyntax = (PropertyDeclarationSyntax)ctx.Node;
         var symbol = ctx.SemanticModel.GetDeclaredSymbol(propSyntax);
@@ -127,7 +127,7 @@ public sealed class ConfigGenerator : IIncrementalGenerator
 
         if (picked.ConstructorArguments.Length < 1) return null;
         var key = picked.ConstructorArguments[0].Value as string;
-        if (string.IsNullOrEmpty(key)) return null;
+        if (key is null || key.Length == 0) return null;
 
         // 默认值与来源解析
         var defaultCode = "default";
@@ -164,19 +164,17 @@ public sealed class ConfigGenerator : IIncrementalGenerator
             }
         }
 
-        return new ItemModel
-        {
-            Property = symbol,
-            Key = key!,
-            Type = symbol.Type,
-            IsStatic = symbol.IsStatic,
-            DeclOrder = symbol.GetDeclarationOrder(),
-            DefaultValueCode = defaultCode,
-            SourceCode = sourceCode
-        };
+        return new ItemModel(
+            symbol,
+            key,
+            symbol.Type,
+            symbol.IsStatic,
+            symbol.GetDeclarationOrder(),
+            defaultCode,
+            sourceCode);
     }
 
-    private static object? _GetGroupCandidate(GeneratorSyntaxContext ctx)
+    private static GroupModel? _GetGroupCandidate(GeneratorSyntaxContext ctx)
     {
         var classSyntax = (ClassDeclarationSyntax)ctx.Node;
         var symbol = ModelExtensions.GetDeclaredSymbol(ctx.SemanticModel, classSyntax) as INamedTypeSymbol;
@@ -194,7 +192,7 @@ public sealed class ConfigGenerator : IIncrementalGenerator
 
         if (attr.ConstructorArguments.Length < 1) return null;
         var name = attr.ConstructorArguments[0].Value as string;
-        if (string.IsNullOrEmpty(name)) return null;
+        if (name is null || name.Length == 0) return null;
 
         var hasDeclaredSource = false;
         string? declaredSourceCode = null;
@@ -205,17 +203,15 @@ public sealed class ConfigGenerator : IIncrementalGenerator
             declaredSourceCode = _RenderSourceCode(ctx.SemanticModel, arguments[1].Expression);
         }
 
-        return new GroupModel
-        {
-            GroupType = symbol,
-            GroupName = name!,
-            DeclOrder = symbol.GetDeclarationOrder(),
-            HasDeclaredSource = hasDeclaredSource,
-            DeclaredSourceCode = declaredSourceCode
-        };
+        return new GroupModel(
+            symbol,
+            name,
+            symbol.GetDeclarationOrder(),
+            hasDeclaredSource,
+            declaredSourceCode);
     }
 
-    private static object? _GetRegisterConfigEventCandidate(GeneratorSyntaxContext ctx)
+    private static EventRegisterModel? _GetRegisterConfigEventCandidate(GeneratorSyntaxContext ctx)
     {
         var propSyntax = (PropertyDeclarationSyntax)ctx.Node;
         if (ctx.SemanticModel.GetDeclaredSymbol(propSyntax) is not { } symbol) return null;
@@ -232,14 +228,10 @@ public sealed class ConfigGenerator : IIncrementalGenerator
             SymbolEqualityComparer.Default.Equals(a.AttributeClass, attrDef));
         if (!hasAttr) return null;
 
-        return new EventRegisterModel
-        {
-            Property = symbol,
-            DeclOrder = symbol.GetDeclarationOrder()
-        };
+        return new EventRegisterModel(symbol, symbol.GetDeclarationOrder());
     }
 
-    private static object? _GetConfigClass(GeneratorSyntaxContext ctx)
+    private static ConfigModel? _GetConfigClass(GeneratorSyntaxContext ctx)
     {
         var classSyntax = (ClassDeclarationSyntax)ctx.Node;
         if (ModelExtensions.GetDeclaredSymbol(ctx.SemanticModel, classSyntax) is not INamedTypeSymbol symbol) return null;
@@ -258,11 +250,7 @@ public sealed class ConfigGenerator : IIncrementalGenerator
             if (hasAttr) return null;
         }
 
-        return new ConfigModel
-        {
-            ConfigType = symbol,
-            DeclOrder = symbol.GetDeclarationOrder()
-        };
+        return new ConfigModel(symbol, symbol.GetDeclarationOrder());
     }
 
     private static ConfigTree _BuildConfigTree(ConfigModel config,
@@ -320,14 +308,12 @@ public sealed class ConfigGenerator : IIncrementalGenerator
             }
         }
 
-        return new ConfigTree
-        {
-            Namespace = configType.ContainingNamespace?.ToDisplayString() ?? "",
-            ConfigType = configType,
-            TopItems = topItems,
-            TopGroups = topGroups,
-            ResolveSourceCode = ResolveItemSource
-        };
+        return new ConfigTree(
+            configType.ContainingNamespace?.ToDisplayString() ?? "",
+            configType,
+            topItems,
+            topGroups,
+            ResolveItemSource);
     }
 
     private static string _MakeHintName(ConfigModel config)
@@ -695,24 +681,36 @@ public sealed class ConfigGenerator : IIncrementalGenerator
 
     // ===== Models/Trees =====
 
-    private sealed class ItemModel
+    private sealed class ItemModel(
+        IPropertySymbol property,
+        string key,
+        ITypeSymbol type,
+        bool isStatic,
+        int declOrder,
+        string defaultValueCode,
+        string? sourceCode)
     {
-        public IPropertySymbol Property { get; set; } = null!;
-        public string Key { get; set; } = "";
-        public ITypeSymbol Type { get; set; } = null!;
-        public bool IsStatic { get; set; }
-        public int DeclOrder { get; set; }
-        public string DefaultValueCode { get; set; } = "";
-        public string? SourceCode { get; set; }
+        public IPropertySymbol Property { get; } = property;
+        public string Key { get; } = key;
+        public ITypeSymbol Type { get; } = type;
+        public bool IsStatic { get; } = isStatic;
+        public int DeclOrder { get; } = declOrder;
+        public string DefaultValueCode { get; } = defaultValueCode;
+        public string? SourceCode { get; } = sourceCode;
     }
 
-    private sealed class GroupModel
+    private sealed class GroupModel(
+        INamedTypeSymbol groupType,
+        string groupName,
+        int declOrder,
+        bool hasDeclaredSource,
+        string? declaredSourceCode)
     {
-        public INamedTypeSymbol GroupType { get; set; } = null!;
-        public string GroupName { get; set; } = "";
-        public int DeclOrder { get; set; }
-        public bool HasDeclaredSource { get; set; }
-        public string? DeclaredSourceCode { get; set; }
+        public INamedTypeSymbol GroupType { get; } = groupType;
+        public string GroupName { get; } = groupName;
+        public int DeclOrder { get; } = declOrder;
+        public bool HasDeclaredSource { get; } = hasDeclaredSource;
+        public string? DeclaredSourceCode { get; } = declaredSourceCode;
     }
 
     private sealed class GroupNode(GroupModel model)
@@ -722,25 +720,30 @@ public sealed class ConfigGenerator : IIncrementalGenerator
         public List<ItemModel> Items { get; } = [];
     }
 
-    private sealed class ConfigModel
+    private sealed class ConfigModel(INamedTypeSymbol configType, int declOrder)
     {
-        public INamedTypeSymbol ConfigType { get; set; } = null!;
+        public INamedTypeSymbol ConfigType { get; } = configType;
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
-        public int DeclOrder { get; set; }
+        public int DeclOrder { get; } = declOrder;
     }
 
-    private sealed class ConfigTree
+    private sealed class ConfigTree(
+        string namespaceName,
+        INamedTypeSymbol configType,
+        List<ItemModel> topItems,
+        List<GroupNode> topGroups,
+        Func<ItemModel, string> resolveSourceCode)
     {
-        public string Namespace { get; set; } = "";
-        public INamedTypeSymbol ConfigType { get; set; } = null!;
-        public List<ItemModel> TopItems { get; set; } = [];
-        public List<GroupNode> TopGroups { get; set; } = [];
-        public Func<ItemModel, string> ResolveSourceCode { get; set; } = static _ => "ConfigSource.Shared";
+        public string Namespace { get; } = namespaceName;
+        public INamedTypeSymbol ConfigType { get; } = configType;
+        public List<ItemModel> TopItems { get; } = topItems;
+        public List<GroupNode> TopGroups { get; } = topGroups;
+        public Func<ItemModel, string> ResolveSourceCode { get; } = resolveSourceCode;
     }
 
-    private sealed class EventRegisterModel
+    private sealed class EventRegisterModel(IPropertySymbol property, int declOrder)
     {
-        public IPropertySymbol Property { get; set; } = null!;
-        public int DeclOrder { get; set; }
+        public IPropertySymbol Property { get; } = property;
+        public int DeclOrder { get; } = declOrder;
     }
 }

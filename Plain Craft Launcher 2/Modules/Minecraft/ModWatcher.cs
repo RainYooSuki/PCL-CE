@@ -45,14 +45,14 @@ public static class ModWatcher
     {
         ModLaunch.McLaunchLog("[全局] 出现运行中的 Minecraft");
         hasRunningMinecraft = true;
-        ModMain.frmMain.BtnExtraShutdown.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraShutdown.ShowRefresh();
     }
 
     private static void MinecraftStop(bool triggerLauncherShutdown)
     {
         ModLaunch.McLaunchLog("[全局] 已无运行中的 Minecraft");
         hasRunningMinecraft = false;
-        ModMain.frmMain.BtnExtraShutdown.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraShutdown.ShowRefresh();
         // 音乐播放
         if (Config.Preference.Music.StopInGame)
             ModBase.RunInUi(() =>
@@ -73,13 +73,13 @@ public static class ModWatcher
             case LauncherVisibility.HideAndExit:
                 // 直接关闭
                 if (triggerLauncherShutdown)
-                    ModBase.RunInUi(() => ModMain.frmMain.EndProgram(false));
+                    ModBase.RunInUi(() => ModMain.FrmMainRequired.EndProgram(false));
                 else
-                    ModBase.RunInUi(() => ModMain.frmMain.Hidden = false);
+                    ModBase.RunInUi(() => ModMain.FrmMainRequired.Hidden = false);
                 break;
             case LauncherVisibility.HideAndReopen:
                 // 恢复
-                ModBase.RunInUi(() => ModMain.frmMain.Hidden = false);
+                ModBase.RunInUi(() => ModMain.FrmMainRequired.Hidden = false);
                 break;
         }
     }

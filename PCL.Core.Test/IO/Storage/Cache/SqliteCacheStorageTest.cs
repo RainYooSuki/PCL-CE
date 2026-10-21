@@ -15,12 +15,11 @@ namespace PCL.Core.Test.IO.Storage.Cache;
 [TestClass]
 public class SqliteCacheStorageTest
 {
-    private SqliteCacheStorage _storage = null!;
-    private SchemaManager _schemaManager = null!;
-    private string _testDbPath = null!;
+    private readonly SqliteCacheStorage _storage;
+    private readonly SchemaManager _schemaManager;
+    private readonly string _testDbPath;
 
-    [TestInitialize]
-    public async Task Setup()
+    public SqliteCacheStorageTest()
     {
         var testDir = Path.Combine(Path.GetTempPath(), "pcl_db_test_" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(testDir);
@@ -28,7 +27,11 @@ public class SqliteCacheStorageTest
         _testDbPath = Path.Combine(testDir, "test.db");
         _schemaManager = new SchemaManager($"Data Source={_testDbPath}");
         _storage = new SqliteCacheStorage(_testDbPath);
+    }
 
+    [TestInitialize]
+    public async Task Setup()
+    {
         // Initialize schema
         await _schemaManager.EnsureCurrentSchemaAsync();
         await _storage.CleanupStartupAsync();

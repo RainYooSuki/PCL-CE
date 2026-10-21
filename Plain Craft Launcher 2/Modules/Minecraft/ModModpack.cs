@@ -55,7 +55,7 @@ public static class ModModpack
         string? resourceId = null, bool isOnlineInstall = false)
     {
         ModBase.Log("[ModPack] 整合包安装请求：" + (file ?? "null"));
-        ZipArchive archive = null;
+        ZipArchive? archive = null;
         var archiveBaseFolder = "";
         try
         {
@@ -378,9 +378,9 @@ public static class ModModpack
         instanceName ??= "";
 
         // 获取 Mod API 版本信息
-        string forgeVersion = null;
-        string neoForgeVersion = null;
-        string fabricVersion = null;
+        string? forgeVersion = null;
+        string? neoForgeVersion = null;
+        string? fabricVersion = null;
         var modLoader = ModComp.CompLoaderType.Any;
         foreach (var Entry in (dynamic)json["minecraft"]["modLoaders"] ?? Array.Empty<JsonNode>())
         {
@@ -550,7 +550,7 @@ public static class ModModpack
                     // 实际的添加
                     fileList.Add(id,
                         file.ToNetFile($@"{ModFolder.mcFolderSelected}versions\{instanceName}\{targetFolder}\",
-                            ModComp.DownloadReason.ModPack, json["minecraft"]!["version"]!.ToString(), modLoader));
+                            ModComp.DownloadReason.ModPack, json["minecraft"]?["version"]?.ToString(), modLoader));
                     task.Progress += 1d / (1 + modList.Count);
                 }
 
@@ -650,9 +650,9 @@ public static class ModModpack
         var loader = new LoaderCombo<string>(loaderName, loaders) { OnStateChanged = ModDownloadLib.McInstallState };
         loader.Start(request.targetInstanceFolder);
         LoaderTaskbarAdd(loader);
-        ModMain.frmMain.BtnExtraDownload.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
         if (!isOnlineInstall)
-            ModBase.RunInUi(() => ModMain.frmMain.PageChange(FormMain.PageType.TaskManager));
+            ModBase.RunInUi(() => ModMain.FrmMainRequired.PageChange(FormMain.PageType.TaskManager));
         return loader;
     }
 
@@ -679,10 +679,10 @@ public static class ModModpack
         if (json["dependencies"] is null || json["dependencies"]["minecraft"] is null)
             throw new Exception("Modrinth 整合包未提供 Minecraft 版本信息");
         // 获取 Mod API 版本信息
-        string minecraftVersion = null;
-        string forgeVersion = null;
-        string neoForgeVersion = null;
-        string fabricVersion = null;
+        string? minecraftVersion = null;
+        string? forgeVersion = null;
+        string? neoForgeVersion = null;
+        string? fabricVersion = null;
         var modLoader = ModComp.CompLoaderType.Any;
         foreach (var Entry in json["dependencies"]?.AsObject() ?? new JsonObject())
             switch (Entry.Key.ToLower() ?? "")
@@ -894,9 +894,9 @@ public static class ModModpack
         var loader = new LoaderCombo<string>(loaderName, loaders) { OnStateChanged = ModDownloadLib.McInstallState };
         loader.Start(request.targetInstanceFolder);
         LoaderTaskbarAdd(loader);
-        ModMain.frmMain.BtnExtraDownload.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
         if (!isOnlineInstall)
-            ModBase.RunInUi(() => ModMain.frmMain.PageChange(FormMain.PageType.TaskManager));
+            ModBase.RunInUi(() => ModMain.FrmMainRequired.PageChange(FormMain.PageType.TaskManager));
         return loader;
     }
 
@@ -972,8 +972,8 @@ public static class ModModpack
         var loader = new LoaderCombo<string>(loaderName, loaders) { OnStateChanged = ModDownloadLib.McInstallState };
         loader.Start(request.targetInstanceFolder);
         LoaderTaskbarAdd(loader);
-        ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-        ModBase.RunInUi(() => ModMain.frmMain.PageChange(FormMain.PageType.TaskManager));
+        ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+        ModBase.RunInUi(() => ModMain.FrmMainRequired.PageChange(FormMain.PageType.TaskManager));
         return loader;
     }
 
@@ -1123,8 +1123,8 @@ public static class ModModpack
         loader.Start(request.targetInstanceFolder);
         LoaderTaskbarAdd(loader);
 
-        ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-        ModBase.RunInUi(() => ModMain.frmMain.PageChange(FormMain.PageType.TaskManager));
+        ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+        ModBase.RunInUi(() => ModMain.FrmMainRequired.PageChange(FormMain.PageType.TaskManager));
 
         return loader;
     }
@@ -1156,7 +1156,7 @@ public static class ModModpack
                 ExtractModpackFiles(targetFolder, fileAddress, task, 0.9d);
                 Thread.Sleep(400); // 避免文件争用
                 // 查找解压后的 exe 文件
-                string launcher = null;
+                string? launcher = null;
                 foreach (var ExeFile in Directory.GetFiles(targetFolder, "*.exe", SearchOption.TopDirectoryOnly))
                 {
                     var info = FileVersionInfo.GetVersionInfo(ExeFile);
@@ -1191,7 +1191,7 @@ public static class ModModpack
                         ModBase.OpenExplorer(targetFolder);
                         ModBase.ShellOnly(launcher, "--wait"); // 要求等待已有的 PCL 退出
                         ModBase.Log("[Modpack] 为换用整合包中的启动器启动，强制结束程序");
-                        ModMain.frmMain.EndProgram(false);
+                        ModMain.FrmMainRequired.EndProgram(false);
                         return;
                     }
                 }
@@ -1215,8 +1215,8 @@ public static class ModModpack
         });
         loader.Start(targetFolder);
         LoaderTaskbarAdd(loader);
-        ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-        ModMain.frmMain.BtnExtraDownload.Ribble();
+        ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
         return loader;
     }
 
@@ -1227,7 +1227,7 @@ public static class ModModpack
     private static LoaderCombo<string> InstallPackCompress(string fileAddress, ZipArchive archive)
     {
         // 尝试定位 .minecraft 文件夹：寻找形如 “/versions/XXX/XXX.json” 的路径
-        Match match = null;
+        Match? match = null;
         var regex = new Regex(@"^.*\/(?=versions\/(?<ver>[^\/]+)\/(\k<ver>)\.json$)", RegexOptions.IgnoreCase);
         foreach (var Entry in archive.Entries)
         {
@@ -1273,7 +1273,7 @@ public static class ModModpack
                 PageSelectLeft.AddFolder(Path.Combine(targetFolder, archiveBaseFolder), ModBase.GetFolderNameFromPath(targetFolder),
                     false);
                 Thread.Sleep(400); // 避免文件争用
-                ModBase.RunInUi(() => ModMain.frmMain.PageChange(FormMain.PageType.InstanceSelect));
+                ModBase.RunInUi(() => ModMain.FrmMainRequired.PageChange(FormMain.PageType.InstanceSelect));
             })
         })
         {
@@ -1281,8 +1281,8 @@ public static class ModModpack
         };
         loader.Start(targetFolder);
         LoaderTaskbarAdd(loader);
-        ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-        ModMain.frmMain.BtnExtraDownload.Ribble();
+        ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+        ModMain.FrmMainRequired.BtnExtraDownload.Ribble();
         return loader;
     }
 
@@ -1302,7 +1302,7 @@ public static class ModModpack
         public JsonArray jvmArgs = new();
         public JsonArray libraries = new();
         public JsonObject overridedJson = new();
-        public string tweakers = null;
+        public string? tweakers = null;
     }
 
     private static LoaderCombo<string> InstallPackMMC(string fileAddress, ZipArchive archive, string archiveBaseFolder)
@@ -1310,7 +1310,7 @@ public static class ModModpack
         // 读取 Json 文件
         JsonObject packJson;
         string packInstance;
-        MMCPackInfo packInfo = null;
+        MMCPackInfo? packInfo = null;
         try
         {
             packJson = (JsonObject)ModBase.GetJson(
@@ -1358,11 +1358,11 @@ public static class ModModpack
                     // 应用 Patches
                     packInfo = new MMCPackInfo();
 
-                    string tweakers = null;
-                    JsonObject assetIndex = null;
-                    string mainClass = null;
-                    List<int> javaMajorsSet = null;
-                    JsonArray javaMajorsJson = null;
+                    string? tweakers = null;
+                    JsonObject? assetIndex = null;
+                    string? mainClass = null;
+                    List<int>? javaMajorsSet = null;
+                    JsonArray? javaMajorsJson = null;
                     var gameArguments = new JsonArray();
                     var jvmArguments = new JsonArray();
                     var libJson = new JsonArray();
@@ -1509,7 +1509,7 @@ public static class ModModpack
 
                     // Java 版本要求：以兼容集合的最低主版本作为最低要求，确保已安装的兼容 Java 能被自动选用；
                     // compatibleJavaMajors 按集合存储（含多补丁交集），启动时按成员资格挑选 Java
-                    JsonObject javaVerJson = null;
+                    JsonObject? javaVerJson = null;
                     if (javaMajorsSet is not null && javaMajorsSet.Count > 0)
                     {
                         var javaMajorMin = javaMajorsSet.Min();
@@ -1528,7 +1528,7 @@ public static class ModModpack
                         ModBase.Log($"[ModPack] 整合包要求的 Java 主版本集合：{string.Join(", ", javaMajorsSet)}");
                     }
 
-                    JsonObject jsonArguments = null;
+                    JsonObject? jsonArguments = null;
                     if (!string.IsNullOrWhiteSpace(tweakers))
                     {
                         gameArguments.Add("--tweakClass");
@@ -1768,8 +1768,8 @@ public static class ModModpack
         var loader = new LoaderCombo<string>(loaderName, loaders) { OnStateChanged = ModDownloadLib.McInstallState };
         loader.Start(request.targetInstanceFolder);
         LoaderTaskbarAdd(loader);
-        ModMain.frmMain.BtnExtraDownload.ShowRefresh();
-        ModBase.RunInUi(() => ModMain.frmMain.PageChange(FormMain.PageType.TaskManager));
+        ModMain.FrmMainRequired.BtnExtraDownload.ShowRefresh();
+        ModBase.RunInUi(() => ModMain.FrmMainRequired.PageChange(FormMain.PageType.TaskManager));
         return loader;
     }
 

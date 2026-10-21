@@ -101,21 +101,21 @@ public partial class PageToolsLeft
         ModAnimation.AniStop("FrmMain PageChangeRight"); // 停止主页面的右页面切换动画，防止它与本动画一起触发多次 PageOnEnter
         if (target.Parent is not null)
             target.SetValue(ContentPresenter.ContentProperty, null);
-        ModMain.frmMain.pageRight = target;
-        ((MyPageRight)ModMain.frmMain.PanMainRight.Child).PageOnExit();
+        ModMain.FrmMainRequired.pageRight = target;
+        ((MyPageRight)ModMain.FrmMainRequired.PanMainRight.Child).PageOnExit();
         ModAnimation.AniStart(new[]
         {
             ModAnimation.AaCode(() =>
             {
-                ((MyPageRight)ModMain.frmMain.PanMainRight.Child).PageOnForceExit();
-                ModMain.frmMain.PanMainRight.Child = ModMain.frmMain.pageRight;
-                ModMain.frmMain.pageRight.Opacity = 0d;
+                ((MyPageRight)ModMain.FrmMainRequired.PanMainRight.Child).PageOnForceExit();
+                ModMain.FrmMainRequired.PanMainRight.Child = ModMain.FrmMainRequired.pageRight;
+                ModMain.FrmMainRequired.pageRight.Opacity = 0d;
             }, 130),
             ModAnimation.AaCode(() =>
             {
                 // 延迟触发页面通用动画，以使得在 Loaded 事件中加载的控件得以处理
-                ModMain.frmMain.pageRight.Opacity = 1d;
-                ModMain.frmMain.pageRight.PageOnEnter();
+                ModMain.FrmMainRequired.pageRight.Opacity = 1d;
+                ModMain.FrmMainRequired.pageRight.PageOnEnter();
             }, 30, true)
         }, "PageLeft PageChange");
     }

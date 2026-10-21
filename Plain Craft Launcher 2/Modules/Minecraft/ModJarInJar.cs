@@ -37,10 +37,10 @@ public static class ModJarInJar
 
     private sealed class _NestedJarInfo
     {
-        public string Path;
-        public string Identifier;
-        public string VersionRange;
-        public string ArtifactVersion;
+        public string Path = "";
+        public string? Identifier;
+        public string? VersionRange;
+        public string? ArtifactVersion;
     }
 
     /// <summary>
@@ -231,7 +231,7 @@ public static class ModJarInJar
             // 先加入结果，元数据或递归解析失败时仍保留该文件。
             result.Add(child);
 
-            string tmp = null;
+            string? tmp = null;
             try
             {
                 // 嵌套流不可 seek，落临时文件后再作为 zip 打开，避免大嵌套 jar 全量进内存

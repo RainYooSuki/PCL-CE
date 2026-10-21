@@ -143,10 +143,14 @@ public sealed partial class ConfigService
         if (!_isProvidersInitialized) throw new InvalidOperationException("Not initialized");
         return source switch
         {
-            ConfigSource.Shared => _sharedConfigProvider!,
-            ConfigSource.SharedEncrypt => _sharedEncryptedConfigProvider!,
-            ConfigSource.Local => _localConfigProvider!,
-            ConfigSource.GameInstance => _instanceConfigProvider!,
+            ConfigSource.Shared => _sharedConfigProvider
+                ?? throw new InvalidOperationException("Shared config provider is not initialized."),
+            ConfigSource.SharedEncrypt => _sharedEncryptedConfigProvider
+                ?? throw new InvalidOperationException("Encrypted config provider is not initialized."),
+            ConfigSource.Local => _localConfigProvider
+                ?? throw new InvalidOperationException("Local config provider is not initialized."),
+            ConfigSource.GameInstance => _instanceConfigProvider
+                ?? throw new InvalidOperationException("Game instance config provider is not initialized."),
             _ => throw new ArgumentException($"Invalid source: {source}")
         };
     }
@@ -194,7 +198,10 @@ public sealed partial class ConfigService
                     StorageFactory = argument =>
                     {
                         ArgumentNullException.ThrowIfNull(argument);
-                        var dir = Path.GetFullPath(argument.ToString()!);
+                        var directoryPath = argument.ToString();
+                        if (string.IsNullOrWhiteSpace(directoryPath))
+                            throw new InvalidOperationException("The config storage argument must resolve to a path.");
+                        var dir = Path.GetFullPath(directoryPath);
                         var configPath = Path.Combine(dir, "PCL", "config.v1.yml");
                         if (!File.Exists(dir)) _TryMigrate(dir, [
                             new ConfigMigration
@@ -342,14 +349,22 @@ public sealed partial class ConfigService
     public static ConfigEventRegistry SharedVersionInit => new(
         SharedVersionConfig,
         trigger: ConfigEvent.Init,
-        handler: e => _UpdateConfigVersion(SharedVersionConfig, "全局", (int)e.NewValue!)
+        handler: e => _UpdateConfigVersion(
+            SharedVersionConfig, "全局",
+            e.NewValue is int version
+                ? version
+                : throw new InvalidOperationException("Shared config version event did not provide an integer value."))
     );
 
     [RegisterConfigEvent]
     public static ConfigEventRegistry LocalVersionInit => new(
         scope: LocalVersionConfig,
         trigger: ConfigEvent.Init,
-        handler: e => _UpdateConfigVersion(LocalVersionConfig, "本地", (int)e.NewValue!)
+        handler: e => _UpdateConfigVersion(
+            LocalVersionConfig, "本地",
+            e.NewValue is int version
+                ? version
+                : throw new InvalidOperationException("Local config version event did not provide an integer value."))
     );
 
     private static void _UpdateConfigVersion(ConfigItem<int> versionConfig, string name, int fileVersion)

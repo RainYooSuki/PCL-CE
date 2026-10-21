@@ -73,10 +73,10 @@ public partial class MyMsgText
             // 动画
             Opacity = 0d;
             ModAnimation.AniStart(
-                ModAnimation.AaColor(ModMain.frmMain.PanMsgBackground, BlurBorder.BackgroundProperty,
+                ModAnimation.AaColor(ModMain.FrmMainRequired.PanMsgBackground, BlurBorder.BackgroundProperty,
                     (myConverter.IsWarn
                         ? new ModBase.MyColor(140d, 80d, 0d, 0d)
-                        : new ModBase.MyColor(90d, 0d, 0d, 0d)) - ModMain.frmMain.PanMsgBackground.Background, 200),
+                        : new ModBase.MyColor(90d, 0d, 0d, 0d)) - ModMain.FrmMainRequired.PanMsgBackground.Background, 200),
                 "PanMsgBackground Background");
             ModAnimation.AniStart(
                 new[]
@@ -114,9 +114,9 @@ public partial class MyMsgText
             ModAnimation.AaCode(() =>
             {
                 if (!ModMain.WaitingMyMsgBox.Any())
-                    ModAnimation.AniStart(ModAnimation.AaColor(ModMain.frmMain.PanMsgBackground,
+                    ModAnimation.AniStart(ModAnimation.AaColor(ModMain.FrmMainRequired.PanMsgBackground,
                         BlurBorder.BackgroundProperty,
-                        new ModBase.MyColor(0d, 0d, 0d, 0d) - ModMain.frmMain.PanMsgBackground.Background, 200,
+                        new ModBase.MyColor(0d, 0d, 0d, 0d) - ModMain.FrmMainRequired.PanMsgBackground.Background, 200,
                         ease: new ModAnimation.AniEaseOutFluent(ModAnimation.AniEasePower.Weak)));
             }, 30),
             ModAnimation.AaOpacity(this, -Opacity, 80, 20),
@@ -144,7 +144,7 @@ public partial class MyMsgText
         }
     }
 
-    public void Btn2_Click(object sender, MouseButtonEventArgs e)
+    public void Btn2_Click(object? sender, EventArgs? e)
     {
         if (myConverter.IsExited)
             return;
@@ -160,7 +160,7 @@ public partial class MyMsgText
         }
     }
 
-    public void Btn3_Click(object sender, MouseButtonEventArgs e)
+    public void Btn3_Click(object? sender, EventArgs? e)
     {
         if (myConverter.IsExited)
             return;
@@ -182,7 +182,7 @@ public partial class MyMsgText
         {
             if (e.LeftButton == MouseButtonState.Pressed)
                 if (e.GetPosition(ShapeLine).Y <= 2d)
-                    ModMain.frmMain.DragMove();
+                    ModMain.FrmMainRequired.DragMove();
         }
         catch (Exception ex)
         {

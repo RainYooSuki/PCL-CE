@@ -64,7 +64,7 @@ public sealed class DependencyCollectorGenerator : IIncrementalGenerator
                             continue;
                         infos.Add(new CollectorInfo(attr, dependencyType, identifier, (AttributeTargets)targets));
                     }
-                    return new KeyValuePair<INamedTypeSymbol, List<CollectorInfo>>(attr, infos);
+                    return new KeyValuePair<INamedTypeSymbol?, List<CollectorInfo>>(attr, infos);
                 })
             .Where(x => x.Key is not null)
             .Collect()
@@ -74,8 +74,9 @@ public sealed class DependencyCollectorGenerator : IIncrementalGenerator
                 var dict = new Dictionary<INamedTypeSymbol, List<CollectorInfo>>(SymbolEqualityComparer.Default);
                 foreach (var pair in pairs)
                 {
-                    if (dict.TryGetValue(pair.Key, out var list)) list.AddRange(pair.Value);
-                    else dict[pair.Key] = pair.Value;
+                    if (pair.Key is not { } collector) continue;
+                    if (dict.TryGetValue(collector, out var list)) list.AddRange(pair.Value);
+                    else dict[collector] = pair.Value;
                 }
                 return dict.ToImmutableDictionary(SymbolEqualityComparer.Default);
             });
@@ -130,22 +131,27 @@ public sealed class DependencyCollectorGenerator : IIncrementalGenerator
                 transform: static (ctx, _) =>
                 {
                     var method = (IMethodSymbol)ctx.TargetSymbol;
-                    var attr = ctx.Attributes.First(x => x.AttributeClass?.GetSimplifiedTypeName() == injectionPointAttr);
+                    var attr = ctx.Attributes.FirstOrDefault(x =>
+                        x.AttributeClass?.GetSimplifiedTypeName() == injectionPointAttr);
+                    if (attr is null) return null;
                     var attrArgs = attr.ConstructorArguments;
+                    if (attrArgs.Length < 1) return null;
                     var identifier = attrArgs[0].Value?.ToString();
-                    return identifier is null ? default : new InjectionPointInfo(method, identifier);
+                    return identifier is null
+                        ? (InjectionPointInfo?)null
+                        : new InjectionPointInfo(method, identifier);
                 })
-            .Where(x => x != default);
+            .Where(static x => x is not null);
 
         // 将注入点与对应标记的依赖项关联
         var injectionPointMatches = injectionPoints.Combine(matches)
-            .Select((item, _) =>
+            .SelectMany(static (item, _) =>
             {
-                var point = item.Left;
+                if (item.Left is not { } point) return Array.Empty<InjectionPointMatchResult>();
                 var deps = item.Right
                     .Where(x => x.Info.Identifier == point.Identifier)
                     .ToImmutableArray();
-                return new InjectionPointMatchResult(point, deps);
+                return new[] { new InjectionPointMatchResult(point, deps) };
             })
             .Collect();
         
