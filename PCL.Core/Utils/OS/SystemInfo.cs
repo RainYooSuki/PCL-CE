@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace PCL.Core.Utils.OS;
 
-public static class SystemInfo
+public static partial class SystemInfo
 {
     /// <summary>
     /// 是否为 32 位系统。
@@ -28,7 +28,7 @@ public static class SystemInfo
     /// <summary>
     /// 获取窗口所在显示器的当前刷新率（Hz）。无法获取时回退到主显示器，再失败则返回 60。
     /// </summary>
-    public static int GetDisplayRefreshRate(IntPtr windowHandle)
+    public static unsafe int GetDisplayRefreshRate(IntPtr windowHandle)
     {
         if (windowHandle != IntPtr.Zero)
         {
@@ -37,13 +37,16 @@ public static class SystemInfo
                 var monitor = MonitorFromWindow(windowHandle, MonitorDefaultToNearest);
                 var monitorInfo = new MonitorInfoEx
                 {
-                    cbSize = Marshal.SizeOf<MonitorInfoEx>(),
-                    szDevice = string.Empty
+                    cbSize = sizeof(MonitorInfoEx)
                 };
                 if (monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref monitorInfo))
                 {
-                    var monitorRate = QueryDisplayRefreshRate(monitorInfo.szDevice);
-                    if (monitorRate > 1) return monitorRate;
+                    var monitorDevice = ReadMonitorDeviceName(ref monitorInfo);
+                    if (!string.IsNullOrEmpty(monitorDevice))
+                    {
+                        var monitorRate = QueryDisplayRefreshRate(monitorDevice);
+                        if (monitorRate > 1) return monitorRate;
+                    }
                 }
             }
             catch
@@ -64,17 +67,29 @@ public static class SystemInfo
         return refreshRate > 1 ? refreshRate : 60;
     }
 
-    private static int QueryDisplayRefreshRate(string? deviceName)
+    private static unsafe int QueryDisplayRefreshRate(string? deviceName)
     {
         try
         {
             var devMode = new DevMode
             {
-                dmDeviceName = string.Empty,
-                dmFormName = string.Empty,
-                dmSize = (short)Marshal.SizeOf<DevMode>()
+                dmSize = (short)sizeof(DevMode)
             };
-            if (EnumDisplaySettings(deviceName, EnumCurrentSettings, ref devMode) && devMode.dmDisplayFrequency > 1)
+
+            bool succeeded;
+            if (deviceName is null)
+            {
+                succeeded = EnumDisplaySettings(IntPtr.Zero, EnumCurrentSettings, ref devMode);
+            }
+            else
+            {
+                fixed (char* deviceNamePtr = deviceName)
+                {
+                    succeeded = EnumDisplaySettings((IntPtr)deviceNamePtr, EnumCurrentSettings, ref devMode);
+                }
+            }
+
+            if (succeeded && devMode.dmDisplayFrequency > 1)
                 return Math.Clamp(devMode.dmDisplayFrequency, 1, 1000);
         }
         catch
@@ -85,24 +100,33 @@ public static class SystemInfo
         return 0;
     }
 
+    private static unsafe string ReadMonitorDeviceName(ref MonitorInfoEx monitorInfo)
+    {
+        fixed (char* deviceName = monitorInfo.szDevice)
+        {
+            return new string(deviceName);
+        }
+    }
+
     private const int EnumCurrentSettings = -1;
     private const uint MonitorDefaultToNearest = 2;
 
-    [DllImport("user32.dll", EntryPoint = "MonitorFromWindow")]
-    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+    [LibraryImport("user32.dll", EntryPoint = "MonitorFromWindow")]
+    private static partial IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
 
-    [DllImport("user32.dll", EntryPoint = "GetMonitorInfoW", CharSet = CharSet.Unicode)]
-    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfoEx lpmi);
+    [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfoEx lpmi);
 
+    // PCL.Core 启用了 DisableRuntimeMarshalling，Win32 结构体必须保持 blittable。
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct MonitorInfoEx
+    private unsafe struct MonitorInfoEx
     {
         public int cbSize;
         public Rect rcMonitor;
         public Rect rcWork;
         public int dwFlags;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string szDevice;
+        public fixed char szDevice[32];
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -114,14 +138,14 @@ public static class SystemInfo
         public int Bottom;
     }
 
-    [DllImport("user32.dll", EntryPoint = "EnumDisplaySettingsW", CharSet = CharSet.Unicode)]
-    private static extern bool EnumDisplaySettings(string? deviceName, int modeNum, ref DevMode devMode);
+    [LibraryImport("user32.dll", EntryPoint = "EnumDisplaySettingsW")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool EnumDisplaySettings(IntPtr deviceName, int modeNum, ref DevMode devMode);
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct DevMode
+    private unsafe struct DevMode
     {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string dmDeviceName;
+        public fixed char dmDeviceName[32];
         public short dmSpecVersion;
         public short dmDriverVersion;
         public short dmSize;
@@ -136,8 +160,7 @@ public static class SystemInfo
         public short dmYResolution;
         public short dmTTOption;
         public short dmCollate;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string dmFormName;
+        public fixed char dmFormName[32];
         public short dmLogPixels;
         public int dmBitsPerPel;
         public int dmPelsWidth;

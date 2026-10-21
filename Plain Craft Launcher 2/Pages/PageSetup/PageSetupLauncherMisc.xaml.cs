@@ -51,13 +51,14 @@ public partial class PageSetupLauncherMisc
             ? new System.Windows.Interop.WindowInteropHelper(window).Handle
             : IntPtr.Zero;
         var displayRefreshRate = SystemInfo.GetDisplayRefreshRate(windowHandle);
+        var primaryDisplayRefreshRate = SystemInfo.GetPrimaryDisplayRefreshRate();
         SliderAniFPS.MaxValue = Math.Max(59, displayRefreshRate - 1);
         SliderAniFPS.Value = Math.Clamp(Config.System.AnimationFpsLimit, 0, SliderAniFPS.MaxValue);
         SliderAniFPS.IsEnabled = !Config.System.AnimationMatchDisplayRefreshRate;
         CheckSystemMatchDisplayRefreshRate.Text =
             $"{Lang.Text("Setup.Misc.System.MatchDisplayRefreshRate")} ({displayRefreshRate} Hz)";
         CheckSystemMatchDisplayRefreshRate.Checked = Config.System.AnimationMatchDisplayRefreshRate;
-        ModBase.Log($"[Animation] 检测到窗口所在显示器刷新率：{displayRefreshRate} Hz");
+        ModBase.Log($"[Animation] 检测到窗口所在显示器刷新率：{displayRefreshRate} Hz（主显示器：{primaryDisplayRefreshRate} Hz）");
         SliderMaxLog.Value = Config.System.MaxGameLog;
         CheckSystemTelemetry.Checked = Config.System.Telemetry;
 
