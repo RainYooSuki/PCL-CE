@@ -3238,34 +3238,13 @@
     <sys:String x:Key="Setup.Update.Error.NetworkFailed">无法获取最新版本信息，请检查网络连接</sys:String>
     <sys:String x:Key="Setup.Update.Install">下载并安装</sys:String>
     <sys:String x:Key="Setup.Update.Latest">已是最新版本</sys:String>
-    <sys:String x:Key="Setup.Update.MirrorChyanCdk.Get">获取 CDK</sys:String>
-    <sys:String x:Key="Setup.Update.MirrorChyanCdk.Label">Mirror 酱 CDK</sys:String>
-    <sys:String x:Key="Setup.Update.MirrorChyanCdk.ToolTip">Mirror 酱 (mirrorchyan.com) 是一个付费的第三方应用分发平台，用于提供国内有偿高速下载源。&#xA;这是一项可选服务，不填入 CDK 不影响正常使用与更新。&#xA;如果你有 Mirror 酱的 CDK，可以提供给 PCL CE，启动器会优先使用他们的高速下载源下载软件更新，也能缓解社区公益更新服务器的一些压力……</sys:String>
     <sys:String x:Key="Setup.Update.OtherOptions.Placeholder">AquaCL 3 是 PCL CE 的第一个主要更新，带来了让人眼前一亮的新设计，使用了最新开发技术，完全重构了基础体验，并更支持 macOS、Linux 等其他平台。</sys:String>
     <sys:String x:Key="Setup.Update.OtherOptions.Title">其他更新选项 - 升级到 AquaCL</sys:String>
     <sys:String x:Key="Setup.Update.RestartInstall">重启安装</sys:String>
 
-    <!-- Setup.Update.Channel -->
 
-    <sys:String x:Key="Setup.Update.Channel.Beta">测试版 / Beta</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Beta.ToolTip">可能不稳定的测试版本，将会进行功能的早期测试，适合希望帮助测试且有一定技术能力的用户使用。</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Beta.Warning.Message">你正在切换启动器更新通道到测试版。&#xA;测试版可以提供下个版本更新内容的预览，但可能会包含未经充分测试的功能，稳定性欠佳。&#xA;&#xA;在升级到测试版后，你需要等待下一个正式版发布，或是手动重新下载启动器来切换到正式版。&#xA;该选项仅推荐具有一定基础知识和能力的用户选择。如果你正在制作整合包，请使用正式版！</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Common.Warning.Confirm">我已知晓</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Common.Warning.Title">继续之前...</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Release">正式版 / Release</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Release.ToolTip">较为稳定的版本，仅推送修复性更新与部分内置资源更新，适合大多数用户使用。</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Title">更新通道</sys:String>
 
-    <!-- Setup.Update.Channel.Dev -->
 
-    <sys:String x:Key="Setup.Update.Channel.Dev">开发版 / Dev</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Dev.FinalConfirm.ExpectedInput">我确认切换到此分支并已知晓风险</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Dev.FinalConfirm.Message">你确定要切换到开发版通道吗？&#xA;开发版可能存在严重问题，甚至无法启动！&#xA;&#xA;在升级到开发版后，将无法切换回其他任何更新通道，只能手动重新下载启动器来切换回正式版或测试版。&#xA;&#xA;该选项仅推荐高级用户选择。如果你正在制作整合包，请使用正式版！&#xA;请输入 '{0}' 以确认。</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Dev.FinalConfirm.Submit">提交</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Dev.FinalConfirm.Title">最终确认</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Dev.FinalConfirm.WrongInput">你输入了错误的内容...</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Dev.ToolTip">可能极不稳定的开发版本，直接从最新源代码构建，适合高度技术性用户。&#xA;可能需要具备较好的互联网连接质量才能顺利获取此通道更新。</sys:String>
-    <sys:String x:Key="Setup.Update.Channel.Dev.Warning.Message">你正在切换启动器更新通道到开发版。&#xA;该通道可第一时间获取基于最新代码构建的开发版本，但可能极不稳定，甚至直接无法启动。&#xA;&#xA;在升级到开发版后，只能手动重新下载启动器来切换回正式版或测试版。&#xA;该选项仅推荐高级用户选择。如果你正在制作整合包，请使用正式版！</sys:String>
 
     <!-- Speed -->
 

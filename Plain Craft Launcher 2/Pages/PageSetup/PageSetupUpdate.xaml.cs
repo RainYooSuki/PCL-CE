@@ -1,7 +1,5 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using PCL.Core.App;
 using PCL.Core.Utils;
 using PCL.Core.App.Localization;
 using PCL.Core.Utils.OS;
@@ -10,7 +8,7 @@ namespace PCL;
 
 public partial class PageSetupUpdate
 {
-    public VersionDataModel updateInfo;
+    public VersionDataModel? updateInfo;
 
     public PageSetupUpdate()
     {
@@ -20,13 +18,7 @@ public partial class PageSetupUpdate
 
     private void Init()
     {
-        ModAnimation.AniControlEnabled += 1;
-        TextMirrorCDK.Password = Config.Update.MirrorChyanKey;
-
-        ComboSystemUpdateChannel.SelectedIndex = (int)Config.Update.UpdateChannel;
-
-        TextCurrentVersion.Text = "PCL CE " + VersionNameFormat(ModBase.versionBaseName);
-        ModAnimation.AniControlEnabled -= 1;
+        TextCurrentVersion.Text = "PCL CE " + VersionNameFormat(ModBase.releaseVersion);
         CheckUpdate();
     }
 
@@ -34,10 +26,8 @@ public partial class PageSetupUpdate
     {
         try
         {
-            // 修复：使用 dynamic 绕过命名空间重名导致的编译期类型冲突，
-            // 或者你可以尝试替换为 PCL.Core.App.SemVer.Parse(ModBase.versionBaseName)
             if (await UpdateManager.remoteServer.IsLatestAsync(
-                    UpdateManager.IsCurrentVersionBeta ? UpdateChannel.beta : UpdateChannel.stable,
+                    UpdateChannel.stable,
                     SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64,
                     SemVer.Parse(ModBase.versionBaseName),
                     ModBase.versionCode))
@@ -63,6 +53,7 @@ public partial class PageSetupUpdate
     public async void CheckUpdate()
     {
         ModBase.Log("[Update] 开始检查更新");
+        updateInfo = null;
         CardUpdate.Visibility = Visibility.Collapsed;
         CardCheck.Visibility = Visibility.Visible;
         TextCurrentDesc.Text = Lang.Text("Setup.Update.Checking");
@@ -71,19 +62,21 @@ public partial class PageSetupUpdate
         {
             case UpdateStatus.Available:
             {
-                Exception checkUpdateEx = null;
+                Exception? checkUpdateEx = null;
                 try
                 {
-                    updateInfo = UpdateManager.remoteServer.GetLatestVersion(
-                        UpdateManager.IsCurrentVersionBeta
-                            ? UpdateChannel.beta
-                            : UpdateChannel.stable, SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64);
-                    TextUpdateName.Text = "PCL CE " + VersionNameFormat(updateInfo.VersionName);
-                    var summary = updateInfo.Changelog.Between("<summary>", "</summary>");
-                    if (!updateInfo.Changelog.Contains("<summary>") || string.IsNullOrWhiteSpace(summary.Trim()))
-                        TextChangelog.Text = Lang.Text("Setup.Update.Changelog.Empty");
+                    var latest = UpdateManager.remoteServer.GetLatestVersion(
+                        UpdateChannel.stable, SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64);
+                    updateInfo = latest;
+                    TextUpdateName.Text = "PCL CE " + VersionNameFormat(latest.VersionName);
+                    var changelog = latest.Changelog;
+                    var summary = changelog.Between("<summary>", "</summary>");
+                    if (!string.IsNullOrWhiteSpace(summary))
+                        TextChangelog.Text = summary.Trim();
+                    else if (!string.IsNullOrWhiteSpace(changelog))
+                        TextChangelog.Text = changelog.Length > 500 ? changelog[..500] + "..." : changelog;
                     else
-                        TextChangelog.Text = summary;
+                        TextChangelog.Text = Lang.Text("Setup.Update.Changelog.Empty");
                 }
                 catch (Exception ex)
                 {
@@ -171,90 +164,14 @@ public partial class PageSetupUpdate
             ModMain.MyMsgBoxMarkdown(updateInfo.Changelog, Lang.Text("Setup.Update.Changelog.Title"));
     }
 
-    private void ComboSystemUpdateBranch_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (ModAnimation.AniControlEnabled != 0)
-            return;
-
-        var isCancelled = false;
-        switch (ComboSystemUpdateChannel.SelectedIndex)
-        {
-            case 0:
-            {
-                break;
-            }
-            case 1:
-            {
-                if (ModMain.MyMsgBox(Lang.Text("Setup.Update.Channel.Beta.Warning.Message"),
-                        Lang.Text("Setup.Update.Channel.Common.Warning.Title"),
-                        Lang.Text("Setup.Update.Channel.Common.Warning.Confirm"),
-                        Lang.Text("Common.Action.Cancel"), isWarn: true) == 2)
-                    isCancelled = true;
-                else
-                    CheckUpdate();
-                break;
-            }
-            case 2:
-            {
-                if (ModMain.MyMsgBox(Lang.Text("Setup.Update.Channel.Dev.Warning.Message"),
-                        Lang.Text("Setup.Update.Channel.Common.Warning.Title"),
-                        Lang.Text("Setup.Update.Channel.Common.Warning.Confirm"),
-                        Lang.Text("Common.Action.Cancel"), isWarn: true) == 2)
-                {
-                    isCancelled = true;
-                    break;
-                }
-
-                var confirmText = Lang.Text("Setup.Update.Channel.Dev.FinalConfirm.ExpectedInput");
-                var ret = ModMain.MyMsgBoxInput(
-                    Lang.Text("Setup.Update.Channel.Dev.FinalConfirm.Title"),
-                    Lang.Text("Setup.Update.Channel.Dev.FinalConfirm.Message", confirmText),
-                    button1: Lang.Text("Setup.Update.Channel.Dev.FinalConfirm.Submit"),
-                    button2: Lang.Text("Common.Action.Cancel"), isWarn: true);
-    
-                if (ret == confirmText)
-                {
-                    CheckUpdate();
-                }
-                else
-                {
-                    HintService.Hint(Lang.Text("Setup.Update.Channel.Dev.FinalConfirm.WrongInput"));
-                    isCancelled = true;
-                }
-                break;
-            }
-        }
-
-        if (isCancelled)
-        {
-            ModAnimation.AniControlEnabled += 1;
-            ComboSystemUpdateChannel.SelectedItem = e.RemovedItems[0];
-            ModAnimation.AniControlEnabled -= 1;
-        }
-        else
-        {
-            Config.Update.UpdateChannel = (Core.App.UpdateChannel)ComboSystemUpdateChannel.SelectedIndex;
-        }
-    }
-
-    private void TextMirrorCDK_PasswordChanged(object sender, EventArgs e)
-    {
-        Config.Update.MirrorChyanKey = TextMirrorCDK.Password;
-    }
-
-    private void BtnGetMirrorCDK_Click(object sender, MouseButtonEventArgs e)
-    {
-        ModBase.OpenWebsite("https://mirrorchyan.com/");
-    }
-
     private void BtnChangelog_Click(object sender, MouseButtonEventArgs e)
     {
-        ModBase.OpenWebsite("https://github.com/PCL-Community/PCL2-CE/releases/v" + ModBase.versionBaseName);
+        ModBase.OpenWebsite(updateInfo?.ReleasePageUrl ?? UpdatesGitHubReleaseModel.LatestReleasePageUrl);
     }
 
     public string VersionNameFormat(string str)
     {
-        str = str.Replace("v", "");
+        str = str.TrimStart('v', 'V');
         if (!str.Contains("-"))
             return str;
         var add = str.AfterLast("-");

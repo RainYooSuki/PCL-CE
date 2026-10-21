@@ -46,8 +46,8 @@ public partial class FormMain
             else
                 changelog = Lang.Text("Main.UpdateLog.Empty");
             if (ModMain.MyMsgBoxMarkdown(changelog,
-                    Lang.Text("Main.UpdateLog.Title", ModBase.versionBranchName, ModBase.versionBaseName), Lang.Text("Common.Action.Confirm"), Lang.Text("Main.UpdateLog.FullChangelog")) ==
-                2) ModBase.OpenWebsite("https://github.com/PCL-Community/PCL2-CE/releases");
+                    Lang.Text("Main.UpdateLog.Title", ModBase.versionBranchName, ModBase.releaseVersion), Lang.Text("Common.Action.Confirm"), Lang.Text("Main.UpdateLog.FullChangelog")) ==
+                2) ModBase.OpenWebsite(UpdatesGitHubReleaseModel.ReleasesUrl);
         }, "UpdateLog Output");
     }
 
@@ -241,7 +241,7 @@ public partial class FormMain
                         $"{hint}{"\r\n"}{"\r\n"}{Lang.Text("Main.SpecialVersion.HideHintNotice")}",
                         Lang.Text("Main.SpecialVersion.Title"), Lang.Text("Main.SpecialVersion.IUnderstand"), Lang.Text("Main.SpecialVersion.OpenDownloadPageAndExit"), isWarn: true, button2Action: () =>
                         {
-                            ModBase.OpenWebsite("https://github.com/PCL-Community/PCL2-CE/releases/latest");
+                            ModBase.OpenWebsite(UpdatesGitHubReleaseModel.LatestReleasePageUrl);
                             EndProgram(false);
                         });
                 }

@@ -12,47 +12,19 @@ public static class UpdateManager
 {
     public static bool isUpdateWaitingRestart;
 
-    public static UpdatesWrapperModel remoteServer = new(new List<IUpdateSource>
+    public static UpdatesWrapperModel remoteServer = new(new IUpdateSource[]
     {
-        new UpdatesMirrorChyanModel(),
-        new UpdatesRandomModel(new[]
-        {
-            new UpdatesMinioModel("https://s3.pysio.online/pcl2-ce/", "Pysio"),
-            new UpdatesMinioModel("https://staticassets.naids.com/resources/pclce/", "Naids")
-        }),
-        new UpdatesMinioModel("https://github.com/PCL-Community/PCL2_CE_Server/raw/main/", "GitHub")
+        new UpdatesGitHubReleaseModel()
     });
 
-    public static bool IsCurrentVersionBeta
-    {
-        get
-        {
-            if (ModBase.versionBaseName.Contains("beta"))
-                return true;
-            return (int)Config.Update.UpdateChannel == 1;
-        }
-    }
-    
     public static UpdateEnums.VersionStatus GetVersionStatus()
     {
         try
         {
-            if (IsCurrentVersionBeta && (int)Config.Update.UpdateChannel != 1)
-            {
-                var isNewerThanStable = remoteServer.IsLatest(UpdateChannel.stable,
-                    SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64, SemVer.Parse(ModBase.versionBaseName),
-                    ModBase.versionCode);
-                var isBetaLatest = remoteServer.IsLatest(UpdateChannel.beta,
-                    SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64, SemVer.Parse(ModBase.versionBaseName),
-                    ModBase.versionCode);
-                return isNewerThanStable && isBetaLatest
-                    ? UpdateEnums.VersionStatus.Latest
-                    : UpdateEnums.VersionStatus.NotLatest;
-            }
-
             return remoteServer.IsLatest(
-                IsCurrentVersionBeta ? UpdateChannel.beta : UpdateChannel.stable,
-                SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64, SemVer.Parse(ModBase.versionBaseName),
+                UpdateChannel.stable,
+                SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64,
+                SemVer.Parse(ModBase.versionBaseName),
                 ModBase.versionCode)
                 ? UpdateEnums.VersionStatus.Latest
                 : UpdateEnums.VersionStatus.NotLatest;
@@ -85,23 +57,29 @@ public static class UpdateManager
             try
             {
                 var version = remoteServer.GetLatestVersion(
-                    IsCurrentVersionBeta ? UpdateChannel.beta : UpdateChannel.stable,
+                    UpdateChannel.stable,
                     SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64
                 );
 
                 ModBase.WriteFile($"{ModBase.pathTemp}CEUpdateLog.md", version.Changelog);
-                ModBase.Log($"[Update] 远程最新版本: {version.VersionName}, 当前版本: {ModBase.versionBaseName}");
-                if (!(SemVer.Parse(version.VersionName) > SemVer.Parse(ModBase.versionBaseName)))
+                ModBase.Log($"[Update] 远程最新版本: {version.VersionName}, 当前构建: {ModBase.commitHashShort}");
+                if (!string.IsNullOrWhiteSpace(version.CommitSha) &&
+                    string.Equals(version.CommitSha, ModBase.commitHashShort, StringComparison.OrdinalIgnoreCase))
+                {
+                    ModBase.Log("[Update] 当前构建已经对应最新 Release，无需更新");
                     return;
+                }
+
                 var loaders = new List<ModLoader.LoaderBase>();
                 // 下载
                 loaders.AddRange(remoteServer.GetDownloadLoader(
-                    IsCurrentVersionBeta ? UpdateChannel.beta : UpdateChannel.stable,
+                    UpdateChannel.stable,
                     SystemInfo.IsArm64System ? UpdateArch.arm64 : UpdateArch.x64, dlTargetPath));
                 loaders.Add(new ModLoader.LoaderTask<int, int>(Lang.Text("Update.Task.Check"), _ =>
                 {
+                    if (string.IsNullOrWhiteSpace(version.Sha256)) return;
                     var curHash = ModBase.GetFileSHA256(dlTargetPath);
-                    if ((curHash ?? "") != (version.Sha256 ?? ""))
+                    if (!string.Equals(curHash, version.Sha256, StringComparison.OrdinalIgnoreCase))
                         throw new Exception(Lang.Text("Update.Error.Sha256Mismatch", version.Sha256, curHash));
                 }));
                 loaders.Add(new ModLoader.LoaderTask<int, int>(Lang.Text("Update.Task.Install"), _ => UpdateRestart(true)));

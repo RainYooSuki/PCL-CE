@@ -122,14 +122,9 @@ public static partial class Config
         [ConfigItem<LauncherAutoUpdateBehavior>("SystemSystemUpdate", LauncherAutoUpdateBehavior.Disable, ConfigSource.Local)] public partial LauncherAutoUpdateBehavior UpdateMode { get; set; }
 
         /// <summary>
-        /// 更新分支。
+        /// 更新分支。保留配置项以兼容旧版配置。
         /// </summary>
         [ConfigItem<UpdateChannel>("SystemUpdateChannel", UpdateChannel.Release, ConfigSource.Local)] public partial UpdateChannel UpdateChannel { get; set; }
-            
-        /// <summary>
-        /// Mirror 酱 CDK。
-        /// </summary>
-        [ConfigItem<string>("SystemMirrorChyanKey", "", ConfigSource.SharedEncrypt)] public partial string MirrorChyanKey { get; set; }
     }
 
     /// <summary>

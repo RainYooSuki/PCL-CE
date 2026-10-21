@@ -26,11 +26,20 @@ public sealed record LauncherVersionModel(
 #endif
 
     private static readonly string? _SecretCommitInfo = EnvironmentInterop.GetSecret("GITHUB_SHA", false);
+    private static readonly string? _SecretReleaseVersion = EnvironmentInterop.GetSecret("RELEASE_VERSION", false);
 
     /// <summary>
     /// 基本版本名, 若 <see cref="Suffix"/> 存在实际值会附加后缀, 否则与 <see cref="BaseVersion"/> 相同
     /// </summary>
     public string BaseName { get; } = BaseVersion + (string.IsNullOrWhiteSpace(Suffix) ? "" : "-" + Suffix);
+
+    /// <summary>
+    /// 发行版本名。CI 构建通过 <c>PCL_RELEASE_VERSION</c> 注入 Release Tag；
+    /// 本地构建回退到 <see cref="BaseName"/>。
+    /// </summary>
+    public string ReleaseVersion { get; } = string.IsNullOrWhiteSpace(_SecretReleaseVersion)
+        ? BaseVersion + (string.IsNullOrWhiteSpace(Suffix) ? "" : "-" + Suffix)
+        : _SecretReleaseVersion!;
     
     /// <summary>
     /// 发行分支名

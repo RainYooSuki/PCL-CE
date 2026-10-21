@@ -134,7 +134,7 @@ public class MyPageRight : AdornerDecorator
     }
 
     // 重试
-    public void PageLoaderRestart(object input = null, bool isForceRestart = true) // 由外部调用的重试
+    public void PageLoaderRestart(object? input = null, bool isForceRestart = true) // 由外部调用的重试
     {
         if (!pageLoaderAutoRun)
             return;

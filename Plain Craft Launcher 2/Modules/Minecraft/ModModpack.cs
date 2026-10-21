@@ -51,8 +51,8 @@ public static class ModModpack
     ///     必须在工作线程执行。
     /// </summary>
     /// <exception cref="ModBase.CancelledException" />
-    public static LoaderCombo<string> ModpackInstall(string file, string instanceName = null, string logo = null,
-        string resourceId = null, bool isOnlineInstall = false)
+    public static LoaderCombo<string> ModpackInstall(string file, string? instanceName = null, string? logo = null,
+        string? resourceId = null, bool isOnlineInstall = false)
     {
         ModBase.Log("[ModPack] 整合包安装请求：" + (file ?? "null"));
         ZipArchive archive = null;
@@ -60,7 +60,7 @@ public static class ModModpack
         try
         {
             // 字符校验
-            var targetFolder = $@"{ModFolder.mcFolderSelected}versions\{instanceName}\";
+            var targetFolder = $@"{ModFolder.mcFolderSelected}versions\{instanceName ?? ""}\";
             if (targetFolder.Contains("!") || targetFolder.Contains(";"))
             {
                 HintService.Hint(Lang.Text("Minecraft.Download.Modpack.InvalidGamePathChars", targetFolder),
@@ -343,7 +343,7 @@ public static class ModModpack
     #region CurseForge
 
     private static LoaderCombo<string> InstallPackCurseForge(string fileAddress, ZipArchive archive,
-        string archiveBaseFolder, string instanceName = null, string logo = null, string resourceId = null,
+        string archiveBaseFolder, string? instanceName = null, string? logo = null, string? resourceId = null,
         bool isOnlineInstall = false)
     {
         // 读取 Json 文件
@@ -374,6 +374,8 @@ public static class ModModpack
             if (string.IsNullOrEmpty(instanceName))
                 throw new ModBase.CancelledException();
         }
+
+        instanceName ??= "";
 
         // 获取 Mod API 版本信息
         string forgeVersion = null;
@@ -615,21 +617,21 @@ public static class ModModpack
             // 整合包版本
             if (json["version"] is not null) States.Instance.ModpackVersion[versionFolder] = json["version"].ToString();
             States.Instance.ModpackSource[versionFolder] = "CurseForge";
-            States.Instance.ModpackId[versionFolder] = resourceId;
-            do
+            States.Instance.ModpackId[versionFolder] = resourceId ?? "";
+            var modpackId = resourceId;
+            if (!string.IsNullOrWhiteSpace(modpackId))
             {
                 try
                 {
-                    var projects = ModComp.CompRequest.GetCompProjectsByIds([resourceId]);
-                    if (projects.Count == 0)
-                        break;
-                    States.Instance.CustomInfo[versionFolder] = projects.First().Description;
+                    var projects = ModComp.CompRequest.GetCompProjectsByIds([modpackId]);
+                    if (projects.Count > 0)
+                        States.Instance.CustomInfo[versionFolder] = projects.First().Description;
                 }
                 catch (Exception ex)
                 {
                     ModBase.Log(ex, "[ModPack] 获取整合包描述文本失败");
                 }
-            } while (false);
+            }
         })
         {
             ProgressWeight = 0.1d,
@@ -659,7 +661,7 @@ public static class ModModpack
     #region Modrinth
 
     private static LoaderCombo<string> InstallPackModrinth(string fileAddress, ZipArchive archive,
-        string archiveBaseFolder, string instanceName = null, string logo = null, string resourceId = null,
+        string archiveBaseFolder, string? instanceName = null, string? logo = null, string? resourceId = null,
         bool isOnlineInstall = false)
     {
         // 读取 Json 文件
@@ -738,6 +740,8 @@ public static class ModModpack
             if (string.IsNullOrEmpty(instanceName))
                 throw new ModBase.CancelledException();
         }
+
+        instanceName ??= "";
 
         // 解压
         var installTemp = ModMain.RequestTaskTempFolder();
@@ -857,21 +861,21 @@ public static class ModModpack
             if (json["versionId"] is not null)
                 States.Instance.ModpackVersion[versionFolder] = json["versionId"].ToString();
             States.Instance.ModpackSource[versionFolder] = "Modrinth";
-            States.Instance.ModpackId[versionFolder] = resourceId;
-            do
+            States.Instance.ModpackId[versionFolder] = resourceId ?? "";
+            var modpackId = resourceId;
+            if (!string.IsNullOrWhiteSpace(modpackId))
             {
                 try
                 {
-                    var projects = ModComp.CompRequest.GetCompProjectsByIds([resourceId]);
-                    if (projects.Count == 0)
-                        break;
-                    States.Instance.CustomInfo[versionFolder] = projects.First().Description;
+                    var projects = ModComp.CompRequest.GetCompProjectsByIds([modpackId]);
+                    if (projects.Count > 0)
+                        States.Instance.CustomInfo[versionFolder] = projects.First().Description;
                 }
                 catch (Exception ex)
                 {
                     ModBase.Log(ex, "[ModPack] 获取整合包描述文本失败");
                 }
-            } while (false);
+            }
         })
         {
             ProgressWeight = 0.1d,
@@ -992,7 +996,7 @@ public static class ModModpack
     }
 
     private static LoaderCombo<string> InstallPackMCBBS(string fileAddress, ZipArchive archive,
-        string archiveBaseFolder, string instanceName = null)
+        string archiveBaseFolder, string? instanceName = null)
     {
         // 读取 Json 文件
         JsonObject json;
@@ -1025,6 +1029,8 @@ public static class ModModpack
 
             if (string.IsNullOrEmpty(instanceName)) throw new ModBase.CancelledException();
         }
+
+        instanceName ??= "";
 
         // 解压与路径准备
         var installTemp = ModMain.RequestTaskTempFolder();

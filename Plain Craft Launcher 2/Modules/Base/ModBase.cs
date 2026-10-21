@@ -40,6 +40,7 @@ public static class ModBase
 
     // 下列版本信息由更新器自动修改
     public static readonly string versionBaseName = Basics.VersionName;
+    public static readonly string releaseVersion = Basics.Metadata.Version.ReleaseVersion;
     public static readonly string versionStandardCode = Basics.Metadata.Version.StandardVersion;
     public static readonly string upstreamVersion = Basics.Metadata.Version.UpstreamVersion;
     public static readonly string commitHash = Basics.Metadata.Version.Commit;
