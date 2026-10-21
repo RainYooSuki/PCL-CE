@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -40,11 +41,11 @@ public class CommandLine
     /// <param name="value">参数值，若获取失败则为对应类型默认值</param>
     /// <typeparam name="TValue">参数值的类型</typeparam>
     /// <returns>是否存在该键; 存在该键时值的类型是否匹配</returns>
-    public (bool exists, bool isTypeMatch) TryGetArgumentValue<TValue>(string key, out TValue? value)
+    public (bool exists, bool isTypeMatch) TryGetArgumentValue<TValue>(string key, [MaybeNull] out TValue value)
     {
         var exists = Arguments.TryGetValue(key, out var arg);
         var isTypeMatch = false;
-        if (exists && (isTypeMatch = arg.TryCastValue(out TValue? typedValue)))
+        if (exists && (isTypeMatch = arg.TryCastValue<TValue>(out var typedValue)))
         {
             value = typedValue;
             return (true, true);

@@ -15,7 +15,7 @@ public class DecimalArgument : CommandArgument<decimal>
         init => base.Value = value;
     }
 
-    public override bool TryCastValue<T>([NotNullWhen(true)] out T? value)
+    public override bool TryCastValue<T>([NotNullWhen(true), MaybeNullWhen(false)] out T value)
     {
         if (base.TryCastValue(out value)) return true;
         var type = typeof(T);

@@ -31,12 +31,13 @@ public abstract class CommandArgument
     /// <param name="value">参数值，若尝试失败则为该类型默认值</param>
     /// <typeparam name="T">参数值的类型</typeparam>
     /// <returns>是否成功，若类型不匹配则失败</returns>
-    public abstract bool TryCastValue<T>([NotNullWhen(true)] out T? value);
+    public abstract bool TryCastValue<T>([NotNullWhen(true), MaybeNullWhen(false)] out T value);
 
-    public T? CastValue<T>()
+    public T CastValue<T>()
     {
-        var result = TryCastValue(out T? value);
-        return result ? value : throw new InvalidCastException("Value type mismatch or cannot cast");
+        if (!TryCastValue<T>(out var value))
+            throw new InvalidCastException("Value type mismatch or cannot cast");
+        return value;
     }
 }
 
@@ -70,7 +71,7 @@ public abstract class CommandArgument<TValue> : CommandArgument
         protected init { _value = new StrongBox<TValue>(value); }
     }
 
-    public override bool TryCastValue<T>([NotNullWhen(true)] out T? value)
+    public override bool TryCastValue<T>([NotNullWhen(true), MaybeNullWhen(false)] out T value)
     {
         if (Value is T v)
         {
