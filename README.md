@@ -13,7 +13,6 @@
 [![Issues](https://img.shields.io/github/issues/RainYooSuki/PCL-CE?style=for-the-badge&label=issues&labelColor=444444&color=1F883D&logo=github)](https://github.com/RainYooSuki/PCL-CE/issues)
 [![Pull requests](https://img.shields.io/github/issues-pr/RainYooSuki/PCL-CE?style=for-the-badge&label=pull%20requests&labelColor=444444&color=1F883D&logo=github)](https://github.com/RainYooSuki/PCL-CE/pulls)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/RainYooSuki/PCL-CE/total?style=for-the-badge)
-[![哔哩哔哩](https://img.shields.io/badge/动态-bilibili-00A4DB?style=for-the-badge&labelColor=444444&logo=bilibili)](https://space.bilibili.com/3546847192811755/dynamic) <br />
 
 [社区版下载](https://github.com/RainYooSuki/PCL-CE/releases/latest) |
 [上游存储库](https://github.com/Meloong-Git/PCL)
