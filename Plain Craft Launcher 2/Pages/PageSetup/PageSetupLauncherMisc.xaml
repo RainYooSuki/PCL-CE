@@ -47,16 +47,15 @@
                                     Change="SliderChange" />
                     <Grid Grid.Row="6" Grid.ColumnSpan="5">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="CheckBox" />
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="CheckBox" />
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="CheckBox" />
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="CheckBox" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="20" />
                         </Grid.RowDefinitions>
-                        <local:MyCheckBox Grid.Row="0" Grid.Column="0" Text="{DynamicResource Setup.Misc.System.DisableHardwareAcceleration}" x:Name="CheckSystemDisableHardwareAcceleration" Tag="SystemDisableHardwareAcceleration" Change="CheckSystemDisableHardwareAcceleration_OnChange"/>
-                        <local:MyCheckBox Grid.Row="0" Grid.Column="1" Text="{DynamicResource Setup.Misc.System.Telemetry}" x:Name="CheckSystemTelemetry" Tag="SystemTelemetry" Change="CheckBoxChange"
+                        <local:MyCheckBox Grid.Row="0" Grid.Column="0" Margin="0,0,24,0" Text="{DynamicResource Setup.Misc.System.DisableHardwareAcceleration}" x:Name="CheckSystemDisableHardwareAcceleration" Tag="SystemDisableHardwareAcceleration" Change="CheckSystemDisableHardwareAcceleration_OnChange"/>
+                        <local:MyCheckBox Grid.Row="0" Grid.Column="1" Margin="0,0,24,0" Text="{DynamicResource Setup.Misc.System.Telemetry}" x:Name="CheckSystemTelemetry" Tag="SystemTelemetry" Change="CheckBoxChange"
                           ToolTip="{DynamicResource Setup.Misc.System.Telemetry.ToolTip}"/>
                         <local:MyCheckBox Grid.Row="0" Grid.Column="2"
                                           Text="{DynamicResource Setup.Misc.System.MatchDisplayRefreshRate}"

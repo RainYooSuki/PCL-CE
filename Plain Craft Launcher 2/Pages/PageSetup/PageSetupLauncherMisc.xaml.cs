@@ -47,8 +47,12 @@ public partial class PageSetupLauncherMisc
         // 系统设置
         ComboSystemActivity.SelectedIndex = States.System.AnnounceSolution;
         CheckSystemDisableHardwareAcceleration.Checked = Config.System.DisableHardwareAcceleration;
-        SliderAniFPS.Value = Config.System.AnimationFpsLimit;
+        var displayRefreshRate = SystemInfo.GetPrimaryDisplayRefreshRate();
+        SliderAniFPS.MaxValue = Math.Max(59, displayRefreshRate - 1);
+        SliderAniFPS.Value = Math.Clamp(Config.System.AnimationFpsLimit, 0, SliderAniFPS.MaxValue);
         SliderAniFPS.IsEnabled = !Config.System.AnimationMatchDisplayRefreshRate;
+        CheckSystemMatchDisplayRefreshRate.Text =
+            $"{Lang.Text("Setup.Misc.System.MatchDisplayRefreshRate")} ({displayRefreshRate} Hz)";
         CheckSystemMatchDisplayRefreshRate.Checked = Config.System.AnimationMatchDisplayRefreshRate;
         SliderMaxLog.Value = Config.System.MaxGameLog;
         CheckSystemTelemetry.Checked = Config.System.Telemetry;
@@ -198,8 +202,11 @@ public partial class PageSetupLauncherMisc
 
     private void CheckSystemMatchDisplayRefreshRate_OnChange(object sender, bool user)
     {
-        CheckBoxChange(sender, user);
-        SliderAniFPS.IsEnabled = CheckSystemMatchDisplayRefreshRate.Checked != true;
+        var enabled = CheckSystemMatchDisplayRefreshRate.Checked == true;
+        if (user || ModAnimation.AniControlEnabled == 0)
+            Config.System.AnimationMatchDisplayRefreshRate = enabled;
+        SliderAniFPS.IsEnabled = !enabled;
+        ModBase.Log($"[Animation] 匹配显示器刷新率：{(enabled ? "已开启" : "已关闭")}");
     }
 
     private void ComboSystemActivity_OnSelectionChanged(object sender, SelectionChangedEventArgs e)

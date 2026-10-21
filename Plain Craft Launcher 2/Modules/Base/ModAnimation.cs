@@ -129,22 +129,23 @@ public static partial class ModAnimation
 
             Interlocked.Exchange(ref aniLastTick, now);
 
-            // 记录 FPS
-            if (ModBase.modeDebug)
+            // 记录实际渲染 FPS
+            aniFPSCounter++;
+            var fpsElapsed = now - aniFPSTimer;
+            if (fpsElapsed >= 500d)
             {
-                aniFPSCounter++;
-                var fpsElapsed = now - aniFPSTimer;
-                if (fpsElapsed >= 500d)
-                {
-                    aniFPS = (int)Math.Round(aniFPSCounter * 1000d / fpsElapsed);
-                    aniFPSCounter = 0;
-                    aniFPSTimer = now;
-                }
+                aniFPS = (int)Math.Round(aniFPSCounter * 1000d / fpsElapsed);
+                aniFPSCounter = 0;
+                aniFPSTimer = now;
+                if (ModBase.modeDebug && matchDisplayRefreshRate)
+                    ModBase.Log($"[Animation] 实际渲染帧率：{aniFPS} FPS", ModBase.LogLevel.Developer);
             }
 
             // 执行动画
             aniCount = 0;
             AniTimer((int)Math.Round(deltaTime * aniSpeed));
+            if (matchDisplayRefreshRate && !aniGroups.IsEmpty)
+                ModMain.frmMain?.InvalidateVisual();
             if (RandomUtils.NextInt(0, 64 * (ModBase.modeDebug ? 5 : 30)) == 0 &&
                 ((aniFPS < 62 && aniFPS > 0) || aniCount > 4 || ModNet.NetManager.FileRemain != 0))
                 ModBase.Log("[Report] FPS " + aniFPS + ", 动画 " + aniCount + ", 下载中 " +
