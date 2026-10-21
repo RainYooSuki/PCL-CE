@@ -219,7 +219,8 @@ public static class ModLibrary
     ///     获取 Minecraft 某一实例忽视继承的支持库列表，即结果中没有继承项。
     /// </summary>
     public static List<McLibToken> McLibListGetWithJson(JsonObject jsonObject,
-        bool keepSameNameDifferentVersionResult = false, string customMcFolder = null, McInstance targetMcInstance = null)
+        bool keepSameNameDifferentVersionResult = false, string? customMcFolder = null,
+        McInstance? targetMcInstance = null)
     {
         customMcFolder = customMcFolder ?? ModFolder.mcFolderSelected;
         var basicArray = new List<McLibToken>();
@@ -539,7 +540,7 @@ public static class ModLibrary
     /// <summary>
     ///     将 McLibToken 列表转换为 NetFile。
     /// </summary>
-    public static List<DownloadFile> McLibNetFilesFromTokens(List<McLibToken> libs, string customMcFolder = null)
+    public static List<DownloadFile> McLibNetFilesFromTokens(List<McLibToken> libs, string? customMcFolder = null)
     {
         customMcFolder = customMcFolder ?? ModFolder.mcFolderSelected;
         var result = new List<DownloadFile>();
@@ -631,7 +632,7 @@ public static class ModLibrary
     /// <param name="original">原始地址，如 com.mumfrey:liteloader:1.12.2-SNAPSHOT。</param>
     /// <param name="withHead">是否包含 Lib 文件夹头部，若不包含，则会类似以 com\xxx\ 开头。</param>
     public static string McLibGet(string original, bool withHead = true, bool ignoreLiteLoader = false,
-        string customMcFolder = null)
+        string? customMcFolder = null)
     {
         string mcLibGetRet = default;
         customMcFolder = customMcFolder ?? ModFolder.mcFolderSelected;
@@ -660,7 +661,7 @@ public static class ModLibrary
     /// <summary>
     ///     根据 JSON 中的 downloads.artifact.path 获取支持库文件地址。
     /// </summary>
-    private static string McLibGetByArtifactPath(string artifactPath, string customMcFolder = null)
+    private static string McLibGetByArtifactPath(string artifactPath, string? customMcFolder = null)
     {
         customMcFolder = customMcFolder ?? ModFolder.mcFolderSelected;
         if (string.IsNullOrWhiteSpace(artifactPath))

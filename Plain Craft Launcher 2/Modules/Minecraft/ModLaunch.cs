@@ -199,7 +199,7 @@ public static class ModLaunch
     ///     尝试启动 Minecraft。必须在 UI 线程调用。
     ///     返回是否实际开始了启动（如果没有，则一定弹出了错误提示）。
     /// </summary>
-    public static bool McLaunchStart(McLaunchOptions options = null)
+    public static bool McLaunchStart(McLaunchOptions? options = null)
     {
         isLaunching = true;
         currentLaunchOptions = options ?? new McLaunchOptions();
@@ -441,9 +441,14 @@ public static class ModLaunch
         /// </summary>
         public McLoginType LoginType;
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is not null && obj.GetHashCode() == GetHashCode();
+        }
+
+        public override int GetHashCode()
+        {
+            return LoginType.GetHashCode();
         }
     }
 
@@ -2742,13 +2747,9 @@ public static class ModLaunch
     /// <summary>
     ///     对替换标记进行处理。会对替换内容使用 EscapeHandler 进行转义。
     /// </summary>
-    private static string ArgumentReplace(string text, bool replaceTime, Func<string, string> escapeHandler = null)
+    private static string ArgumentReplace(string text, bool replaceTime, Func<string, string>? escapeHandler = null)
     {
-        // 预处理
-        if (text is null)
-            return null;
-
-        string replacer(string s)
+        string replacer(string? s)
         {
             if (s is null)
                 return "";

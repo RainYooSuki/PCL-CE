@@ -314,7 +314,7 @@ public partial class MyRadioButton
         isMouseDown = false;
     }
 
-    private void RefreshColor(object obj = null, object e = null)
+    private void RefreshColor(object? obj = null, object? e = null)
     {
         try
         {

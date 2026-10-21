@@ -982,12 +982,9 @@ public static class ModMain
     /// <summary>
     /// 对替换标记进行处理。会对替换内容使用 EscapeHandler 进行转义。
     /// /// </summary>
-    public static string ArgumentReplace(string text, Func<string, string> escapeHandler = null, bool replaceTime = true) 
+    public static string ArgumentReplace(string text, Func<string, string>? escapeHandler = null, bool replaceTime = true) 
     {
-    // 预处理
-    if (text is null) return null;
-    
-    Func<string, string> replacer = (s) =>
+    Func<string?, string> replacer = (s) =>
     {
         if (s is null) return "";
         if (escapeHandler is null) return s;

@@ -2283,10 +2283,15 @@ public static class ModLocalComp
             return $"{State} - {path}";
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var target = obj as LocalCompFile;
-            return target is not null && (path ?? "") == (target.path ?? "");
+            return target is not null && path == target.path;
+        }
+
+        public override int GetHashCode()
+        {
+            return path.GetHashCode();
         }
 
         #endregion
