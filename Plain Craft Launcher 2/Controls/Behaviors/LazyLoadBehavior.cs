@@ -38,7 +38,7 @@ public class LazyLoadBehavior : Behavior<FrameworkElement>
         base.OnDetaching();
     }
 
-    private void OnLayoutUpdated(object sender, EventArgs e)
+    private void OnLayoutUpdated(object? sender, EventArgs e)
     {
         var element = AssociatedObject;
         if (element is null || element.RenderSize.Width < double.Epsilon || !element.IsVisible)
@@ -60,7 +60,7 @@ public class LazyLoadBehavior : Behavior<FrameworkElement>
         element.LayoutUpdated -= OnLayoutUpdated;
     }
 
-    private static ScrollViewer FindParentScrollViewer(DependencyObject d)
+    private static ScrollViewer? FindParentScrollViewer(DependencyObject d)
     {
         for (var current = d; current is not null; current = VisualTreeHelper.GetParent(current))
         {

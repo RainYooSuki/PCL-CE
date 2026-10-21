@@ -25,8 +25,8 @@ namespace PCL;
 
 public partial class PageToolsTest
 {
-    private Bitmap currentSkinBitmap;
-    private Bitmap generatedHeadBitmap;
+    private Bitmap? currentSkinBitmap;
+    private Bitmap? generatedHeadBitmap;
 
     private int headSize = 64;
     private string skinPath = "";
@@ -95,8 +95,9 @@ public partial class PageToolsTest
                 }
                 case ModBase.LoadState.Failed:
                 {
+                    var loaderError = loader.Error ?? new Exception($"{loader.name}失败");
                     ModBase.Log(
-                        loader.Error,
+                        loaderError,
                         $"{loader.name}失败",
                         ModBase.LogLevel.Msgbox,
                         userSummary: Lang.Text("Tools.Test.Error.OperationFailed"));
@@ -110,7 +111,7 @@ public partial class PageToolsTest
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
         }
     }
@@ -632,23 +633,26 @@ public partial class PageToolsTest
     {
         try
         {
+            Bitmap loadedSkin;
             using (var stream = new FileStream(skinPath, FileMode.Open, FileAccess.Read))
             {
-                currentSkinBitmap = new Bitmap(stream);
+                loadedSkin = new Bitmap(stream);
             }
 
+            currentSkinBitmap = loadedSkin;
             this.skinPath = skinPath;
 
-            if (currentSkinBitmap.Width != currentSkinBitmap.Height)
+            if (loadedSkin.Width != loadedSkin.Height)
             {
                 HintService.Hint(Lang.Text("Tools.Test.Avatar.InvalidSize"), HintType.Error);
                 SkinPreviewBorder.Visibility = Visibility.Collapsed;
                 return;
             }
 
-            generatedHeadBitmap = GenerateHeadFromSkin(currentSkinBitmap);
+            var headBitmap = GenerateHeadFromSkin(loadedSkin);
+            generatedHeadBitmap = headBitmap;
 
-            ImgFace.Source = BitmapToBitmapImage(generatedHeadBitmap);
+            ImgFace.Source = BitmapToBitmapImage(headBitmap);
             ImgHair.Source = null;
 
             SkinPreviewBorder.Visibility = Visibility.Visible;
@@ -720,7 +724,7 @@ public partial class PageToolsTest
 
     private void BtnSaveHead_Click(object sender, MouseButtonEventArgs e)
     {
-        if (generatedHeadBitmap is null)
+        if (generatedHeadBitmap is not { } headBitmap)
         {
             HintService.Hint(Lang.Text("Tools.Test.Avatar.SelectFirst"), HintType.Error);
             return;
@@ -731,7 +735,7 @@ public partial class PageToolsTest
         if (string.IsNullOrEmpty(savePath))
             return;
 
-        generatedHeadBitmap.Save(savePath, ImageFormat.Png);
+        headBitmap.Save(savePath, ImageFormat.Png);
         HintService.Hint(Lang.Text("Tools.Test.Avatar.Saved"), HintType.Success);
     }
 

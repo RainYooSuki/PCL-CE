@@ -35,7 +35,7 @@ public partial class MinecraftServer : Grid
         d.Dispatcher.BeginInvoke(new Func<Task>(() => server.UpdateServerInfoAsync(e.NewValue?.ToString())));
     }
 
-    public async Task UpdateServerInfoAsync(string address)
+    public async Task UpdateServerInfoAsync(string? address)
     {
         if (address is null)
             return;
@@ -61,7 +61,7 @@ public partial class MinecraftServer : Grid
                 if (ret is null) throw new Exception(Lang.Text("Tools.ServerQuery.State.NoInfo"));
 
                 // 处理服务器图标
-                await ImageLoaderHelper.SetServerLogoAsync(ret.Favicon, ImgServerLogo);
+                await ImageLoaderHelper.SetServerLogoAsync(ret.Favicon ?? string.Empty, ImgServerLogo);
 
                 // 更新UI
                 UpdateServerStatus(ret);
