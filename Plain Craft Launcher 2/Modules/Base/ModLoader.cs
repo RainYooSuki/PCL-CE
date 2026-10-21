@@ -120,7 +120,7 @@ public static class ModLoader
     /// <param name="extraPath">用于检查文件夹修改的额外路径。该路径不会传入加载器。</param>
     /// <param name="loaderInput">如果不想要文件夹路径为输入值，则传入期望数据</param>
     public static bool LoaderFolderRun(LoaderBase loader, string folderPath, LoaderFolderRunType type, int maxDepth = 0,
-        string extraPath = "", bool waitForExit = false, object loaderInput = null)
+        string extraPath = "", bool waitForExit = false, object? loaderInput = null)
     {
         DirectoryInfo folderInfo;
         var value = new LoaderFolderDictionaryEntry { folderPath = folderPath + extraPath, lastCheckTime = default };
@@ -417,7 +417,7 @@ public static class ModLoader
         /// <summary>
         ///     无限期地等待加载器完成，直到结束或抛出异常。若加载器尚未开始，则会开始执行。
         /// </summary>
-        public void WaitForExit(object input = null, LoaderBase loaderToSyncProgress = null,
+        public void WaitForExit(object? input = null, LoaderBase? loaderToSyncProgress = null,
             bool isForceRestart = false)
         {
             Start(input, isForceRestart);
@@ -450,8 +450,9 @@ public static class ModLoader
         /// </summary>
         /// <param name="timeout">等待的超时时间，以毫秒为单位。</param>
         /// <param name="timeoutMessage">若执行超时，将会抛出的异常信息。</param>
-        public void WaitForExitTime(int timeout, object input = null, string timeoutMessage = waitForExitTimeoutMessage,
-            object loaderToSyncProgress = null, bool isForceRestart = false)
+        public void WaitForExitTime(int timeout, object? input = null,
+            string timeoutMessage = waitForExitTimeoutMessage, object? loaderToSyncProgress = null,
+            bool isForceRestart = false)
         {
             Start(input, isForceRestart);
             while (State == ModBase.LoadState.Loading)
@@ -615,7 +616,7 @@ public static class ModLoader
             // 需要开始
         }
 
-        public override void Start(object input = null, bool isForceRestart = false)
+        public override void Start(object? input = null, bool isForceRestart = false)
         {
             // 确认是否开始加载
             if (ShouldStart(ref input, isForceRestart))
@@ -771,7 +772,7 @@ public static class ModLoader
                 Loader.InitParent(this);
         }
 
-        public override void Start(object input = null, bool isForceRestart = false)
+        public override void Start(object? input = null, bool isForceRestart = false)
         {
             isForceRestarting = isForceRestart;
             lock (lockState)
@@ -1009,11 +1010,11 @@ public static class ModLoader
     /// </summary>
     public class LoaderCombo<InputType> : LoaderCombo
     {
-        public new InputType typedInput;
+        public InputType typedInput;
 
         public LoaderCombo(string name, IEnumerable<LoaderBase> loaders) : base(name, loaders) { }
 
-        public override void Start(object input = null, bool isForceRestart = false)
+        public override void Start(object? input = null, bool isForceRestart = false)
         {
             this.typedInput = Conversions.ToGenericParameter<InputType>(input);
             base.Start(this.typedInput, isForceRestart);
