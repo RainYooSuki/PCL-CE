@@ -101,7 +101,13 @@ public partial class PageSetupUI
             // 主页
             try
             {
-                ComboCustomPreset.SelectedIndex = Config.Preference.Homepage.SelectedPreset;
+                var preset = Config.Preference.Homepage.SelectedPreset;
+                if (preset is 8 or 14)
+                {
+                    preset = 0;
+                    Config.Preference.Homepage.SelectedPreset = 0;
+                }
+                ComboCustomPreset.SelectedIndex = preset;
             }
             catch
             {

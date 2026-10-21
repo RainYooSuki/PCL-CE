@@ -25,9 +25,8 @@ public static class HttpSenderExtension
 
             if(addMetedata)
             {
-                request
-                    .WithHeader("User-Agent", $"RainYooSuki/PCL-CE/{Basics.VersionName} (+https://github.com/RainYooSuki/PCL-CE)")
-                    .WithHeader("Referer", $"https://{Basics.VersionCode}.ce.open.pcl2.server/");
+                request.WithHeader("User-Agent",
+                    $"RainYooSuki/PCL-CE/{Basics.VersionName} (+https://github.com/RainYooSuki/PCL-CE)");
             }
 
             var requestId = Guid.NewGuid().ToString();

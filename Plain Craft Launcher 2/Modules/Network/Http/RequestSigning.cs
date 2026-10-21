@@ -14,7 +14,7 @@ public static class RequestSigning
     }
     
     /// <summary>
-    ///     设置 Headers 的 UA、Referer。
+    ///     设置 Headers 的 User-Agent 与 API Key。
     /// </summary>
     internal static void SecretHeadersSign(string url, ref HttpRequestMessage client, bool useBrowserUserAgent = false,
         string customUserAgent = "")

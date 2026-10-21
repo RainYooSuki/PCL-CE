@@ -13,7 +13,7 @@ using Clipboard = System.Windows.Forms.Clipboard;
 // which is licensed under the GNU AGPL v3.0 only.
 // 
 // As the original author of this code, I am re-licensing this specific file under
-// the Apache License 2.0 for use in PCL2-CE.
+// the Apache License 2.0 for use in PCL CE.
 // 
 // Description:
 // Implements a WPF clipboard fix to handle OpenClipboard failures in TextBox,
