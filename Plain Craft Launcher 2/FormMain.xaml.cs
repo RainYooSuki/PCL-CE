@@ -209,7 +209,10 @@ public partial class FormMain
                 -TransformRotate.Angle, 500, 100, new ModAnimation.AniEaseOutBack(ModAnimation.AniEasePower.Weak)),
             ModAnimation.AaCode(() =>
             {
-                RenderTransform = null;
+                TransformRotate.Angle = 0d;
+                TransformPos.X = 0d;
+                TransformPos.Y = 0d;
+                PanRoot.RenderTransform = null;
                 isWindowLoadFinished = true;
                 ModBase.Log(
                     $"[System] DPI：{ModBase.dpi}，系统版本：{Environment.OSVersion.VersionString}，PCL 位置：{Basics.ExecutablePath}");
