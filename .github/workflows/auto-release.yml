@@ -86,21 +86,32 @@ jobs:
           cp "dist/${x64_name}" "package/x64/${x64_name}"
           cp "dist/${arm64_name}" "package/ARM64/${arm64_name}"
 
-          cat > package/BUILD_INFO.txt <<EOF
+          write_build_info() {
+            local platform="$1"
+            cat > "package/${platform}/BUILD_INFO.txt" <<EOF
           PCL2 CE automatic release
           Commit: ${GITHUB_SHA}
           Branch: ${GITHUB_REF_NAME}
-          Platforms: x64, ARM64
+          Platform: ${platform}
           Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
           EOF
+          }
 
-          zip_name="PCL2_CE_Release_${SHORT_SHA}_x64_ARM64.zip"
-          checksum_name="PCL2_CE_Release_${SHORT_SHA}_x64_ARM64_sha256.txt"
+          write_build_info x64
+          write_build_info ARM64
 
-          (cd package && zip -r "../dist/${zip_name}" .)
+          x64_zip="PCL2_CE_Release_${SHORT_SHA}_x64.zip"
+          arm64_zip="PCL2_CE_Release_${SHORT_SHA}_ARM64.zip"
+          x64_checksum="PCL2_CE_Release_${SHORT_SHA}_x64.sha256"
+          arm64_checksum="PCL2_CE_Release_${SHORT_SHA}_ARM64.sha256"
+
+          (cd package/x64 && zip -r "../../dist/${x64_zip}" .)
+          (cd package/ARM64 && zip -r "../../dist/${arm64_zip}" .)
+
           (
             cd dist
-            sha256sum "${x64_name}" "${arm64_name}" "${zip_name}" > "${checksum_name}"
+            sha256sum "${x64_name}" "${x64_zip}" > "${x64_checksum}"
+            sha256sum "${arm64_name}" "${arm64_zip}" > "${arm64_checksum}"
           )
 
       - name: Create release notes
@@ -140,5 +151,7 @@ jobs:
           files: |
             dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_x64.exe
             dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_ARM64.exe
-            dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_x64_ARM64.zip
-            dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_x64_ARM64_sha256.txt
+            dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_x64.zip
+            dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_ARM64.zip
+            dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_x64.sha256
+            dist/PCL2_CE_Release_${{ steps.meta.outputs.short_sha }}_ARM64.sha256
