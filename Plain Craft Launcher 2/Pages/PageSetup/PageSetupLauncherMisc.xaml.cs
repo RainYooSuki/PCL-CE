@@ -47,13 +47,17 @@ public partial class PageSetupLauncherMisc
         // 系统设置
         ComboSystemActivity.SelectedIndex = States.System.AnnounceSolution;
         CheckSystemDisableHardwareAcceleration.Checked = Config.System.DisableHardwareAcceleration;
-        var displayRefreshRate = SystemInfo.GetPrimaryDisplayRefreshRate();
+        var windowHandle = Window.GetWindow(this) is { } window
+            ? new System.Windows.Interop.WindowInteropHelper(window).Handle
+            : IntPtr.Zero;
+        var displayRefreshRate = SystemInfo.GetDisplayRefreshRate(windowHandle);
         SliderAniFPS.MaxValue = Math.Max(59, displayRefreshRate - 1);
         SliderAniFPS.Value = Math.Clamp(Config.System.AnimationFpsLimit, 0, SliderAniFPS.MaxValue);
         SliderAniFPS.IsEnabled = !Config.System.AnimationMatchDisplayRefreshRate;
         CheckSystemMatchDisplayRefreshRate.Text =
             $"{Lang.Text("Setup.Misc.System.MatchDisplayRefreshRate")} ({displayRefreshRate} Hz)";
         CheckSystemMatchDisplayRefreshRate.Checked = Config.System.AnimationMatchDisplayRefreshRate;
+        ModBase.Log($"[Animation] 检测到窗口所在显示器刷新率：{displayRefreshRate} Hz");
         SliderMaxLog.Value = Config.System.MaxGameLog;
         CheckSystemTelemetry.Checked = Config.System.Telemetry;
 

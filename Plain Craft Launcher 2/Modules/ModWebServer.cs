@@ -256,14 +256,14 @@ public static class ModWebServer
         public bool success { get; set; }
         public string username { get; set; }
         public string message { get; set; }
-        public string stacktrace { get; set; }
+        public string? stacktrace { get; set; }
 
         public static OAuthCompleteStatus Complete(string username)
         {
             return new OAuthCompleteStatus { success = true, username = username };
         }
 
-        public static OAuthCompleteStatus Failed(string message, Exception ex = null)
+        public static OAuthCompleteStatus Failed(string message, Exception? ex = null)
         {
             var init = new OAuthCompleteStatus();
             return (init.success = false, init.message = message, init.stacktrace = ex?.ToString(), init).init;

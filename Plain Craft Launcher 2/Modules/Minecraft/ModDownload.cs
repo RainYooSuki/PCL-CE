@@ -927,8 +927,10 @@ public static class ModDownload
             }
         }
 
-        public int CompareTo(DlForgelikeEntry other)
+        public int CompareTo(DlForgelikeEntry? other)
         {
+            if (other is null) return 1;
+
             if (version != other.version) return version.CompareTo(other.version);
 
             return McVersionComparer.CompareVersion(VersionName, other.VersionName);

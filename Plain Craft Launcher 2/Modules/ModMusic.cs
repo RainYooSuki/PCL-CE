@@ -13,7 +13,7 @@ public static class ModMusic
     /// <summary>
     ///     当前正在播放的 NAudio.Wave.WaveOutEvent。
     /// </summary>
-    public static WaveOutEvent musicNAudio;
+    public static WaveOutEvent? musicNAudio;
 
     /// <summary>
     ///     当前播放的音乐地址。
@@ -22,8 +22,8 @@ public static class ModMusic
 
     private static void MusicLoop(bool isFirstLoad = false)
     {
-        WaveOutEvent currentWave = null;
-        AudioFileReader reader = null;
+        WaveOutEvent? currentWave = null;
+        AudioFileReader? reader = null;
 
         try
         {
@@ -139,26 +139,26 @@ public static class ModMusic
     /// <summary>
     ///     接下来要播放的音乐文件路径。未初始化时为 Nothing。
     /// </summary>
-    public static List<string> musicWaitingList;
+    public static List<string> musicWaitingList = new();
 
     /// <summary>
     ///     全部音乐文件路径。未初始化时为 Nothing。
     /// </summary>
-    public static List<string> musicAllList;
+    public static List<string> musicAllList = new();
 
     /// <summary>
     ///     初始化音乐播放列表。
     /// </summary>
     /// <param name="forceReload">强制全部重新载入列表。</param>
     /// <param name="preventFirst">在重载列表时避免让某项成为第一项。</param>
-    private static void MusicListInit(bool forceReload, string preventFirst = null)
+    private static void MusicListInit(bool forceReload, string? preventFirst = null)
     {
         if (forceReload)
-            musicAllList = null;
+            musicAllList.Clear();
 
         try
         {
-            if (musicAllList is null)
+            if (musicAllList.Count == 0)
             {
                 musicAllList = new List<string>();
                 var musicDir = Path.Combine(ModBase.exePath, "PCL", "Musics");
@@ -202,9 +202,9 @@ public static class ModMusic
     ///     获取下一首播放的音乐路径并将其从列表中移除。
     ///     如果没有，可能会返回 Nothing。
     /// </summary>
-    private static string DequeueNextMusicAddress()
+    private static string? DequeueNextMusicAddress()
     {
-        if (musicAllList is null || !musicAllList.Any() || !musicWaitingList.Any()) MusicListInit(false);
+        if (musicAllList.Count == 0 || !musicWaitingList.Any()) MusicListInit(false);
 
         if (musicWaitingList.Any())
         {
@@ -343,10 +343,11 @@ public static class ModMusic
     {
         get
         {
-            if (musicNAudio is null)
+            var audio = musicNAudio;
+            if (audio is null)
                 return MusicStates.Stop;
-            return musicNAudio.PlaybackState == PlaybackState.Paused ? MusicStates.Pause :
-                musicNAudio.PlaybackState == PlaybackState.Stopped ? MusicStates.Stop : MusicStates.Play;
+            return audio.PlaybackState == PlaybackState.Paused ? MusicStates.Pause :
+                audio.PlaybackState == PlaybackState.Stopped ? MusicStates.Stop : MusicStates.Play;
         }
     }
 
@@ -415,7 +416,7 @@ public static class ModMusic
         }
     }
 
-    private static void MusicStartPlay(string address, bool isFirstLoad = false)
+    private static void MusicStartPlay(string? address, bool isFirstLoad = false)
     {
         if (string.IsNullOrEmpty(address))
             return;

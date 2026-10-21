@@ -342,7 +342,7 @@ public static class ModComp
         /// </summary>
         /// <param name="project"></param>
         /// <param name="pos"></param>
-        public static void ShowMenu(CompProject project, UIElement pos, Action closedCallBack = null)
+        public static void ShowMenu(CompProject project, UIElement pos, Action? closedCallBack = null)
         {
             var body = new ContextMenu();
             foreach (var i in FavoritesList)
@@ -395,7 +395,7 @@ public static class ModComp
         /// <summary>
         ///     显示收藏菜单。
         /// </summary>
-        public static void ShowMenu(List<CompProject> project, UIElement pos, Action closedCallBack = null)
+        public static void ShowMenu(List<CompProject> project, UIElement pos, Action? closedCallBack = null)
         {
             var body = new ContextMenu();
             foreach (var i in FavoritesList)
