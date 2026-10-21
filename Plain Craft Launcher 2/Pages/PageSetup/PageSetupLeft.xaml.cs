@@ -19,7 +19,6 @@ public partial class PageSetupLeft
         if (ItemLaunch.Checked && hide.SetupLaunch) isHiddenPage = true;
         if (ItemJava.Checked && hide.SetupJava) isHiddenPage = true;
         if (ItemGameManage.Checked && hide.SetupGameManage)  isHiddenPage = true;
-        if (ItemGameLink.Checked && hide.SetupGameLink) isHiddenPage = true;
         if (ItemUI.Checked && hide.SetupUi) isHiddenPage = true;
         if (ItemLauncherLanguage.Checked && hide.SetupLauncherLanguage) isHiddenPage = true;
         if (ItemLauncherMisc.Checked && hide.SetupLauncherMisc) isHiddenPage = true;
@@ -45,8 +44,6 @@ public partial class PageSetupLeft
             ItemJava.SetChecked(true, false, false);    
         else if (!hideCfg.SetupGameManage) 
             ItemGameManage.SetChecked(true, false, false);
-        else if (!hideCfg.SetupGameLink) 
-            ItemGameLink.SetChecked(true, false, false);    
         else if (!hideCfg.SetupUi) 
             ItemUI.SetChecked(true, false, false);
         else if (!hideCfg.SetupLauncherLanguage)
@@ -107,18 +104,6 @@ public partial class PageSetupLeft
                         ModMain.frmSetupGameManage = new PageSetupGameManage();
                     ModMain.frmSetupGameManage.Reset();
                     ItemGameManage.Checked = true;
-                }
-
-                break;
-            }
-            case (double)FormMain.PageSubType.SetupGameLink:
-            {
-                if (ModMain.MyMsgBox(Lang.Text("Setup.Left.Reset.GameLink.Message"), Lang.Text("Setup.Left.Reset.Title"), button2: Lang.Text("Common.Action.Cancel"), isWarn: true) == 1)
-                {
-                    if (ModMain.frmSetupGameLink is null)
-                        ModMain.frmSetupGameLink = new PageSetupGameLink();
-                    ModMain.frmSetupGameLink.Reset();
-                    ItemGameLink.Checked = true;
                 }
 
                 break;
@@ -197,7 +182,7 @@ public partial class PageSetupLeft
     #region 页面切换
 
     /// <summary>
-    ///     当前页面的编号。从左往右从 0 开始计算。
+    ///     当前页面的编号。
     /// </summary>
     public FormMain.PageSubType pageID;
 
@@ -212,8 +197,6 @@ public partial class PageSetupLeft
             pageID = FormMain.PageSubType.SetupJava;
         else if (!hideCfg.SetupGameManage)
             pageID = FormMain.PageSubType.SetupGameManage;
-        else if (!hideCfg.SetupGameLink)
-            pageID = FormMain.PageSubType.SetupGameLink;    
         else if (!hideCfg.SetupUi)
             pageID = FormMain.PageSubType.SetupUI;
         else if (!hideCfg.SetupLauncherLanguage)
@@ -253,7 +236,7 @@ public partial class PageSetupLeft
     public object PageGet(FormMain.PageSubType? id = null)
     {
         var targetID = id ?? pageID;
-        switch (id)
+        switch (targetID)
         {
             case FormMain.PageSubType.SetupLaunch:
             {
@@ -297,12 +280,6 @@ public partial class PageSetupLeft
                     ModMain.frmSetupFeedback = new PageSetupFeedback();
                 return ModMain.frmSetupFeedback;
             }
-            case FormMain.PageSubType.SetupGameLink:
-            {
-                if (ModMain.frmSetupGameLink is null)
-                    ModMain.frmSetupGameLink = new PageSetupGameLink();
-                return ModMain.frmSetupGameLink;
-            }
             case FormMain.PageSubType.SetupLauncherLanguage:
             {
                 if (ModMain.frmSetupLauncherLanguage is null)
@@ -324,7 +301,7 @@ public partial class PageSetupLeft
 
             default:
             {
-                throw new Exception("未知的设置子页面种类：" + (int)id);
+                throw new Exception("未知的设置子页面种类：" + (int)targetID);
             }
         }
     }

@@ -1,8 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using PCL.Core.App;
-
 using PCL.Core.App.Localization;
+
 namespace PCL;
 
 public partial class PageToolsLeft
@@ -14,16 +14,15 @@ public partial class PageToolsLeft
     {
         InitializeComponent();
         AnimatedControl = PanItem;
-        Loaded += PageLinkLeft_Loaded;
+        Loaded += PageToolsLeft_Loaded;
         Unloaded += PageOtherLeft_Unloaded;
     }
 
-    private void PageLinkLeft_Loaded(object sender, RoutedEventArgs e)
+    private void PageToolsLeft_Loaded(object sender, RoutedEventArgs e)
     {
         var isHiddenPage = false;
         var hide = Config.Preference.Hide;
 
-        if (ItemGameLink.Checked && hide.ToolsGameLink) isHiddenPage = true;
         if (ItemTest.Checked && hide.ToolsTest) isHiddenPage = true;
         if (PageSetupUI.HiddenForceShow)
             isHiddenPage = false;
@@ -33,16 +32,9 @@ public partial class PageToolsLeft
         isLoad = true;
         // 刷新子页面隐藏情况
         PageSetupUI.HiddenRefresh();
-        // 选择第一个未被禁用的子页面
-        if (isPageSwitched) 
-            return;
-        var hideCfg = Config.Preference.Hide;
-        if (!hideCfg.ToolsGameLink)
-            ItemGameLink.SetChecked(true, false, false);
-        else if (!hideCfg.ToolsTest)
+        // 当前仅剩工具箱子页面
+        if (!isPageSwitched && (!hide.ToolsTest || PageSetupUI.HiddenForceShow))
             ItemTest.SetChecked(true, false, false);
-        else
-            ItemGameLink.SetChecked(true, false, false);
     }
 
     private void PageOtherLeft_Unloaded(object sender, RoutedEventArgs e)
@@ -50,31 +42,12 @@ public partial class PageToolsLeft
         isPageSwitched = false;
     }
 
-    public void Refresh(object sender, EventArgs e)
-    {
-        var button = (MyIconButton)sender;
-        if (button.Tag is null)
-            return;
-        double id = ModBase.Val(button.Tag);
-        switch (id)
-        {
-            case (double)FormMain.PageSubType.ToolsGameLink:
-            {
-                if (ModMain.frmToolsGameLink is null)
-                    ModMain.frmToolsGameLink = new PageToolsGameLink();
-                ModMain.frmToolsGameLink.Reload();
-                ItemGameLink.Checked = true;
-                break;
-            }
-        }
-    }
-
     #region 页面切换
 
     /// <summary>
     ///     当前页面的编号。
     /// </summary>
-    public FormMain.PageSubType pageID = FormMain.PageSubType.ToolsGameLink;
+    public FormMain.PageSubType pageID = FormMain.PageSubType.ToolsTest;
 
     /// <summary>
     ///     勾选事件改变页面。
@@ -90,26 +63,9 @@ public partial class PageToolsLeft
 
     public object PageGet(FormMain.PageSubType? id = null)
     {
-        var targetID = id ?? pageID;
-        switch (id)
-        {
-            case FormMain.PageSubType.ToolsGameLink:
-            {
-                if (ModMain.frmToolsGameLink is null)
-                    ModMain.frmToolsGameLink = new PageToolsGameLink();
-                return ModMain.frmToolsGameLink;
-            }
-            case FormMain.PageSubType.ToolsTest:
-            {
-                if (ModMain.frmToolsTest is null)
-                    ModMain.frmToolsTest = new PageToolsTest();
-                return ModMain.frmToolsTest;
-            }
-            default:
-            {
-                throw new Exception("未知的更多子页面种类：" + (int)id);
-            }
-        }
+        if (ModMain.frmToolsTest is null)
+            ModMain.frmToolsTest = new PageToolsTest();
+        return ModMain.frmToolsTest;
     }
 
     /// <summary>

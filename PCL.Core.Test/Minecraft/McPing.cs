@@ -2,7 +2,7 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using System.Net.Sockets;
-using PCL.Core.Link.McPing;
+using PCL.Core.Minecraft.McPing;
 
 namespace PCL.Core.Test.Minecraft;
 

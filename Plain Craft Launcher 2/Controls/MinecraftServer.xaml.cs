@@ -1,6 +1,6 @@
 using PCL.Core.App.Localization;
-using PCL.Core.Link.McPing;
-using PCL.Core.Link.McPing.Model;
+using PCL.Core.Minecraft.McPing;
+using PCL.Core.Minecraft.McPing.Model;
 using PCL.Core.Minecraft;
 using PCL.Core.UI;
 using System.Windows;

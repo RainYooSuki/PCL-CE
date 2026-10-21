@@ -22,11 +22,11 @@ public partial class PageSetupLauncherMisc
     public PageSetupLauncherMisc()
     {
         InitializeComponent();
-        Loaded += PageSetupLink_Loaded;
+        Loaded += PageSetupMisc_Loaded;
         Loaded += (_, _) => Reload();
     }
 
-    private void PageSetupLink_Loaded(object sender, RoutedEventArgs e)
+    private void PageSetupMisc_Loaded(object sender, RoutedEventArgs e)
     {
         // 重复加载部分
         PanBack.ScrollToHome();

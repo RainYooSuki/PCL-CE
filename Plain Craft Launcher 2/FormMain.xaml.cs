@@ -516,8 +516,6 @@ public partial class FormMain
                 return;
         }
 
-        // 关闭联机大厅
-        // Await LobbyController.CloseAsync().ConfigureAwait(False)
         // 关闭
         ModBase.RunInUiWait(() =>
         {
@@ -574,8 +572,6 @@ public partial class FormMain
         bool force = true, bool isUpdating = false)
     {
         // On Error Resume Next
-        // 关闭联机大厅
-        // Await LobbyController.CloseAsync().ConfigureAwait(False)
         ModBase.isProgramEnded = true;
         ModAnimation.AniControlEnabled += 1;
         if (UpdateManager.isUpdateWaitingRestart && !isUpdating)
@@ -1370,7 +1366,7 @@ public partial class FormMain
         Download = 1,
 
         /// <summary>
-        ///     联机。
+        ///     工具。
         /// </summary>
         Tools = 3,
 
@@ -1416,7 +1412,7 @@ public partial class FormMain
     }
 
     /// <summary>
-    ///     次要页面种类。其数值必须与 StackPanel 中的下标一致。
+    ///     次要页面种类。其数值需与对应导航项的 Tag 一致。
     /// </summary>
     public enum PageSubType
     {
@@ -1442,17 +1438,14 @@ public partial class FormMain
         SetupLaunch = 0,
         SetupUI = 1,
         SetupGameManage = 2,
-        SetupLink = 3,
         SetupAbout = 4,
         SetupLog = 5,
         SetupFeedback = 6,
-        SetupGameLink = 7,
         SetupUpdate = 8,
         SetupJava = 9,
         SetupLauncherMisc = 10,
         SetupLauncherLanguage = 11,
 
-        ToolsGameLink = 1,
         ToolsTest = 3,
 
         VersionOverall = 0,
@@ -1863,7 +1856,7 @@ public partial class FormMain
                         PageChangeAnim(ModMain.frmDownloadLeft, (FrameworkElement)ModMain.frmDownloadLeft.PageGet(subType));
                         break;
                     }
-                case PageType.Tools: // 联机
+                case PageType.Tools: // 工具
                     {
                         ModMain.frmToolsLeft ??= new PageToolsLeft();
                         subType = ModMain.frmToolsLeft.pageID;
