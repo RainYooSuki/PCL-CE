@@ -19,9 +19,13 @@ public class UpdatesGitHubReleaseModel : IUpdateSource
     public const string RepositoryUrl = "https://github.com/" + RepositoryOwner + "/" + RepositoryName;
     public const string ReleasesUrl = RepositoryUrl + "/releases";
     public const string LatestReleasePageUrl = ReleasesUrl + "/latest";
+    public const string IssuesUrl = RepositoryUrl + "/issues";
 
-    private const string LatestReleaseApiUrl =
-        "https://api.github.com/repos/" + RepositoryOwner + "/" + RepositoryName + "/releases/latest";
+    private const string RepositoryApiUrl =
+        "https://api.github.com/repos/" + RepositoryOwner + "/" + RepositoryName;
+
+    public const string IssuesApiUrl = RepositoryApiUrl + "/issues";
+    private const string LatestReleaseApiUrl = RepositoryApiUrl + "/releases/latest";
 
     private readonly Dictionary<UpdateArch, VersionDataModel> _versionCache = new();
     private JsonObject? _release;

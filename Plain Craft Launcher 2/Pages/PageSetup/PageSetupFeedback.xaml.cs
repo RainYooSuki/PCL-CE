@@ -39,6 +39,29 @@ public partial class PageSetupFeedback
         [((long)TagId.Duplicate).ToString()] = (p => p.PanListDuplicate, "Blocks/CobbleStone.png"),
     };
 
+    // 同时按标签名称匹配状态，避免切换仓库后标签 ID 变化导致分类失效
+    private static readonly (string Keyword, TagId Tag)[] TagNameMap =
+    [
+        ("正在处理", TagId.Processing),
+        ("等待处理", TagId.WaitingProcess),
+        ("等待", TagId.Wait),
+        ("暂停", TagId.Pause),
+        ("在即", TagId.Upnext),
+        ("已完成", TagId.Completed),
+        ("已拒绝", TagId.Decline),
+        ("已忽略", TagId.Ignored),
+        ("重复", TagId.Duplicate),
+        ("awaiting processing", TagId.WaitingProcess),
+        ("processing", TagId.Processing),
+        ("waiting", TagId.Wait),
+        ("paused", TagId.Pause),
+        ("up next", TagId.Upnext),
+        ("completed", TagId.Completed),
+        ("declined", TagId.Decline),
+        ("ignored", TagId.Ignored),
+        ("duplicate", TagId.Duplicate)
+    ];
+
     public PageSetupFeedback()
     {
         InitializeComponent();
@@ -60,7 +83,7 @@ public partial class PageSetupFeedback
     public void FeedbackListGet(ModLoader.LoaderTask<bool, List<Feedback>> task)
     {
         var list = Requester.FetchJson(
-            "https://api.github.com/repos/PCL-Community/PCL2-CE/issues?state=all&sort=created&per_page=200",
+            $"{UpdatesGitHubReleaseModel.IssuesApiUrl}?state=all&sort=created&per_page=200",
             new RequestParam
             {
                 Retries = 3,
@@ -88,11 +111,27 @@ public partial class PageSetupFeedback
             }
 
             item.Type = issueType;
+            item.IsOpen = string.Equals(issue["state"]?.ToString(), "open", StringComparison.OrdinalIgnoreCase);
 
             if (issue["labels"] is JsonArray thisTags)
                 foreach (var thisTag in thisTags)
                     if (thisTag is JsonObject tagObj)
-                        item.Tags.Add(tagObj["id"]!.ToString());
+                    {
+                        var labelId = tagObj["id"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(labelId))
+                            item.Tags.Add(labelId);
+
+                        var labelName = tagObj["name"]?.ToString();
+                        if (string.IsNullOrWhiteSpace(labelName)) continue;
+
+                        var statusTag = TagNameMap.FirstOrDefault(tag =>
+                            labelName.Contains(tag.Keyword, StringComparison.OrdinalIgnoreCase)).Tag;
+                        if (statusTag == default) continue;
+
+                        var statusTagId = ((long)statusTag).ToString();
+                        if (!item.Tags.Contains(statusTagId))
+                            item.Tags.Add(statusTagId);
+                    }
 
             res.Add(item);
         }
@@ -152,12 +191,10 @@ public partial class PageSetupFeedback
 
         foreach (var item in Loader.output)
         {
-            var tag = item.Tags.Find(TagMap.ContainsKey);
-            if (tag is not null)
-            {
-                var (panel, icon) = TagMap[tag];
-                panel(this).Children.Add(CreateFeedbackItem(item, icon));
-            }
+            var tag = item.Tags.Find(TagMap.ContainsKey)
+                      ?? ((long)(item.IsOpen ? TagId.WaitingProcess : TagId.Completed)).ToString();
+            var (panel, icon) = TagMap[tag];
+            panel(this).Children.Add(CreateFeedbackItem(item, icon));
         }
 
         SetPanelVisibility(PanListProcessing, PanContentProcessing);
@@ -190,6 +227,8 @@ public partial class PageSetupFeedback
         public string Url { get; init; } = string.Empty;
         [JsonIgnore]
         public string Id { get; set; } = string.Empty;
+        [JsonIgnore]
+        public bool IsOpen { get; set; } = true;
         public List<string> Tags { get; } = new();
         public string Type { get; set; } = string.Empty;
     }
