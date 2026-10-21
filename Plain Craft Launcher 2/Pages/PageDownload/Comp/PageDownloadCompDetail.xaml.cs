@@ -718,7 +718,7 @@ public partial class PageDownloadCompDetail
             this.topmost = topmost ?? "";
         }
 
-        public int Compare(string x, string y)
+        public int Compare(string? x, string? y)
         {
             // 相同
             if ((x ?? "") == (y ?? ""))

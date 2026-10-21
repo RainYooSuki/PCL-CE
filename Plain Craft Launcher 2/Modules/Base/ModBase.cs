@@ -391,9 +391,14 @@ public static class ModBase
             return "(" + a + "," + r + "," + g + "," + b + ")";
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is MyColor other && a == other.a && r == other.r && g == other.g && b == other.b;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(a, r, g, b);
         }
     }
 
@@ -480,7 +485,7 @@ public static class ModBase
     /// </summary>
     public class EqualableList<T> : List<T>
     {
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj as List<T> is null)
                 // 类型不同
@@ -494,6 +499,14 @@ public static class ModBase
                 if (!objList[i].Equals(this[i]))
                     return false;
             return true;
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            foreach (var item in this)
+                hash.Add(item);
+            return hash.ToHashCode();
         }
 
         public static bool operator ==(EqualableList<T> left, EqualableList<T> right)

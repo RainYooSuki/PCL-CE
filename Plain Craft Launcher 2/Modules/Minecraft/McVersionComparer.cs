@@ -104,8 +104,11 @@ public static class McVersionComparer
     /// </summary>
     public class VersionComparer : IComparer<string>
     {
-        public int Compare(string x, string y)
+        public int Compare(string? x, string? y)
         {
+            if (ReferenceEquals(x, y)) return 0;
+            if (x is null) return -1;
+            if (y is null) return 1;
             return CompareVersion(x, y);
         }
     }

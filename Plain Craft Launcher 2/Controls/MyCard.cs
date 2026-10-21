@@ -451,7 +451,7 @@ public class MyCard : AnimatedBackgroundGrid
 
 public static partial class ModAnimation
 {
-    public static void AniDispose(MyCard control, bool removeFromChildren, ParameterizedThreadStart callBack = null)
+    public static void AniDispose(MyCard control, bool removeFromChildren, ParameterizedThreadStart? callBack = null)
     {
         if (control.IsHitTestVisible)
         {

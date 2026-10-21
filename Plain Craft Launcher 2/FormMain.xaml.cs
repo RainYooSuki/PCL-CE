@@ -1609,7 +1609,7 @@ public partial class FormMain
 
         public PageType page;
 
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             if (other is null)
                 return false;
@@ -1633,6 +1633,11 @@ public partial class FormMain
             }
 
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(page, helpPage, additional);
         }
 
         public static bool operator ==(PageStackData left, PageStackData right)

@@ -822,7 +822,7 @@ public static class ModLocalComp
         /// <summary>
         ///     依赖项，其中包括了 Minecraft 的版本要求。格式为 ModID - VersionRequirement，若无版本要求则为 Nothing。
         /// </summary>
-        public Dictionary<string, string> Dependencies
+        public Dictionary<string, string?> Dependencies
         {
             get
             {
@@ -831,7 +831,7 @@ public static class ModLocalComp
             }
         }
 
-        private Dictionary<string, string> _Dependencies = new();
+        private Dictionary<string, string?> _Dependencies = new();
 
         /// <summary>
         ///     依赖的原始版本约束（未经 Maven 括号规整），保留 Fabric/Quilt semver 谓词原貌，供
@@ -902,7 +902,7 @@ public static class ModLocalComp
 
         private readonly List<EmbeddedConflict> _ConflictDeclarations = new();
 
-        private void _AddConflict(string modID, string versionRange, bool hard, string declarerId = null)
+        private void _AddConflict(string modID, string versionRange, bool hard, string? declarerId = null)
         {
             if (modID is null || modID.Length < 2) return;
             modID = modID.ToLower();
@@ -916,7 +916,7 @@ public static class ModLocalComp
                     { DeclarerId = declarerId, Target = modID, Raw = raw, Hard = hard });
         }
 
-        private void AddDependency(string modID, string versionRequirement = null, bool optional = false)
+        private void AddDependency(string modID, string? versionRequirement = null, bool optional = false)
         {
             // 确保信息正确
             if (modID is null || modID.Length < 2)
@@ -964,13 +964,13 @@ public static class ModLocalComp
 
         // 提取 dependencies[.<id>] = [ ... ] 的内联数组体。用引号感知的方括号平衡扫描而非懒惰正则，
         // 避免在 versionRange="[1.21.1]" 之类字符串内的 ] 处提前截断
-        private static List<(string DeclarerId, string Body)> _ExtractInlineDepArrays(string text)
+        private static List<(string? DeclarerId, string Body)> _ExtractInlineDepArrays(string text)
         {
-            var result = new List<(string, string)>();
+            var result = new List<(string?, string)>();
             foreach (Match m in Regex.Matches(text, @"dependencies[.\w""-]*\s*=\s*\[", RegexOptions.IgnoreCase))
             {
                 var header = m.Value.Substring(0, m.Value.IndexOf('=')).Trim();
-                var declarerId = header.Substring("dependencies".Length).Trim().TrimStart('.').Trim('"');
+                string? declarerId = header.Substring("dependencies".Length).Trim().TrimStart('.').Trim('"');
                 if (declarerId.Length == 0) declarerId = null;
                 var start = m.Index + m.Length;
                 var depth = 1;
@@ -1030,7 +1030,7 @@ public static class ModLocalComp
 
         internal void SetJijDependencies(List<EmbeddedDependency> declarations)
         {
-            _Dependencies = new Dictionary<string, string>();
+            _Dependencies = new Dictionary<string, string?>();
             _DependencyRaw.Clear();
             _DependencyDeclarations.Clear();
             if (declarations is null) return;
@@ -1073,7 +1073,7 @@ public static class ModLocalComp
                 _Version = other._Version;
                 _ModId = other._ModId;
                 possibleModId = new List<string>(other.possibleModId);
-                _Dependencies = new Dictionary<string, string>(other._Dependencies);
+                _Dependencies = new Dictionary<string, string?>(other._Dependencies);
                 _DependencyRaw.Clear();
                 foreach (var kv in other._DependencyRaw) _DependencyRaw[kv.Key] = kv.Value;
                 _DependencyDeclarations.Clear();
@@ -1165,7 +1165,7 @@ public static class ModLocalComp
             _Version = null;
             _ModId = null;
             possibleModId = new List<string>();
-            _Dependencies = new Dictionary<string, string>();
+            _Dependencies = new Dictionary<string, string?>();
             _DependencyRaw.Clear();
             _DependencyDeclarations.Clear();
             _ProvidedIds.Clear();

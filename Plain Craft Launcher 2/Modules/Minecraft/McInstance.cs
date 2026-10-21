@@ -1058,10 +1058,15 @@ public class McInstance
         }
 
         // 运算符支持
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var instance = obj as McInstance;
             return instance is not null && (PathInstance ?? "") == (instance.PathInstance ?? "");
+        }
+
+        public override int GetHashCode()
+        {
+            return (PathInstance ?? string.Empty).GetHashCode();
         }
 
         public static bool operator ==(McInstance? a, McInstance? b)
@@ -1073,7 +1078,7 @@ public class McInstance
             return (a.PathInstance ?? "") == (b.PathInstance ?? "");
         }
 
-        public static bool operator !=(McInstance a, McInstance b)
+        public static bool operator !=(McInstance? a, McInstance? b)
         {
             return !(a == b);
         }

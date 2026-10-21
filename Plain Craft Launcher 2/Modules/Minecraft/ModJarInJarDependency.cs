@@ -316,7 +316,7 @@ public class ModJarInJarIndex
         if (!string.IsNullOrWhiteSpace(id)) _declaredSources[(owner, _Norm(id))] = source;
     }
 
-    private CompFile _ResolveConflictSource(CompFile owner, string declarerId) =>
+    private CompFile _ResolveConflictSource(CompFile owner, string? declarerId) =>
         !string.IsNullOrWhiteSpace(declarerId) &&
         _declaredSources.TryGetValue((owner, _Norm(declarerId)), out var source)
             ? source

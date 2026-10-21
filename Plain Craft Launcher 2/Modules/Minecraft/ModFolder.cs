@@ -41,13 +41,17 @@ public static class ModFolder
         public string Name;
         public Types type;
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (obj is not McFolder)
+            if (obj is not McFolder folder)
                 return false;
-            var folder = (McFolder)obj;
             return (Name ?? "") == (folder.Name ?? "") && (Location ?? "") == (folder.Location ?? "") &&
                    type == folder.type;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Name ?? string.Empty, Location ?? string.Empty, type);
         }
 
         public override string ToString()

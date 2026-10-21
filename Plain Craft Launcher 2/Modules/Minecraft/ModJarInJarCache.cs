@@ -281,14 +281,14 @@ public class EmbeddedModNode
 public class EmbeddedDependency
 {
     public string Id { get; set; }
-    public string Raw { get; set; }
+    public string? Raw { get; set; }
     public bool Optional { get; set; }
 }
 
 public class EmbeddedConflict
 {
-    public string DeclarerId { get; set; }
+    public string? DeclarerId { get; set; }
     public string Target { get; set; }
-    public string Raw { get; set; }
+    public string? Raw { get; set; }
     public bool Hard { get; set; }
 }

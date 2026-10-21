@@ -482,10 +482,15 @@ public static class ModLoader
         }
 
         // 相同重载
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var @base = obj as LoaderBase;
             return @base is not null && Uuid == @base.Uuid;
+        }
+
+        public override int GetHashCode()
+        {
+            return Uuid;
         }
     }
 
@@ -1020,13 +1025,17 @@ public static class ModLoader
         public DateTime? lastCheckTime;
         public string folderPath;
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (obj is not LoaderFolderDictionaryEntry)
+            if (obj is not LoaderFolderDictionaryEntry entry)
                 return false;
-            var entry = (LoaderFolderDictionaryEntry)obj;
             return EqualityComparer<DateTime?>.Default.Equals(lastCheckTime, entry.lastCheckTime) &&
                    (folderPath ?? "") == (entry.folderPath ?? "");
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(lastCheckTime, folderPath);
         }
     }
 }

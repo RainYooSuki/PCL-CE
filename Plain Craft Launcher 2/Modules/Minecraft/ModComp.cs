@@ -1875,10 +1875,15 @@ public static class ModComp
             return $"{Id} ({Slug}): {RawName}";
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var project = obj as CompProject;
             return project is not null && (Id ?? "") == (project.Id ?? "");
+        }
+
+        public override int GetHashCode()
+        {
+            return (Id ?? string.Empty).GetHashCode();
         }
 
         public static bool operator ==(CompProject left, CompProject right)
@@ -2143,13 +2148,18 @@ public static class ModComp
         }
 
         // 相同判断
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var request = obj as CompProjectRequest;
             return request is not null && type == request.type && targetResultCount == request.targetResultCount &&
                    (tag ?? "") == (request.tag ?? "") && modLoader == request.modLoader && source == request.source &&
                    (gameVersion ?? "") == (request.gameVersion ?? "") &&
                    (searchText ?? "") == (request.searchText ?? "") && sort == request.sort;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(type, targetResultCount, tag, modLoader, source, gameVersion, searchText, sort);
         }
 
         public static bool operator ==(CompProjectRequest left, CompProjectRequest right)
