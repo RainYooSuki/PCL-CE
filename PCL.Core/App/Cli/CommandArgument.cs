@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 namespace PCL.Core.App.Cli;
 
@@ -53,7 +52,7 @@ public abstract class CommandArgument<TValue> : CommandArgument
     /// <returns>对应类型的参数值</returns>
     protected abstract TValue ParseValueText();
 
-    private StrongBox<TValue>? _value;
+    private ValueTuple<TValue>? _value;
 
     /// <summary>
     /// 参数值
@@ -63,12 +62,12 @@ public abstract class CommandArgument<TValue> : CommandArgument
         get
         {
             if (_value is { } cached)
-                return cached.Value;
+                return cached.Item1;
             var parsedValue = ParseValueText();
-            _value = new StrongBox<TValue>(parsedValue);
+            _value = new ValueTuple<TValue>(parsedValue);
             return parsedValue;
         }
-        protected init { _value = new StrongBox<TValue>(value); }
+        protected init { _value = new ValueTuple<TValue>(value); }
     }
 
     public override bool TryCastValue<T>([NotNullWhen(true), MaybeNullWhen(false)] out T value)

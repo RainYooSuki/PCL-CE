@@ -305,10 +305,10 @@ public static class ModComp
             set
             {
                 _FavoritesList = value;
-                foreach (var item in _FavoritesList)
+                foreach (var item in value)
                     item.Notes = item.Notes.Where(n => !string.IsNullOrWhiteSpace(n.Value)).ToDictionary();
-                var rawList = JsonSerializer.Serialize(_FavoritesList, JsonCompat.SerializerOptions);
-                States.Game.CompFavorites = JsonSerializer.Serialize(_FavoritesList, JsonCompat.SerializerOptions);
+                var rawList = JsonSerializer.Serialize(value, JsonCompat.SerializerOptions);
+                States.Game.CompFavorites = rawList;
             }
         }
 

@@ -14,7 +14,7 @@ public class BoolArgument : CommandArgument<bool>
 
     public override bool TryCastValue<T>([NotNullWhen(true), MaybeNullWhen(false)] out T value)
     {
-        if (base.TryCastValue(out value)) return true;
+        if (base.TryCastValue<T>(out value)) return true;
         var type = typeof(T);
         if (type != typeof(sbyte) &&
             type != typeof(byte) &&

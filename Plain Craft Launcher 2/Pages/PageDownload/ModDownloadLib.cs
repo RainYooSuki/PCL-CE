@@ -4094,7 +4094,7 @@ public static class ModDownloadLib
                                   request.liteLoaderEntry is not null || request.labyModCommitRef is not null))
         {
             var loadersLib = new List<ModLoader.LoaderBase>();
-            if (request.labyModCommitRef is { } labyModCommitRef && request.labyModChannel is { } labyModChannel)
+            if (request.labyModCommitRef is { } libLabyModCommitRef && request.labyModChannel is { } libLabyModChannel)
             {
                 var labyModClientLoader = new ModLoader.LoaderCombo<string>(
                     Lang.Text(
@@ -4102,8 +4102,8 @@ public static class ModDownloadLib
                         Lang.Text("Minecraft.Version.Vanilla"), request.minecraftName
                     ),
                     McDownloadLabyModClientLoader(
-                        request.minecraftName, labyModChannel,
-                        labyModCommitRef, request.targetInstanceName
+                        request.minecraftName, libLabyModChannel,
+                        libLabyModCommitRef, request.targetInstanceName
                     )
                 )
                 {

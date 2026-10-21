@@ -65,6 +65,12 @@ public partial class PageInstanceServer : MyPageRight
 
     private async void RemoveServerEvent(object sender, EventArgs e)
     {
+        if (sender is not ServerCard serverCard)
+        {
+            HintService.Hint(Lang.Text("Instance.Server.ReadDataFailed"), HintType.Error);
+            return;
+        }
+
         // Get server index
         var index = PanServers.Children.IndexOf(serverCard);
         if (index < 0)
@@ -97,11 +103,11 @@ public partial class PageInstanceServer : MyPageRight
 
         // Remove server from list and UI
         serverList.RemoveAt(index);
-        serverCardList.Remove((ServerCard)sender);
+        serverCardList.Remove(serverCard);
         if (serverList.Count == 0) RefreshTip();
 
         // Remove UI element
-        PanServers.Children.Remove((UIElement)sender);
+        PanServers.Children.Remove(serverCard);
 
         // Success message
         HintService.Hint(Lang.Text("Instance.Server.Removed"), HintType.Success);

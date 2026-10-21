@@ -678,8 +678,8 @@ public partial class PageInstanceExport : IRefreshable
             }
 
             // 赋值到界面控件
-            TextExportName.Text = ini.GetOrDefault("Name", "");
-            TextExportVersion.Text = ini.GetOrDefault("Version", "");
+            TextExportName.Text = ini.GetOrDefault("Name", "") ?? "";
+            TextExportVersion.Text = ini.GetOrDefault("Version", "") ?? "";
             CheckOptionsPcl.Checked =
                 Convert.ToBoolean(ini.GetOrDefault("IncludeLauncher", false.ToString()));
             CheckOptionsPclCustom.Checked =
@@ -796,7 +796,7 @@ public partial class PageInstanceExport : IRefreshable
     /// <summary>
     ///     配置文件中指定的导出位置。
     /// </summary>
-    private string configPackPath;
+    private string? configPackPath;
 
     /// <summary>
     ///     开始导出。

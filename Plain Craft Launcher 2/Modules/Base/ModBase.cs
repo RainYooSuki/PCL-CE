@@ -2781,18 +2781,18 @@ public static class ModBase
     /// <summary>
     ///     尝试从字典中获取某项，如果该项不存在，则返回默认值。
     /// </summary>
-    public static TValue GetOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key,
-        TValue defaultValue = default)
+    public static TValue? GetOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key,
+        TValue? defaultValue = default)
+        where TKey : notnull
     {
-        if (dict.ContainsKey(key)) return dict[key];
-
-        return defaultValue;
+        return dict.TryGetValue(key, out var value) ? value : defaultValue;
     }
 
     /// <summary>
     ///     将某项添加到以列表作为值的字典中。
     /// </summary>
     public static void AddToList<TKey, TValue>(this Dictionary<TKey, List<TValue>> dict, TKey key, TValue value)
+        where TKey : notnull
     {
         if (dict.ContainsKey(key))
             dict[key].Add(value);

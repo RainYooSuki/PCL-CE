@@ -45,7 +45,8 @@ public class CommandLine
     {
         var exists = Arguments.TryGetValue(key, out var arg);
         var isTypeMatch = false;
-        if (exists && (isTypeMatch = arg.TryCastValue<TValue>(out var typedValue)))
+        if (exists && arg is { } commandArgument &&
+            (isTypeMatch = commandArgument.TryCastValue<TValue>(out var typedValue)))
         {
             value = typedValue;
             return (true, true);

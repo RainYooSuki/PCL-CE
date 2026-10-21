@@ -152,7 +152,7 @@ public class MyCard : AnimatedBackgroundGrid
         {
             if (SwapControl is null && Children.Count > 3)
                 SwapControl = Children[3];
-            var mainSwap = new Path
+            var swapArrow = new Path
             {
                 HorizontalAlignment = HorizontalAlignment.Right, Stretch = Stretch.Uniform, Height = 6d, Width = 10d,
                 VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0d, 17d, 16d, 0d),
@@ -160,9 +160,9 @@ public class MyCard : AnimatedBackgroundGrid
                     (Geometry)new GeometryConverter().ConvertFromString("M2,4 l-2,2 10,10 10,-10 -2,-2 -8,8 -8,-8 z"),
                 RenderTransform = new RotateTransform(180d), RenderTransformOrigin = new Point(0.5d, 0.5d)
             };
-            MainSwap = mainSwap;
-            mainSwap.SetResourceReference(Shape.FillProperty, "ColorBrush1");
-            mainGrid.Children.Add(mainSwap);
+            MainSwap = swapArrow;
+            swapArrow.SetResourceReference(Shape.FillProperty, "ColorBrush1");
+            mainGrid.Children.Add(swapArrow);
         }
 
         // 改变默认的折叠

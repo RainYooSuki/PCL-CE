@@ -97,15 +97,16 @@ public static class ModSkin
             _ => throw new ArgumentException(Lang.Text("Minecraft.Skin.Error.InvalidSkinType", type ?? "null"))
         };
 
-        var skinString = ModNet.NetGetCodeByRequestRetry(url + uuid);
-        if (string.IsNullOrEmpty(skinString))
+        var skinResponse = ModNet.NetGetCodeByRequestRetry(url + uuid);
+        if (skinResponse is not string skinString || string.IsNullOrEmpty(skinString))
             throw new InvalidDataException(Lang.Text("Minecraft.Skin.Error.SkinReturnEmpty"));
 
         // 解析皮肤 Property
         string? skinValue = null;
         try
         {
-            var json = (JsonObject)ModBase.GetJson(skinString);
+            var json = ModBase.GetJson(skinString) as JsonObject
+                ?? throw new InvalidDataException(Lang.Text("Common.Error.InvalidJson"));
             foreach (var property in json["properties"].AsArray())
                 if (property["name"]?.ToString() == "textures")
                 {

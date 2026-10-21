@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using PCL.Core.Utils.Exts;
 
 namespace PCL.Core.App.Configuration;
@@ -25,18 +24,18 @@ public class ConfigItem<TValue>(
     public Type Type => typeof(TValue);
 
     private Func<TValue>? _defaultValueConstructor = defaultValue;
-    private StrongBox<TValue>? _defaultValue;
+    private ValueTuple<TValue>? _defaultValue;
 
     #region 默认值逻辑
 
     private TValue _GetDefaultValue()
     {
         if (_defaultValue is { } cached)
-            return cached.Value;
+            return cached.Item1;
         if (_defaultValueConstructor is not { } constructor)
             throw new InvalidOperationException("The configuration default value has already been consumed.");
         var defaultValue = constructor();
-        _defaultValue = new StrongBox<TValue>(defaultValue);
+        _defaultValue = new ValueTuple<TValue>(defaultValue);
         _defaultValueConstructor = null;
         return defaultValue;
     }

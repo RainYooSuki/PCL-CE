@@ -103,7 +103,7 @@ public class MyComboBox : ComboBox
             if (string.IsNullOrEmpty(Text))
                 textBox.Text = _Text;
             else
-                TextChanged?.Invoke(this, new TextChangedEventArgs(textBox, UndoAction.None));
+                TextChanged?.Invoke(this, new TextChangedEventArgs(TextBoxBase.TextChangedEvent, UndoAction.None));
             if (HintText.Length > 0)
                 textBox.HintText = HintText;
             textBox.SetResourceReference(TextBoxBase.CaretBrushProperty, "ColorBrushGray1");
